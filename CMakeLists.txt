@@ -19,15 +19,7 @@ set(GLFW_BUILD_DOCS OFF)
 # as an alternative we could use find_library() instead
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-# TODO: could be optional
-find_package(assimp REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
-
-if(assimp_FOUND)
-    message(STATUS "libAssimp found")
-else()
-    message(STATUS "libAssimp not found")
-endif()
 
 file(GLOB sources src/*.cpp)
 add_executable(${PROJECT_NAME} WIN32 ${sources})

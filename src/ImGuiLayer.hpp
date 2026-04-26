@@ -19,10 +19,12 @@ class ImGuiLayer {
         // Call after render() to actually render and end frame
         void end();
 
-        void render();
+        void render(float* clearColour);
 
     private:
         void setupDockspace();
+
+        GLFWwindow* windowPtr;
 
         static bool showDemoWindow; ///< Toggle IMGui Demo Window for Docs
 };

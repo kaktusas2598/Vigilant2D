@@ -1,5 +1,7 @@
-# GLFW
-OpenGL/GLM/ImGui/GLFW project template
+# Vigilant2D - 2D Tiled Game Engine
+
+Project inspired by my previous 2D engine build using SDL: [Vigilant](https://github.com/kaktusas2598/Vigilant), however I decided
+to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 
 # Included libraries
 
@@ -8,7 +10,7 @@ OpenGL/GLM/ImGui/GLFW project template
  * [ImGui](https://github.com/ocornut/imgui) - Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies (docking branch)
  * [stb_image](https://github.com/nothings/stb) - Public Domain Image Loading Library for C++
 
-# Included features
+# Included features (from template)
 
  * OpenGL Abstractions:
    - Texture with texture loading using stb_image
