@@ -8,10 +8,20 @@ void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
-// Static GLFW callbacks setup here by Application and updating various services like Input
+// Static GLFW callbacks setup here by Application and updating Input service state
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     app->getInput()->onKeyEvent(key, action);
+}
+
+static void mouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->getInput()->onMouseMoveEvent(xpos, ypos);
+}
+
+static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->getInput()->onMouseButtonEvent(button, action);
 }
 
 static void windowSizeCallback(GLFWwindow* window, int width, int height) {
@@ -26,12 +36,11 @@ void Application::init() {
     window.init(640, 480);
 
     glfwSetWindowUserPointer(window.getHandle(), this);
-    // input.setupKeyCallback(window.getHandle());
     glfwSetErrorCallback(errorCallback);
     glfwSetKeyCallback(window.getHandle(), keyCallback);
     glfwSetWindowSizeCallback(window.getHandle(), windowSizeCallback);
-    // glfwSetMouseButtonCallback(window.getHandle(), mouseButtonCallback);
-    // glfwSetCursorPosCallback(window.getHandle(), mouseMoveCallback);
+    glfwSetMouseButtonCallback(window.getHandle(), mouseButtonCallback);
+    glfwSetCursorPosCallback(window.getHandle(), mouseMoveCallback);
 
     uiLayer.init(window.getHandle());
 
@@ -45,6 +54,9 @@ void Application::run() {
     while (!window.shouldClose()) {
         input.beginFrame(); // Reset input
         glfwPollEvents();
+
+        // TODO: already regretting not getting variadic argument support from Villain Logger
+        // VA_DEBUG("Mouse X:  %s", x)
 
         if (input.isKeyPressed(GLFW_KEY_A)) {
 

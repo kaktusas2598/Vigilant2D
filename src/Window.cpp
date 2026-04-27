@@ -1,11 +1,12 @@
 #include "Window.hpp"
 
+#include "Logger.hpp"
+
 void Window::init(int width, int height) {
 
-    //glfwSetErrorCallback(errorCallback);
     /* Initialize the library */
     if (!glfwInit()) {
-        printf("Could not initialise GLFW.\n");
+        VG_ERROR("Could not initialise GLFW.");
         return;
     }
 
@@ -18,18 +19,16 @@ void Window::init(int width, int height) {
     if (!window)
     {
         glfwTerminate();
-        printf("Failed creating GLFW window.\n");
+        VG_ERROR("Failed creating GLFW window.");
         return;
     }
-
-    //glfwSetKeyCallback(window, keyCallback);
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
     if (glewInit() != GLEW_OK) {
-        printf("Could not initialise Glew.\n");
+        VG_ERROR("Could not initialise Glew.");
     }
 }
 
