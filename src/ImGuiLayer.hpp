@@ -22,8 +22,6 @@ class ImGuiLayer {
         void render(float* clearColour);
 
     private:
-        void setupDockspace();
-
         GLFWwindow* windowPtr;
 
         static bool showDemoWindow; ///< Toggle IMGui Demo Window for Docs

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22.1)
 
 # Setup project and set name
-project(OpenGLTemplate)
+project(Vigilant2D)
 
 # Set C++ Standard
 set(CMAKE_CXX_STANDARD 14)

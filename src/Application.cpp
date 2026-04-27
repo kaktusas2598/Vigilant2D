@@ -1,28 +1,26 @@
 #include "Application.hpp"
 
 #include "ErrorHandler.hpp"
+#include "Logger.hpp"
 #include "Input.hpp"
 
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
+// Static GLFW callbacks setup here by Application and updating various services like Input
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    Application* app = (Application* )glfwGetWindowUserPointer(window);
-    //Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-
-    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
-        printf("Debug mode: %d\n", app->isDebugModeEnabled());
-        app->switchDebugMode();
-    }
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->getInput()->onKeyEvent(key, action);
 }
 
 static void windowSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+Input* Application::getInput() {
+    return &input;
+}
 
 void Application::init() {
     window.init(640, 480);
@@ -32,6 +30,8 @@ void Application::init() {
     glfwSetErrorCallback(errorCallback);
     glfwSetKeyCallback(window.getHandle(), keyCallback);
     glfwSetWindowSizeCallback(window.getHandle(), windowSizeCallback);
+    // glfwSetMouseButtonCallback(window.getHandle(), mouseButtonCallback);
+    // glfwSetCursorPosCallback(window.getHandle(), mouseMoveCallback);
 
     uiLayer.init(window.getHandle());
 
@@ -43,7 +43,24 @@ void Application::init() {
 
 void Application::run() {
     while (!window.shouldClose()) {
+        input.beginFrame(); // Reset input
         glfwPollEvents();
+
+        if (input.isKeyPressed(GLFW_KEY_A)) {
+
+            VG_DEBUG("A pressed");
+            // printf("A pressed.\n");
+            // fflush(stdout);
+        }
+
+        if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
+            debugMode = !debugMode;
+            if (debugMode) VG_INFO("Debug Mode ON");
+        }
+
+        if (input.isKeyPressed(GLFW_KEY_ESCAPE)) {
+            glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
+        }
 
         int display_w, display_h;
         glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);

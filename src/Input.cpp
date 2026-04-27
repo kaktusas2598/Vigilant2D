@@ -1,22 +1,45 @@
 #include "Input.hpp"
 
-bool Input::isKeyDown(int key) {
-
-    return false;
+void Input::beginFrame() {
+    for(auto& key: keys) {
+        key.pressed = false;
+        key.released = false;
+        key.repeated = false;
+    }
 }
 
-void Input::setupKeyCallback(GLFWwindow *window) {
-    glfwSetKeyCallback(window, keyCallback);
+bool Input::isKeyDown(int key) const {
+    return keys[key].down;
 }
 
-// Static callback to register keys onto map
-void Input::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    // keys[key] = action;
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+bool Input::isKeyPressed(int key) const {
+    return keys[key].pressed; 
+};
 
-    // if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
-    //     app.switchDebugMode();
-    // }
+bool Input::isKeyReleased(int key) const {
+    return keys[key].repeated; 
+};
 
+void Input::onKeyEvent(int key, int action) {
+        KeyState& state = keys[key];
+        switch (action) {
+        case GLFW_PRESS:
+            if (!state.down)
+                state.pressed = true;
+            state.down = true;
+            break;
+
+        case GLFW_RELEASE:
+            state.down = false;
+            state.released = true;
+            break;
+
+        case GLFW_REPEAT:
+            state.down = true;
+            state.repeated = true;
+            break;
+
+        default:
+            break;
+    }
 }

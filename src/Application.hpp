@@ -4,6 +4,7 @@
 #include "Window.hpp"
 #include "Renderer.hpp"
 #include "Input.hpp"
+#include "Logger.hpp"
 
 class Application {
     public:
@@ -13,6 +14,8 @@ class Application {
 
         void switchDebugMode();
         bool isDebugModeEnabled();
+
+        Input* getInput();
     private:
 
         Window window;
