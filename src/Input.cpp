@@ -37,7 +37,7 @@ void Input::onMouseButtonEvent(int key, int action) {
     applyKeyEvent(mouseButtons[key], action);
 }
 
-void Input::OnMouseMoveEvent(double x, double y) {
+void Input::onMouseMoveEvent(double x, double y) {
     mouseX = x;
     mouseY = y;
 }

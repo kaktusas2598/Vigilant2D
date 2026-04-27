@@ -51,45 +51,65 @@ void Application::init() {
 }
 
 void Application::run() {
+    lastTime = static_cast<float>(glfwGetTime());
+
     while (!window.shouldClose()) {
+        float currentTime = static_cast<float>(glfwGetTime());
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
         input.beginFrame(); // Reset input
         glfwPollEvents();
 
-        // TODO: already regretting not getting variadic argument support from Villain Logger
-        // VA_DEBUG("Mouse X:  %s", x)
-
-        if (input.isKeyPressed(GLFW_KEY_A)) {
-
-            VG_DEBUG("A pressed");
-            // printf("A pressed.\n");
-            // fflush(stdout);
-        }
-
-        if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
-            debugMode = !debugMode;
-            if (debugMode) VG_INFO("Debug Mode ON");
-        }
-
-        if (input.isKeyPressed(GLFW_KEY_ESCAPE)) {
-            glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
-        }
-
-        int display_w, display_h;
-        glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clearColour.x * clearColour.w, clearColour.y * clearColour.w, clearColour.z * clearColour.w, clearColour.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        uiLayer.begin();
-
-        if (debugMode)
-            uiLayer.render((float*)&clearColour);
-
-        renderer.render();
-
-        uiLayer.end();
-        window.swapBuffers();
+        update(deltaTime);
+        
+        render(deltaTime);
     }
+}
+
+void Application::update(float dt) {
+    // TODO: already regretting not getting variadic argument support from Villain Logger
+    // VA_DEBUG("Mouse X:  %s", x)
+
+    float cameraSpeed = 500.0f * dt;
+
+    if (input.isKeyDown(GLFW_KEY_W)) {
+        camera.move({0.0f, -cameraSpeed});
+    } else if (input.isKeyDown(GLFW_KEY_S)) {
+        camera.move({0.0f, cameraSpeed});
+    } else if (input.isKeyDown(GLFW_KEY_A)) {
+        camera.move({cameraSpeed, 0.0f});
+    } else if (input.isKeyDown(GLFW_KEY_D)) {
+        camera.move({-cameraSpeed, 0.0f});
+    }
+
+    if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
+        debugMode = !debugMode;
+        if (debugMode) VG_INFO("Debug Mode ON");
+    }
+
+    if (input.isKeyPressed(GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
+    }
+}
+
+void Application::render(float dt) {
+    int display_w, display_h;
+    glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(clearColour.x * clearColour.w, clearColour.y * clearColour.w, clearColour.z * clearColour.w, clearColour.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    uiLayer.begin();
+
+    if (debugMode)
+        uiLayer.render((float *)&clearColour);
+
+    camera.setViewportSize((float)display_w, (float)display_h);
+    renderer.render(camera);
+
+    uiLayer.end();
+    window.swapBuffers();
 }
 
 void Application::exit() {

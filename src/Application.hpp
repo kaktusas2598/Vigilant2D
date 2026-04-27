@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 #include "Input.hpp"
 #include "Logger.hpp"
+#include "Camera2D.hpp"
 
 class Application {
     public:
@@ -17,6 +18,8 @@ class Application {
 
         Input* getInput();
     private:
+        void update(float dt);
+        void render(float dt);
 
         Window window;
         ImGuiLayer uiLayer;
@@ -26,4 +29,9 @@ class Application {
         bool debugMode;
 
         Input input;
+        float deltaTime = 0.0f;
+        float lastTime = 0.0f;
+
+        // TODO: research whats best for Camera - probably not storing single insance in Application class!
+        Camera2D camera;
 };

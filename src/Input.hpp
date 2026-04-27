@@ -16,7 +16,7 @@ class Input {
         
         void onKeyEvent(int key, int action);
         void onMouseButtonEvent(int key, int action);
-        void OnMouseMoveEvent(double x, double y);
+        void onMouseMoveEvent(double x, double y);
 
         bool isKeyDown(int key) const;
         bool isKeyPressed(int key) const;
