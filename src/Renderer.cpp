@@ -9,7 +9,7 @@
 void Renderer::init() {
     // TEST Render code below: Quad setup
     // TODO: need encapsulate quads for sprite and tile rendering later, particle engine render separate?
-    shader = new Shader("shaders/triangleTest.vert", "shaders/triangleTest.frag");
+    shader = new Shader("shaders/texturedQuad.vert", "shaders/texturedQuad.frag");
 
     Vertex vertices[4] = {
         {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}},
