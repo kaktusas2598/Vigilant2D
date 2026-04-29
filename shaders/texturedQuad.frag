@@ -6,10 +6,11 @@ in vec2 v_texCoords;
 
 uniform sampler2D spriteTexture;
 uniform vec4 color;
+uniform vec2 uvMin;
+uniform vec2 uvMax;
 
 void main() {
-    fragColor = texture(spriteTexture, v_texCoords) * color;
-
-    //fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    vec2 uv = mix(uvMin, uvMax, v_texCoords);
+    vec4 texColor = texture(spriteTexture, uv);
+    fragColor = texColor * v_color * color;
 }
-
