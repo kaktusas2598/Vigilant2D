@@ -33,12 +33,15 @@ Renderer::~Renderer() {
 
 void Renderer::drawQuad(const QuadDrawParams &params) {
     shader->bind();
+    // TODO: get rid of Texture dependency in Renderer, eventually introduce AssetManager
     texture->bind();
 
     shader->setUniform1i("spriteTexture", 0);
     shader->setUniformVec4("color", params.color);
     shader->setUniformMat4f("viewProjection", viewProjection);
     shader->setUniformMat4f("model", params.transform.toMatrix());
+    shader->setUniformVec2("uvMin", params.region.uvMin);
+    shader->setUniformVec2("uvMax", params.region.uvMax);
 
     quadMesh->draw();
     shader->unbind();

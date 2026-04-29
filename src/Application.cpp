@@ -109,10 +109,13 @@ void Application::render(float dt) {
     camera.setViewportSize((float)display_w, (float)display_h);
     renderer.begin(camera);
 
-    // TEST render code
+    // TEST quad render code
     renderer.drawQuad({{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
     renderer.drawQuad({{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
     renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+
+    // Tile atlas test
+    renderer.drawQuad({nullptr, {0.25f, 0.25f}, {1.0f, 1.0f}},{{-100.0f, -100.0f}, {100.0f, 100.0f}, 0.0f});
 
     renderer.end();
 
