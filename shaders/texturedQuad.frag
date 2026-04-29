@@ -5,10 +5,11 @@ in vec4 v_color;
 in vec2 v_texCoords;
 
 uniform sampler2D spriteTexture;
+uniform vec4 color;
 
 void main() {
-    fragColor = texture(spriteTexture, v_texCoords) * v_color;
+    fragColor = texture(spriteTexture, v_texCoords) * color;
 
-    fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    //fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 }
 

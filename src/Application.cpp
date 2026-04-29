@@ -73,14 +73,15 @@ void Application::update(float dt) {
 
     float cameraSpeed = 500.0f * dt;
 
+    // TEST camera
     if (input.isKeyDown(GLFW_KEY_W)) {
-        camera.move({0.0f, -cameraSpeed});
-    } else if (input.isKeyDown(GLFW_KEY_S)) {
         camera.move({0.0f, cameraSpeed});
+    } else if (input.isKeyDown(GLFW_KEY_S)) {
+        camera.move({0.0f, -cameraSpeed});
     } else if (input.isKeyDown(GLFW_KEY_A)) {
-        camera.move({cameraSpeed, 0.0f});
-    } else if (input.isKeyDown(GLFW_KEY_D)) {
         camera.move({-cameraSpeed, 0.0f});
+    } else if (input.isKeyDown(GLFW_KEY_D)) {
+        camera.move({cameraSpeed, 0.0f});
     }
 
     if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
@@ -106,7 +107,14 @@ void Application::render(float dt) {
         uiLayer.render((float *)&clearColour);
 
     camera.setViewportSize((float)display_w, (float)display_h);
-    renderer.render(camera);
+    renderer.begin(camera);
+
+    // TEST render code
+    renderer.drawQuad({{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+    renderer.drawQuad({{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+    renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+
+    renderer.render();
 
     uiLayer.end();
     window.swapBuffers();
