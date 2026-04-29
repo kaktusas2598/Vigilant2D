@@ -19,30 +19,6 @@ void Renderer::begin(const Camera2D& camera) {
     viewProjection = camera.getViewProjectionMatrix();
 }
 
-void Renderer::render() {
-    shader->bind();
-
-    texture->bind();
-    shader->setUniform1i("spriteTexture", 0);
-    //fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-
-    // TODO: Is quad separate or does it contain transform and calculates Model matrix?
-    glm::mat4 model = glm::mat4(1.0f);
-
-    // Important: your quad is currently only 1x1 world units.
-    // With a pixel-sized orthographic camera, this will be tiny unless scaled.
-    model = glm::scale(model, glm::vec3(100.0f, 100.0f, 1.0f));
-
-    shader->setUniformMat4f("viewProjection", viewProjection);
-    shader->setUniformMat4f("model", model);
-
-    quadMesh->draw();
-    shader->unbind();
-
-    // drawQuad({texture, {{1.0f, -25.0f}, {100.0f, 100.0f}}});
-    // drawQuad({texture, {{10.0f, 15.0f}, {100.0f, 100.0f}}});
-}
-
 void Renderer::exit() {
 }
 

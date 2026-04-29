@@ -114,7 +114,7 @@ void Application::render(float dt) {
     renderer.drawQuad({{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
     renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
 
-    renderer.render();
+    renderer.end();
 
     uiLayer.end();
     window.swapBuffers();
