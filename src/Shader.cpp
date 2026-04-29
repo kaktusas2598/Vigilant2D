@@ -159,6 +159,10 @@ void Shader::setUniform4f(const std::string& name, float v0, float v1, float v2,
     GLCall(glUniform4f(getUniformLocation(name), v0, v1, v2, v3));
 }
 
+void Shader::setUniformVec2(const std::string& name, const glm::vec2& vec) {
+    GLCall(glUniform2f(getUniformLocation(name), vec.x, vec.y));
+}
+
 void Shader::setUniformVec3(const std::string& name, const glm::vec3& vec) {
     GLCall(glUniform3f(getUniformLocation(name), vec.x, vec.y, vec.z));
 }

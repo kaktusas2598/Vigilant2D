@@ -38,6 +38,7 @@ class Shader {
         void setUniform1f(const std::string& name, float value);
         void setUniform3f(const std::string& name, float v0, float v1, float v2);
         void setUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+        void setUniformVec2(const std::string &name, const glm::vec2 &vec);
         void setUniformVec3(const std::string& name, const glm::vec3& vec);
         void setUniformVec4(const std::string& name, const glm::vec4& vec);
         void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
