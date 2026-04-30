@@ -4,7 +4,6 @@
 
 #include "Shader.hpp"
 #include "Mesh.hpp"
-#include "Texture.hpp"
 #include "TextureRegion.hpp"
 #include "Transform2D.hpp"
 
@@ -30,13 +29,10 @@ class Renderer{
             drawQuad({transform, TextureRegion::full(nullptr)});
         }
         // void drawTile(const );
-        // void drawQuad(Texture *texture, const Transform2D &transform);
-        // void drawQuad(const QuadDrawParams &params);
 
     private:
         glm::mat4 viewProjection{1.0f};
 
         Mesh* quadMesh = nullptr;
         Shader* shader = nullptr;
-        Texture* texture = nullptr;
 };

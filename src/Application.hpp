@@ -7,6 +7,8 @@
 #include "Logger.hpp"
 #include "Camera2D.hpp"
 
+#include "Texture.hpp"
+
 class Application {
     public:
         void init();
@@ -34,4 +36,9 @@ class Application {
 
         // TODO: research whats best for Camera - probably not storing single insance in Application class!
         Camera2D camera;
+
+
+        // TEMPORARY textures
+        Texture* boxTexture = nullptr;
+        Texture* atlasTexture = nullptr;
 };

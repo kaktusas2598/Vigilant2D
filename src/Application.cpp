@@ -48,6 +48,9 @@ void Application::init() {
     debugMode = false;
 
     renderer.init();
+
+    boxTexture = new Texture("assets/textures/crate.png");
+    atlasTexture = new Texture("assets/Retro-Lines-16x16/Environment.png");
 }
 
 void Application::run() {
@@ -110,12 +113,18 @@ void Application::render(float dt) {
     renderer.begin(camera);
 
     // TEST quad render code
-    renderer.drawQuad({{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
-    renderer.drawQuad({{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+    renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+
+    renderer.drawQuad(
+        {{{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f},
+        TextureRegion::full(nullptr),
+        {0.6f, 0.2f, 0.1f, 0.5f}}
+    );
+
     renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
 
     // Tile atlas test
-    renderer.drawQuad({nullptr, {0.25f, 0.25f}, {1.0f, 1.0f}},{{-100.0f, -100.0f}, {100.0f, 100.0f}, 0.0f});
+    renderer.drawQuad({atlasTexture, {0.0f, 0.95f}, {0.05f, 1.00f}},{{-100.0f, -100.0f}, {100.0f, 100.0f}, 0.0f});
 
     renderer.end();
 
