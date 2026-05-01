@@ -35,7 +35,10 @@ Input* Application::getInput() {
 }
 
 void Application::init() {
-    window.init(640, 480);
+    window.init(1024, 768);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
     glfwSetWindowUserPointer(window.getHandle(), this);
     glfwSetErrorCallback(errorCallback);
@@ -129,21 +132,18 @@ void Application::render(float dt) {
     // TEST quad render code
     renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
 
+    // TEST coloured quad s
     renderer.drawQuad(
         {{{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f},
         TextureRegion::full(nullptr),
         {0.6f, 0.2f, 0.1f, 0.5f}}
     );
-
     renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
-
-    // Tile atlas test
-    renderer.drawQuad({atlasTexture, {0.0f, 0.95f}, {0.05f, 1.00f}},{{-100.0f, -100.0f}, {100.0f, 100.0f}, 0.0f});
 
     // Test tiled map
     for (const auto& layer : tileLayers) {
-        // FIXME: LAG!
-        layer->draw(renderer, camera, display_w, display_h);
+        layer->rebuildVisibleMesh(camera, display_w, display_h);
+        layer->draw(renderer);
     }
 
     renderer.end();

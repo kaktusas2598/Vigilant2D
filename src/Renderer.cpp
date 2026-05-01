@@ -17,14 +17,12 @@ void Renderer::init() {
 void Renderer::begin(const Camera2D& camera) {
     viewProjection = camera.getViewProjectionMatrix();
 
+    currentTexture = nullptr;
     shader->bind();
 }
 
 void Renderer::end() {
     shader->unbind();
-}
-
-void Renderer::exit() {
 }
 
 Renderer::~Renderer() {
@@ -57,11 +55,28 @@ void Renderer::drawQuad(const QuadDrawParams &params) {
     shader->setUniformVec4("color", params.color);
     shader->setUniformMat4f("viewProjection", viewProjection);
     shader->setUniformMat4f("model", params.transform.toMatrix());
+    shader->setUniform1i("remapUVs", 1);
     
     quadMesh->draw();
     // shader->unbind();
+}
 
-    // if (useTexture) {
-    //     params.region.texture->unbind();
-    // }
+void Renderer::drawMesh(const Mesh& mesh, Texture* texture,
+                        const glm::mat4& model,
+                        const glm::vec4& color) {
+    if (texture != currentTexture) {
+        if (texture != nullptr) {
+            texture->bind();
+        }
+        currentTexture = texture;
+    }
+
+    shader->setUniform1i("useTexture", texture != nullptr ? 1 : 0);
+    shader->setUniform1i("spriteTexture", 0);
+    shader->setUniformVec4("color", color);
+    shader->setUniformMat4f("viewProjection", viewProjection);
+    shader->setUniformMat4f("model", model);
+    shader->setUniform1i("remapUVs", 0);
+    
+    mesh.draw();
 }

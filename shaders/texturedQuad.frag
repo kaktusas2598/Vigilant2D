@@ -9,14 +9,19 @@ uniform sampler2D spriteTexture;
 uniform vec4 color;
 uniform vec2 uvMin;
 uniform vec2 uvMax;
+// TODO: dont like this
+uniform bool remapUVs;
 
 void main() {
+    vec2 uv = v_texCoords;
+    if (remapUVs) {
+        uv = mix(uvMin, uvMax, v_texCoords);
+    }
+    
     vec4 baseColor = v_color * color;
-
     if (useTexture) {
-        vec2 uv = mix(uvMin, uvMax, v_texCoords);
         baseColor *= texture(spriteTexture, uv);
     }
     
-    fragColor = baseColor * v_color * color;
+    fragColor = baseColor;
 }
