@@ -26,6 +26,11 @@ static void mouseButtonCallback(GLFWwindow* window, int button, int action, int 
     app->getInput()->onMouseButtonEvent(button, action);
 }
 
+static void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->getInput()->onMouseScrollEvent(xoffset, yoffset);
+}
+
 static void windowSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -46,6 +51,7 @@ void Application::init() {
     glfwSetWindowSizeCallback(window.getHandle(), windowSizeCallback);
     glfwSetMouseButtonCallback(window.getHandle(), mouseButtonCallback);
     glfwSetCursorPosCallback(window.getHandle(), mouseMoveCallback);
+    glfwSetScrollCallback(window.getHandle(), mouseScrollCallback);
 
     uiLayer.init(window.getHandle());
 
@@ -101,8 +107,12 @@ void Application::update(float dt) {
         camera.move({cameraSpeed, 0.0f});
     }
 
-    // TODO: implement mouse wheel in Input
-    // if (input.is)
+    const double scrollY = input.getScrollY();
+    if (scrollY != 0.0f) {
+        const float zoomPerStep = 1.1f;
+        const float factor = std::pow(zoomPerStep, static_cast<float>(scrollY));
+        camera.setZoom(camera.getZoom() * factor);
+    }
 
     if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
         debugMode = !debugMode;

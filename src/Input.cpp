@@ -11,6 +11,8 @@ void Input::beginFrame() {
         button.released = false;
         button.repeated = false;
     }
+    scrollX = 0.0f;
+    scrollY = 0.0f;
 }
 
 bool Input::isKeyDown(int key) const {
@@ -40,6 +42,11 @@ void Input::onMouseButtonEvent(int key, int action) {
 void Input::onMouseMoveEvent(double x, double y) {
     mouseX = x;
     mouseY = y;
+}
+
+void Input::onMouseScrollEvent(double xOffset, double yOffset) {
+    scrollX += xOffset;
+    scrollY += yOffset;
 }
 
 void Input::applyKeyEvent(KeyState& state, int action) {
