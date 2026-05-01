@@ -1,0 +1,32 @@
+#pragma once
+
+#include <vector>
+#include <memory>
+#include <string>
+
+#include "TileMapData.hpp"
+#include "TileLayer.hpp"
+#include "TileLayer.hpp"
+#include "Texture.hpp"
+#include "Renderer.hpp"
+#include "Camera2D.hpp"
+
+class TileMap {
+    public:
+        bool loadFromFile(const std::string& fileName);
+        ~TileMap();
+
+        void rebuildVisibleLayers(const Camera2D& camera, int viewportWidth, int viewportHeight);
+        void draw(Renderer& renderer) const;
+        bool isLoaded() const { return loaded; }
+
+    private:
+        std::unique_ptr<TileLayer> buildTileLayer(const TileLayerData& layerData);
+        Texture* resolveTextureForTileset(const TilesetData* tileset);
+
+        bool loaded = false;
+        TileMapData mapData;
+        std::vector<Texture*> tilesetTextures;
+        std::vector<std::unique_ptr<TileLayer>> layers;
+
+};

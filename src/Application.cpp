@@ -4,8 +4,6 @@
 #include "Logger.hpp"
 #include "Input.hpp"
 
-#include "TiledMapLoader.hpp"
-
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -60,19 +58,9 @@ void Application::init() {
 
     renderer.init();
 
+    //-------------- TEST CODE
     boxTexture = new Texture("assets/textures/crate.png");
-    atlasTexture = new Texture("assets/Retro-Lines-16x16/Environment.png");
-
-    TiledMapLoader loader;
-    testMap = loader.loadFromFile("assets/farmMap.tmx");
-
-    for (const auto& tileset : testMap.tilesets) {
-        tilesetTextures.push_back(new Texture(tileset.imagePath));
-    }
-
-    for (const auto& layerData : testMap.layers) {
-        tileLayers.push_back(buildTileLayer(testMap, layerData, tilesetTextures));
-    } 
+    testMap.loadFromFile("assets/farmMap.tmx");
 }
 
 void Application::run() {
@@ -109,7 +97,7 @@ void Application::update(float dt) {
 
     const double scrollY = input.getScrollY();
     if (scrollY != 0.0f) {
-        const float zoomPerStep = 1.1f;
+        const float zoomPerStep = 1.095f;
         const float factor = std::pow(zoomPerStep, static_cast<float>(scrollY));
         camera.setZoom(camera.getZoom() * factor);
     }
@@ -151,10 +139,8 @@ void Application::render(float dt) {
     renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
 
     // Test tiled map
-    for (const auto& layer : tileLayers) {
-        layer->rebuildVisibleMesh(camera, display_w, display_h);
-        layer->draw(renderer);
-    }
+    testMap.rebuildVisibleLayers(camera, display_w, display_h);
+    testMap.draw(renderer);
 
     renderer.end();
 
@@ -172,44 +158,4 @@ void Application::switchDebugMode() {
 
 bool Application::isDebugModeEnabled() {
     return debugMode;
-}
-
-// TODO: Temporary probably 
-std::unique_ptr<TileLayer> Application::buildTileLayer(const TileMapData& map, const TileLayerData& layerData,
-            const std::vector<Texture*>& tilesetTextures) {
-
-    auto layer = std::make_unique<TileLayer>(
-        layerData.width,
-        layerData.height,
-        glm::vec2(static_cast<float>(map.tileWidth), static_cast<float>(map.tileHeight))
-
-    );
-
-    for (int y = 0; y < layerData.height; ++y) {
-        for (int x = 0; x < layerData.width; ++x) {
-            const int gid = layerData.getTileId(x, y);
-            if (gid == 0)
-                continue;
-            
-            const TilesetData* tileset = findTilesetForGid(map, gid);
-            if (tileset == nullptr)
-                continue;
-            
-            Texture* texture = nullptr;
-            for (size_t i = 0; i < map.tilesets.size(); ++i) {
-                if (&map.tilesets[i] == tileset) {
-                    texture = tilesetTextures[i];
-                    break;
-                }
-            }
-
-            if (texture == nullptr)
-                continue;
-
-            const int flippedY = layerData.height - 1 - y;
-            layer->setTile(x, flippedY, makeRegionForGid(*tileset, texture, gid));
-        }
-    }
-
-    return layer;
 }
