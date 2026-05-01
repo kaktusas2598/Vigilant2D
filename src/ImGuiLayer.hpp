@@ -19,7 +19,7 @@ class ImGuiLayer {
         // Call after render() to actually render and end frame
         void end();
 
-        void render(float* clearColour);
+        void render(float* clearColour, float fps, float frameTimeMs);
 
     private:
         GLFWwindow* windowPtr;

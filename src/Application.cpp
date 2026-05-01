@@ -4,6 +4,8 @@
 #include "Logger.hpp"
 #include "Input.hpp"
 
+#include "TiledMapLoader.hpp"
+
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -51,22 +53,31 @@ void Application::init() {
 
     boxTexture = new Texture("assets/textures/crate.png");
     atlasTexture = new Texture("assets/Retro-Lines-16x16/Environment.png");
+
+    TiledMapLoader loader;
+    testMap = loader.loadFromFile("assets/farmMap.tmx");
+
+    for (const auto& tileset : testMap.tilesets) {
+        tilesetTextures.push_back(new Texture(tileset.imagePath));
+    }
+
+    for (const auto& layerData : testMap.layers) {
+        tileLayers.push_back(buildTileLayer(testMap, layerData, tilesetTextures));
+    } 
 }
 
 void Application::run() {
-    lastTime = static_cast<float>(glfwGetTime());
+    time.init(glfwGetTime());
 
     while (!window.shouldClose()) {
-        float currentTime = static_cast<float>(glfwGetTime());
-        deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
+        time.update(glfwGetTime());
 
         input.beginFrame(); // Reset input
         glfwPollEvents();
 
-        update(deltaTime);
+        update(time.getDeltaTime());
         
-        render(deltaTime);
+        render(time.getDeltaTime());
     }
 }
 
@@ -86,6 +97,9 @@ void Application::update(float dt) {
     } else if (input.isKeyDown(GLFW_KEY_D)) {
         camera.move({cameraSpeed, 0.0f});
     }
+
+    // TODO: implement mouse wheel in Input
+    // if (input.is)
 
     if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
         debugMode = !debugMode;
@@ -107,7 +121,7 @@ void Application::render(float dt) {
     uiLayer.begin();
 
     if (debugMode)
-        uiLayer.render((float *)&clearColour);
+        uiLayer.render((float *)&clearColour, time.getFPS(), time.getFrameTimeMs());
 
     camera.setViewportSize((float)display_w, (float)display_h);
     renderer.begin(camera);
@@ -126,6 +140,12 @@ void Application::render(float dt) {
     // Tile atlas test
     renderer.drawQuad({atlasTexture, {0.0f, 0.95f}, {0.05f, 1.00f}},{{-100.0f, -100.0f}, {100.0f, 100.0f}, 0.0f});
 
+    // Test tiled map
+    for (const auto& layer : tileLayers) {
+        // FIXME: LAG!
+        layer->draw(renderer, camera, display_w, display_h);
+    }
+
     renderer.end();
 
     uiLayer.end();
@@ -142,4 +162,44 @@ void Application::switchDebugMode() {
 
 bool Application::isDebugModeEnabled() {
     return debugMode;
+}
+
+// TODO: Temporary probably 
+std::unique_ptr<TileLayer> Application::buildTileLayer(const TileMapData& map, const TileLayerData& layerData,
+            const std::vector<Texture*>& tilesetTextures) {
+
+    auto layer = std::make_unique<TileLayer>(
+        layerData.width,
+        layerData.height,
+        glm::vec2(static_cast<float>(map.tileWidth), static_cast<float>(map.tileHeight))
+
+    );
+
+    for (int y = 0; y < layerData.height; ++y) {
+        for (int x = 0; x < layerData.width; ++x) {
+            const int gid = layerData.getTileId(x, y);
+            if (gid == 0)
+                continue;
+            
+            const TilesetData* tileset = findTilesetForGid(map, gid);
+            if (tileset == nullptr)
+                continue;
+            
+            Texture* texture = nullptr;
+            for (size_t i = 0; i < map.tilesets.size(); ++i) {
+                if (&map.tilesets[i] == tileset) {
+                    texture = tilesetTextures[i];
+                    break;
+                }
+            }
+
+            if (texture == nullptr)
+                continue;
+
+            const int flippedY = layerData.height - 1 - y;
+            layer->setTile(x, flippedY, makeRegionForGid(*tileset, texture, gid));
+        }
+    }
+
+    return layer;
 }

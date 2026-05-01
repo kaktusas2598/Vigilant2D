@@ -16,6 +16,12 @@ void Renderer::init() {
 
 void Renderer::begin(const Camera2D& camera) {
     viewProjection = camera.getViewProjectionMatrix();
+
+    shader->bind();
+}
+
+void Renderer::end() {
+    shader->unbind();
 }
 
 void Renderer::exit() {
@@ -31,13 +37,18 @@ Renderer::~Renderer() {
 }
 
 void Renderer::drawQuad(const QuadDrawParams &params) {
-    shader->bind();
+    // shader->bind();
 
     const bool useTexture = params.region.texture != nullptr;
     shader->setUniform1i("useTexture", useTexture ? 1 : 0);
 
     if (useTexture) {
-        params.region.texture->bind();
+        // Temporary texture caching on renderer side
+        if (currentTexture != params.region.texture) {
+            params.region.texture->bind();
+            currentTexture = params.region.texture;
+        }
+
         shader->setUniform1i("spriteTexture", 0);
         shader->setUniformVec2("uvMin", params.region.uvMin);
         shader->setUniformVec2("uvMax", params.region.uvMax);
@@ -48,9 +59,9 @@ void Renderer::drawQuad(const QuadDrawParams &params) {
     shader->setUniformMat4f("model", params.transform.toMatrix());
     
     quadMesh->draw();
-    shader->unbind();
+    // shader->unbind();
 
-    if (useTexture) {
-        params.region.texture->unbind();
-    }
+    // if (useTexture) {
+    //     params.region.texture->unbind();
+    // }
 }

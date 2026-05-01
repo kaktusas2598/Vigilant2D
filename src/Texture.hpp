@@ -4,6 +4,29 @@
 #include <string>
 #include <vector>
 
+// TODO: Instead of these shitty constructor overloads below, just pass filename and const& to Params object
+struct TextureParams {
+    GLint wrapS = GL_CLAMP_TO_EDGE;
+    GLint wrapT = GL_CLAMP_TO_EDGE;
+    GLint minFilter = GL_LINEAR;
+    GLint magFilter = GL_LINEAR;
+    bool generateMipmaps = true;
+    bool flipY = true;
+};
+
+static TextureParams PixelArt() {
+    TextureParams pixelArtParams;
+    pixelArtParams.minFilter = GL_NEAREST;
+    pixelArtParams.magFilter = GL_NEAREST;
+    pixelArtParams.generateMipmaps = false;
+    return pixelArtParams;
+}
+static TextureParams Smooth() {
+    TextureParams smoothParams;
+    smoothParams.minFilter = GL_LINEAR_MIPMAP_LINEAR;
+    return smoothParams;
+}
+
 class Texture {
     public:
         // Initialise empty texture, used by framebuffers

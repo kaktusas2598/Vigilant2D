@@ -39,11 +39,13 @@ void ImGuiLayer::begin() {
     ImGui::NewFrame();
 }
 
-void ImGuiLayer::render(float* clearColour) {
+void ImGuiLayer::render(float *clearColour, float fps, float frameTimeMs) {
     // NOTE: Must be done after starting new frame and before any Imgui rendering is done!
     ImGui::Begin("Settings");
     ImGui::Checkbox("Demo Window", &showDemoWindow);
     ImGui::ColorEdit3("clear color", clearColour);
+    ImGui::Text("FPS: %.1f", fps);
+    ImGui::Text("Frame: %.3f ms", frameTimeMs);
     // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
 
