@@ -12,12 +12,8 @@
 #include "Time.hpp"
 
 #include "Texture.hpp"
-
-#include "TileMap.hpp"
-
-#include "Sprite.hpp"
-#include "AnimatedSprite.hpp"
 #include "AnimationClip.hpp"
+#include "Scene.hpp"
 
 class Application {
     public:
@@ -50,14 +46,9 @@ class Application {
         // TODO: research whats best for Camera - probably not storing single insance in Application class!
         Camera2D camera;
 
-        // TEMPORARY textures for testing
+        Scene scene;
+        // TEMPORARY resources for testing - TODO: asset/resource manager!!
         Texture* boxTexture = nullptr;
-        // Tiled map test with batched rendering
-        TileMap testMap;
-        // Sprite and animated sprite test
         Texture* playerTexture = nullptr;
-        Sprite testPlayerSprite;
-        AnimatedSprite testPlayerAnimation;
         AnimationClip testIdleClip;
-        Transform2D testPlayerTransform;
 };

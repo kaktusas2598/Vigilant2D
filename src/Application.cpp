@@ -4,6 +4,10 @@
 #include "Logger.hpp"
 #include "Input.hpp"
 
+#include "TileMap.hpp"
+#include "Sprite.hpp"
+#include "AnimatedSprite.hpp"
+
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -58,24 +62,31 @@ void Application::init() {
 
     renderer.init();
 
-    //-------------- TEST CODE
-    camera.setPosition({320.0f, 200.0f});
-
-    boxTexture = new Texture("assets/textures/crate.png");
-    testMap.loadFromFile("assets/farmMap.tmx");
+    // -------- SCENE INIT --------
+    auto map = std::make_unique<TileMap>();
+    map->loadFromFile("assets/farmMap.tmx");
+    scene.setTileMap(std::move(map));
 
     playerTexture = new Texture("assets/textures/player.png");
-
     testIdleClip = AnimationClip("idle_down", true);
     for (int x = 0; x < 6; ++x) {
         testIdleClip.addFrame(makeRegionFromGrid(playerTexture, x, 0, 6, 10), 0.12f);
     }
 
-    testPlayerAnimation.setSprite(&testPlayerSprite);
-    testPlayerAnimation.play(&testIdleClip);
+    Entity& playerEntity = scene.createEntity("player");
+    playerEntity.transform.position = {150.0f, 150.0f};
+    playerEntity.transform.scale = {48.0f, 48.0f};
 
-    testPlayerTransform.position = {150.0f, 150.0f};
-    testPlayerTransform.scale = {48.0f, 48.0f};
+    auto sprite = std::make_unique<Sprite>();
+    auto animatedSprite = std::make_unique<AnimatedSprite>();
+    animatedSprite->setSprite(sprite.get());
+    animatedSprite->play(&testIdleClip);
+    playerEntity.setSprite(std::move(sprite));
+    playerEntity.setAnimatedSprite(std::move(animatedSprite));
+
+    //-------------- TEST CODE
+    camera.setPosition({320.0f, 200.0f});
+    boxTexture = new Texture("assets/textures/crate.png");
 }
 
 void Application::run() {
@@ -126,7 +137,7 @@ void Application::update(float dt) {
         glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
     }
 
-    testPlayerAnimation.update(dt);
+    scene.update(dt);
 }
 
 void Application::render(float dt) {
@@ -144,23 +155,18 @@ void Application::render(float dt) {
     camera.setViewportSize((float)display_w, (float)display_h);
     renderer.begin(camera);
 
-    // TEST quad render code
-    renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+    // Main scene render
+    scene.render(renderer, camera, display_w, display_h);
 
-    // TEST coloured quad s
+    // TEST textured quad render code
+    renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+    // TEST coloured quad render code
     renderer.drawQuad(
         {{{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f},
         TextureRegion::full(nullptr),
         {0.6f, 0.2f, 0.1f, 0.5f}}
     );
     renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
-
-    // Test tiled map
-    testMap.rebuildVisibleLayers(camera, display_w, display_h);
-    testMap.draw(renderer);
-
-    // Sprite test
-    testPlayerSprite.draw(renderer, testPlayerTransform);
 
     renderer.end();
 
@@ -169,7 +175,6 @@ void Application::render(float dt) {
 }
 
 void Application::exit() {
-
 }
 
 void Application::switchDebugMode() {
