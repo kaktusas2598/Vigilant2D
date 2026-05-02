@@ -137,7 +137,29 @@ void Application::update(float dt) {
         glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
     }
 
+    if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+        tileSelected = tileHover;
+    }
+
     scene.update(dt);
+
+    // Update however tile based on mouse
+    TileMap* map = scene.getTileMap();
+    if (map != nullptr) {
+        glm::vec2 mouseScreen(
+            static_cast<float>(input.getMouseX()),
+            static_cast<float>(input.getMouseY())
+        );
+
+        glm::vec2 mouseWorld = camera.screenToWorld(mouseScreen);
+        glm::ivec2 tile = map->worldToTile(mouseWorld);
+
+        if (map->isTileInBounds(tile.x, tile.y)) {
+            tileHover = tile;
+        } else {
+            tileHover = {-1, -1};
+        }
+    }
 }
 
 void Application::render(float dt) {
@@ -158,6 +180,35 @@ void Application::render(float dt) {
     // Main scene render
     scene.render(renderer, camera, display_w, display_h);
 
+    // Tile overlay render
+    TileMap* map = scene.getTileMap();
+    if (map != nullptr && tileHover.x >= 0 && tileHover.y >= 0) {
+        Transform2D hoverTransform;
+        hoverTransform.position = map->tileToWorld(tileHover.x, tileHover.y);
+        hoverTransform.scale = {
+            static_cast<float>(map->getTileWidth()),
+            static_cast<float>(map->getTileHeight())
+        };
+
+        renderer.drawQuad({
+            hoverTransform,
+            TextureRegion::full(nullptr),
+            {0.2f, 0.9f, 0.3f, 0.35f}
+        });
+
+        if (tileSelected.x >= 0 && tileSelected.y >= 0) {
+            Transform2D selectTransform;
+            selectTransform.position = map->tileToWorld(tileSelected.x, tileSelected.y);
+            selectTransform.scale = {
+                static_cast<float>(map->getTileWidth()),
+                static_cast<float>(map->getTileHeight())};
+
+            renderer.drawQuad({selectTransform,
+                               TextureRegion::full(nullptr),
+                               {0.8f, 0.1f, 0.3f, 0.35f}});
+        }
+    }
+
     // TEST textured quad render code
     renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
     // TEST coloured quad render code
@@ -166,7 +217,6 @@ void Application::render(float dt) {
         TextureRegion::full(nullptr),
         {0.6f, 0.2f, 0.1f, 0.5f}}
     );
-    renderer.drawQuad({{400.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
 
     renderer.end();
 

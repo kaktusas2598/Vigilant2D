@@ -51,4 +51,7 @@ class Application {
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
         AnimationClip testIdleClip;
+        // TESTING members
+        glm::ivec2 tileHover{-1, -1};
+        glm::ivec2 tileSelected{-1, -1};
 };

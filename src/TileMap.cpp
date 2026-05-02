@@ -46,6 +46,27 @@ void TileMap::draw(Renderer &renderer) const {
     }
 }
 
+glm::ivec2 TileMap::worldToTile(const glm::vec2 &worldPosition) const {
+    return {
+        static_cast<int>(std::floor(worldPosition.x / static_cast<float>(mapData.tileWidth))),
+        static_cast<int>(std::floor(worldPosition.y / static_cast<float>(mapData.tileHeight)))
+    };
+}
+
+glm::vec2 TileMap::tileToWorld(int tileX, int tileY) const {
+    return {
+        tileX * static_cast<float>(mapData.tileWidth),
+        tileY * static_cast<float>(mapData.tileHeight)
+    };
+}
+
+bool TileMap::isTileInBounds(int tileX, int tileY) const {
+    return tileX >= 0 &&
+           tileY >= 0 &&
+           tileX < mapData.width &&
+           tileY < mapData.height;
+}
+
 std::unique_ptr<TileLayer> TileMap::buildTileLayer(const TileLayerData &layerData) {
     auto layer = std::make_unique<TileLayer>(
         layerData.width,

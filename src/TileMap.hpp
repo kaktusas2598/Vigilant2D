@@ -20,6 +20,12 @@ class TileMap {
         void draw(Renderer& renderer) const;
         bool isLoaded() const { return loaded; }
 
+        glm::ivec2 worldToTile(const glm::vec2& worldPosition) const;
+        glm::vec2 tileToWorld(int tileX, int tileY) const;
+        bool isTileInBounds(int tileX, int tileY) const;
+
+        int getTileWidth() const { return mapData.tileWidth; }
+        int getTileHeight() const { return mapData.tileHeight; }
     private:
         std::unique_ptr<TileLayer> buildTileLayer(const TileLayerData& layerData);
         Texture* resolveTextureForTileset(const TilesetData* tileset);

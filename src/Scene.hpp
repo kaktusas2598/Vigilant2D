@@ -18,6 +18,9 @@ class Scene {
     
         Entity* findEntityByID(const std::string& id);
         const Entity* findEntityByID(const std::string& id) const;
+
+        TileMap* getTileMap() { return tileMap.get(); }
+        const TileMap* getTileMap() const { return tileMap.get(); }
     private:
         // TODO: might want make more than 1 map available
         std::unique_ptr<TileMap> tileMap;
