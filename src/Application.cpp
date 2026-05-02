@@ -60,6 +60,25 @@ void Application::init() {
     clearColour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     debugMode = false;
 
+    uiLayer.addPanel("Renderer", [this]() {
+        ImGui::ColorEdit4("Clear Color", (float*)&clearColour);
+        ImGui::Text("FPS: %.1f", time.getFPS());
+        ImGui::Text("Frame: %.3f ms", time.getFrameTimeMs()); 
+    });
+    uiLayer.addPanel("Camera", [this]() {
+        glm::vec2 position = camera.getPosition();
+        float zoom = camera.getZoom();
+
+        if (ImGui::DragFloat2("Position", &position.x, 1.0f)) {
+            camera.setPosition(position);
+        }
+
+        if (ImGui::SliderFloat("Zoom", &zoom, 0.2f, 2.0f)) {
+            camera.setZoom(zoom);
+        }
+    });
+
+
     renderer.init();
 
     // -------- SCENE INIT --------
@@ -172,7 +191,7 @@ void Application::render(float dt) {
     uiLayer.begin();
 
     if (debugMode)
-        uiLayer.render((float *)&clearColour, time.getFPS(), time.getFrameTimeMs());
+        uiLayer.render();
 
     camera.setViewportSize((float)display_w, (float)display_h);
     renderer.begin(camera);

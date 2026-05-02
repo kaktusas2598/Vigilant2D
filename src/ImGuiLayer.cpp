@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 
-bool ImGuiLayer::showDemoWindow = false;
 ImGuiLayer::ImGuiLayer() {}
 
 ImGuiLayer::~ImGuiLayer() {
@@ -27,8 +26,6 @@ void ImGuiLayer::init(GLFWwindow* window) {
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 430");
-
-    windowPtr = window;
 }
 
 void ImGuiLayer::begin() {
@@ -39,21 +36,24 @@ void ImGuiLayer::begin() {
     ImGui::NewFrame();
 }
 
-void ImGuiLayer::render(float *clearColour, float fps, float frameTimeMs) {
-    // NOTE: Must be done after starting new frame and before any Imgui rendering is done!
-    ImGui::Begin("Settings");
-    ImGui::Checkbox("Demo Window", &showDemoWindow);
-    ImGui::ColorEdit3("clear color", clearColour);
-    ImGui::Text("FPS: %.1f", fps);
-    ImGui::Text("Frame: %.3f ms", frameTimeMs);
-    // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::End();
+void ImGuiLayer::render() {
+    ImGui::Begin("Debug Tools");
+    for (auto& panel : panels) {
+        if (!panel.enabled)
+            continue;
 
-    if (showDemoWindow)
-        ImGui::ShowDemoWindow(&showDemoWindow);
+        if (ImGui::CollapsingHeader(panel.name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+            panel.draw();
+        }
+    }
+    ImGui::End();
 }
 
 void ImGuiLayer::end() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void ImGuiLayer::addPanel(const std::string& name, std::function<void()> drawFunc) {
+    panels.push_back({name, std::move(drawFunc), true});
 }

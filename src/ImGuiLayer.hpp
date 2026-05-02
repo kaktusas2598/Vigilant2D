@@ -1,8 +1,18 @@
 #pragma once
 
+#include <string>
+#include <functional>
+#include <vector>
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+
+struct DebugPanel {
+    std::string name;
+    std::function<void()> draw;
+    bool enabled = true;
+};
 
 class ImGuiLayer {
     public:
@@ -14,15 +24,12 @@ class ImGuiLayer {
         // Shutdown ImGui
         void exit();
 
-        // Call before render() to start a new frame
+        // Always call these methods in the same order as such: begin() -> render() -> end()
         void begin();
-        // Call after render() to actually render and end frame
+        void render();
         void end();
 
-        void render(float* clearColour, float fps, float frameTimeMs);
-
+        void addPanel(const std::string& name, std::function<void()> drawFunc);
     private:
-        GLFWwindow* windowPtr;
-
-        static bool showDemoWindow; ///< Toggle IMGui Demo Window for Docs
+        std::vector<DebugPanel> panels;
 };
