@@ -59,6 +59,8 @@ void Application::init() {
     renderer.init();
 
     //-------------- TEST CODE
+    camera.setPosition({320.0f, 200.0f});
+
     boxTexture = new Texture("assets/textures/crate.png");
     testMap.loadFromFile("assets/farmMap.tmx");
 

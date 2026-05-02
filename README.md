@@ -27,4 +27,20 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libglew-dev libassimp-dev libglfw3 libglfw3-dev
 ```
 
-![DEMO](screenshot.png?raw=true "Minimal skeleton demo application")
+# TODO in order of importance
+  * Entity system (something simple, not ECS)
+  * Selectable entities/tiles
+  * Resource/Asset manager class
+  * Particle System
+  * UI System (world and screen space)
+  * Scripting
+  * Saving
+  * Box2D integration
+  * Light source support
+  * True type fonts
+  * Sound
+  *
+  * ------
+  * Cutscene, cinematic camera support (Lua Coroutines?)
+  * Hot Reload scripts, shaders, maps
+

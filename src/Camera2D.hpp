@@ -19,6 +19,9 @@ class Camera2D {
 
         glm::vec2 getPosition() const { return position; }
         float getZoom() const { return zoom; }
+
+        glm::vec2 screenToWorld(const glm::vec2& screenPosition) const;
+        glm::vec2 worldToScreen(const glm::vec2& worldPosition) const;
     private:
         glm::vec2 position;
         float zoom;

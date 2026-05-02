@@ -5,8 +5,8 @@ void Camera2D::setPosition(const glm::vec2 &newPosition) { position = newPositio
 void Camera2D::move(const glm::vec2 &delta) { position += delta; }
 
 void Camera2D::setZoom(float newZoom) {
-    if (newZoom < 0.25f) newZoom = 0.25f;
-    if (newZoom > 2.5f) newZoom = 2.5f;
+    if (newZoom < 0.2f) newZoom = 0.2f;
+    if (newZoom > 2.0f) newZoom = 2.0f;
     zoom = newZoom;
 }
 
@@ -31,4 +31,28 @@ glm::mat4 Camera2D::getProjectionMatrix() const {
 
 glm::mat4 Camera2D::getViewProjectionMatrix() const {
     return getProjectionMatrix() * getViewMatrix();
+}
+
+glm::vec2 Camera2D::screenToWorld(const glm::vec2 &screenPosition) const {
+    const float worldWidth = viewportWidth / zoom;
+    const float worldHeight = viewportHeight / zoom;
+    const float left = position.x - worldWidth * 0.5f;
+    const float bottom = position.y - worldHeight * 0.5f;
+
+    return {  
+        left + screenPosition.x / zoom,
+        bottom + (viewportHeight - screenPosition.y) / zoom
+    };
+}
+
+glm::vec2 Camera2D::worldToScreen(const glm::vec2 &worldPosition) const {
+    const float worldWidth = viewportWidth / zoom;
+    const float worldHeight = viewportHeight / zoom;
+    const float left = position.x - worldWidth * 0.5f;
+    const float bottom = position.y - worldHeight * 0.5f;
+
+    return {
+        (worldPosition.x - left) * zoom,
+        viewportHeight - ((worldPosition.y - bottom) * zoom)
+    };
 }
