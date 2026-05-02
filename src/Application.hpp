@@ -17,7 +17,7 @@
 class Application {
     public:
         ~Application() {
-            delete boxTexture;wd
+            delete boxTexture;
         }
         void init();
         void run();
