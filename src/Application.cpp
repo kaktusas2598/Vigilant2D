@@ -61,6 +61,19 @@ void Application::init() {
     //-------------- TEST CODE
     boxTexture = new Texture("assets/textures/crate.png");
     testMap.loadFromFile("assets/farmMap.tmx");
+
+    playerTexture = new Texture("assets/textures/player.png");
+
+    testIdleClip = AnimationClip("idle_down", true);
+    for (int x = 0; x < 6; ++x) {
+        testIdleClip.addFrame(makeRegionFromGrid(playerTexture, x, 0, 6, 10), 0.12f);
+    }
+
+    testPlayerAnimation.setSprite(&testPlayerSprite);
+    testPlayerAnimation.play(&testIdleClip);
+
+    testPlayerTransform.position = {150.0f, 150.0f};
+    testPlayerTransform.scale = {48.0f, 48.0f};
 }
 
 void Application::run() {
@@ -110,6 +123,8 @@ void Application::update(float dt) {
     if (input.isKeyPressed(GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
     }
+
+    testPlayerAnimation.update(dt);
 }
 
 void Application::render(float dt) {
@@ -141,6 +156,9 @@ void Application::render(float dt) {
     // Test tiled map
     testMap.rebuildVisibleLayers(camera, display_w, display_h);
     testMap.draw(renderer);
+
+    // Sprite test
+    testPlayerSprite.draw(renderer, testPlayerTransform);
 
     renderer.end();
 

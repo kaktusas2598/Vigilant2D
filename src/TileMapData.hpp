@@ -46,3 +46,25 @@ struct TileMapData {
 // TODO: Don't like these global methods just sittin there below data definitions
 const TilesetData* findTilesetForGid(const TileMapData& map, int gid);
 TextureRegion makeRegionForGid(const TilesetData& tileset, Texture* texture,  int gid);
+inline TextureRegion makeRegionFromGrid(
+    Texture* texture,
+    int frameX,
+    int frameY,
+    int columns,
+    int rows
+) {
+    const float frameWidth = 1.0f / static_cast<float>(columns);
+    const float frameHeight = 1.0f / static_cast<float>(rows);
+
+    const glm::vec2 uvMin(
+        frameX * frameWidth,
+        1.0f - ((frameY + 1) * frameHeight)
+    );
+
+    const glm::vec2 uvMax(
+        (frameX + 1) * frameWidth,
+        1.0f - (frameY * frameHeight)
+    );
+
+    return {texture, uvMin, uvMax};
+}

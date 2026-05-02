@@ -12,7 +12,12 @@
 #include "Time.hpp"
 
 #include "Texture.hpp"
+
 #include "TileMap.hpp"
+
+#include "Sprite.hpp"
+#include "AnimatedSprite.hpp"
+#include "AnimationClip.hpp"
 
 class Application {
     public:
@@ -47,5 +52,12 @@ class Application {
 
         // TEMPORARY textures for testing
         Texture* boxTexture = nullptr;
+        // Tiled map test with batched rendering
         TileMap testMap;
+        // Sprite and animated sprite test
+        Texture* playerTexture = nullptr;
+        Sprite testPlayerSprite;
+        AnimatedSprite testPlayerAnimation;
+        AnimationClip testIdleClip;
+        Transform2D testPlayerTransform;
 };
