@@ -27,6 +27,18 @@ bool Input::isKeyReleased(int key) const {
     return keys[key].released; 
 };
 
+bool Input::isMouseButtonDown(int key) const {
+    return mouseButtons[key].down;
+}
+
+bool Input::isMouseButtonPressed(int key) const {
+    return mouseButtons[key].pressed;
+}
+
+bool Input::isMouseButtonReleased(int key) const {
+    return mouseButtons[key].released;
+}
+
 void Input::onKeyEvent(int key, int action) {
     if (!isValidKey(key)) return;
 
