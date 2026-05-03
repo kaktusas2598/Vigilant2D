@@ -23,13 +23,12 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libglew-dev libassimp-dev libglfw3 libglfw3-dev
 ```
 
-# TODO in order of importance
-  * Entity system (something simple, not ECS)
+# TODO
   * Selectable entities/tiles
   * UI System (world and screen space)
   * Scripting
   * Saving
-  * Box2D integration
+  * Box2D integration/Collision in tiled maps
   * Light source support
   * True type fonts
   * Sound
