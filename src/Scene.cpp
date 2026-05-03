@@ -2,7 +2,13 @@
 
 void Scene::update(float dt) {
     physicsWorld.step(dt);
+
     for (auto& entity: entities) {
+        if (entity->hasPhysicsBody()) {
+            const glm::vec2 centre = physicsWorld.getBodyPositionPixels(entity->getPhysicsBody());
+            entity->transform.position = centre - entity->transform.scale * 0.5f;
+        }
+
         entity->update(dt);
     }
 }

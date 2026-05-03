@@ -151,6 +151,13 @@ void Application::init() {
     playerEntity.setSprite(std::move(sprite));
     playerEntity.setAnimatedSprite(std::move(animatedSprite));
 
+    playerEntity.setPhysicsBody(
+        scene.getPhysicsWorld().createDynamicBox(
+            playerEntity.transform.position,
+            playerEntity.transform.scale
+        )
+    );
+
     Entity& slimeEntity = scene.createEntity("slime");
     slimeEntity.transform.position = {300.0f, 550.0f};
     slimeEntity.transform.scale = {48.0f, 48.0f};
@@ -218,6 +225,11 @@ void Application::update(float dt) {
         glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
     }
 
+    movePlayer();
+    Entity *player = scene.findEntityByID("player");
+    if (player != nullptr)
+        camera.setPosition(player->transform.position);
+
     scene.update(dt);
     selectionManager.update(input, camera, scene);
     particleSystem.update(dt);
@@ -237,54 +249,6 @@ void Application::update(float dt) {
         if (textureEmitter) {
             textureEmitter->emit(mouseWorld, 12);
         }
-    }
-
-
-    Entity* player = scene.findEntityByID("player");
-    if (player != nullptr) {
-        glm::vec2 movement(0.0f);
-        const float playerSpeed = 120.0f;
-
-        if (input.isKeyDown(GLFW_KEY_W)) movement.y += 1.0f;
-        if (input.isKeyDown(GLFW_KEY_S)) movement.y -= 1.0f;
-        if (input.isKeyDown(GLFW_KEY_A)) movement.x -= 1.0f;
-        if (input.isKeyDown(GLFW_KEY_D)) movement.x += 1.0f;
-
-        AnimatedSprite* anim = player->getAnimatedSprite();
-        if (movement.x != 0.0f || movement.y != 0.0f) {
-            movement = glm::normalize(movement);
-            player->transform.position += movement * playerSpeed * dt;
-            if (anim != nullptr) {
-                if (std::abs(movement.x) > std::abs(movement.y)) {
-                    if (movement.x > 0.0f) {
-                        if (player->getSprite()) player->getSprite()->setFlipX(false);
-                        anim->play(&testWalkRightClip, false);
-                    } else {
-                        if (player->getSprite()) player->getSprite()->setFlipX(true);
-                        anim->play(&testWalkRightClip, false);
-                    }
-                } else {
-                    if (movement.y > 0.0f) {
-                        anim->play(&testWalkUpClip, false);
-                    } else {
-                        anim->play(&testWalkDownClip, false);
-                    }
-
-                }
-            }
-        } else {
-            if (anim != nullptr) {
-                const AnimationClip* current = anim->getClip();
-                if (current == &testWalkUpClip) {
-                    anim->play(&testWalkUpClip, false);
-                } else if (current == &testWalkRightClip) {
-                    anim->play(&testWalkRightClip, false);
-                } else {
-                    anim->play(&testIdleClip, false);
-                }
-            }
-        }
-        camera.setPosition(player->transform.position);
     }
 }
 
@@ -334,4 +298,60 @@ void Application::switchDebugMode() {
 
 bool Application::isDebugModeEnabled() {
     return debugMode;
+}
+
+void Application::movePlayer() {
+    Entity *player = scene.findEntityByID("player");
+    if (player != nullptr) {
+        glm::vec2 movement(0.0f);
+        const float playerSpeed = 120.0f;
+
+        if (input.isKeyDown(GLFW_KEY_W)) movement.y += 1.0f;
+        if (input.isKeyDown(GLFW_KEY_S)) movement.y -= 1.0f;
+        if (input.isKeyDown(GLFW_KEY_A)) movement.x -= 1.0f;
+        if (input.isKeyDown(GLFW_KEY_D)) movement.x += 1.0f;
+
+        AnimatedSprite* anim = player->getAnimatedSprite();
+        if (movement.x != 0.0f || movement.y != 0.0f) {
+            movement = glm::normalize(movement);
+
+            if (player->hasPhysicsBody()) {
+                scene.getPhysicsWorld().setBodyLinearVelocityPixels(
+                    player->getPhysicsBody(),
+                    movement * playerSpeed
+                );
+            }
+            // player->transform.position += movement * playerSpeed * dt;
+
+            if (anim != nullptr) {
+                if (std::abs(movement.x) > std::abs(movement.y)) {
+                    if (movement.x > 0.0f) {
+                        if (player->getSprite()) player->getSprite()->setFlipX(false);
+                        anim->play(&testWalkRightClip, false);
+                    } else {
+                        if (player->getSprite()) player->getSprite()->setFlipX(true);
+                        anim->play(&testWalkRightClip, false);
+                    }
+                } else {
+                    if (movement.y > 0.0f) {
+                        anim->play(&testWalkUpClip, false);
+                    } else {
+                        anim->play(&testWalkDownClip, false);
+                    }
+
+                }
+            }
+        } else {
+            if (anim != nullptr) {
+                // const AnimationClip* current = anim->getClip();
+                // if (current == &testWalkUpClip) {
+                //     anim->play(&testWalkUpClip, false);
+                // } else if (current == &testWalkRightClip) {
+                //     anim->play(&testWalkRightClip, false);
+                // } else {
+                    anim->play(&testIdleClip, false);
+                // }
+            }
+        }
+    }
 }

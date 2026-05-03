@@ -7,7 +7,9 @@
 #include "Sprite.hpp"
 #include "AnimatedSprite.hpp"
 #include "Renderer.hpp"
+#include <box2d/box2d.h>
 
+// TODO: I don't like Entity owning Sprites, animated sprites, physics handles etc.
 class Entity {
     public:
         Transform2D transform;
@@ -35,6 +37,10 @@ class Entity {
         AnimatedSprite *getAnimatedSprite() { return animatedSprite.get(); }
         const AnimatedSprite *getAnimatedSprite() const { return animatedSprite.get(); }
 
+        void setPhysicsBody(b2BodyId newBody) { physicsBody = newBody; }
+        b2BodyId getPhysicsBody() const { return physicsBody; }
+        bool hasPhysicsBody() const { return B2_IS_NON_NULL(physicsBody); }
+
         void update(float dt) {
             if (animatedSprite)
                 animatedSprite->update(dt);
@@ -49,4 +55,5 @@ class Entity {
         std::string id;
         std::unique_ptr<AnimatedSprite> animatedSprite = nullptr;
         std::unique_ptr<Sprite> sprite = nullptr;
+        b2BodyId physicsBody = b2_nullBodyId;
 };

@@ -16,11 +16,11 @@ void PhysicsWorld2D::step(float dt) {
 b2BodyId PhysicsWorld2D::createStaticBox(float centerX, float centerY, float halfWidth, float halfHeight) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
-    bodyDef.position = {centerX, centerY};
+    bodyDef.position = {toMeters(centerX), toMeters(centerY)};
 
     b2BodyId body = b2CreateBody(worldId, &bodyDef);
 
-    b2Polygon polygon = b2MakeBox(halfWidth, halfHeight);
+    b2Polygon polygon = b2MakeBox(toMeters(halfWidth), toMeters(halfHeight));
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     b2CreatePolygonShape(body, &shapeDef, &polygon);
 
@@ -63,4 +63,41 @@ void PhysicsWorld2D::buildStaticCollisionFromMap(const TileMapData &map) {
             createStaticBox(centerX, centerY, object.width * 0.5f, object.height * 0.5f);
         }
     }
+}
+
+b2BodyId PhysicsWorld2D::createDynamicBox(const glm::vec2 &positionPixels, const glm::vec2 &sizePixels) {
+
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position = {
+        toMeters(positionPixels.x + sizePixels.x * 0.5f), 
+        toMeters(positionPixels.y + sizePixels.y * 0.5f)
+    };
+    bodyDef.gravityScale = 0.0f;
+    bodyDef.motionLocks.angularZ = true;
+    bodyDef.linearDamping = 8.0f;
+
+    b2BodyId bodyId = b2CreateBody(worldId, &bodyDef);
+
+    b2Polygon polygon = b2MakeBox(
+        toMeters(sizePixels.x * 0.5f), 
+        toMeters(sizePixels.y * 0.5f)
+    );
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.density = 1.0f;
+    shapeDef.material.friction = 0.0f;
+    b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
+
+    return bodyId;
+}
+glm::vec2 PhysicsWorld2D::getBodyPositionPixels(b2BodyId bodyId) const {
+    b2Vec2 pos = b2Body_GetPosition(bodyId);
+    return {toPixels(pos.x), toPixels(pos.y)};
+}
+
+void PhysicsWorld2D::setBodyLinearVelocityPixels(b2BodyId bodyId, const glm::vec2 &velocityPixelsPerSecond) {
+    b2Body_SetLinearVelocity(bodyId, {
+        toMeters(velocityPixelsPerSecond.x),
+        toMeters(velocityPixelsPerSecond.y)
+    });
 }

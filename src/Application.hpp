@@ -33,6 +33,9 @@ class Application {
         void update(float dt);
         void render(float dt);
 
+        // TODO: probably best to do through scripting?
+        void movePlayer();
+
         Window window;
         ImGuiLayer uiLayer;
         Renderer renderer;
