@@ -51,8 +51,12 @@ class Application {
         // TEMPORARY resources for testing - TODO: asset/resource manager!!
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
-        AnimationClip testIdleClip;
         Texture* slimeTexture = nullptr;
+
+        AnimationClip testIdleClip;
+        AnimationClip testWalkDownClip;
+        AnimationClip testWalkUpClip;
+        AnimationClip testWalkRightClip;
         AnimationClip testSlimeClip;
 
         TileCursor tileCursor;

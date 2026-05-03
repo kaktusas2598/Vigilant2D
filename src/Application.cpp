@@ -77,6 +77,9 @@ void Application::init() {
             camera.setZoom(zoom);
         }
     });
+    uiLayer.addPanel("Scene", [this]() {
+        ImGui::Text("Entities: %d", scene.getEntityCount());
+    });
 
 
     renderer.init();
@@ -92,6 +95,20 @@ void Application::init() {
     for (int x = 0; x < 6; ++x) {
         testIdleClip.addFrame(makeRegionFromGrid(playerTexture, x, 0, 6, 10), 0.12f);
     }
+    testWalkDownClip = AnimationClip("walk_down", true);
+    for (int x = 0; x < 6; ++x) {
+        testWalkDownClip.addFrame(makeRegionFromGrid(playerTexture, x, 3, 6, 10), 0.12f);
+    }
+    testWalkUpClip = AnimationClip("walk_up", true);
+    for (int x = 0; x < 6; ++x) {
+        testWalkUpClip.addFrame(makeRegionFromGrid(playerTexture, x, 2, 6, 10), 0.12f);
+    }
+    testWalkRightClip = AnimationClip("walk_right", true);
+    for (int x = 0; x < 6; ++x) {
+        testWalkRightClip.addFrame(makeRegionFromGrid(playerTexture, x, 4, 6, 10), 0.12f);
+    }
+
+
     testSlimeClip = AnimationClip("testSlime", true);
     for (int x = 0; x < 7; ++x) {
         testSlimeClip.addFrame(makeRegionFromGrid(slimeTexture, x, 2, 7, 5), 0.12f);
@@ -144,19 +161,6 @@ void Application::update(float dt) {
     // TODO: already regretting not getting variadic argument support from Villain Logger
     // VA_DEBUG("Mouse X:  %s", x)
 
-    float cameraSpeed = 500.0f * dt;
-
-    // TEST camera
-    if (input.isKeyDown(GLFW_KEY_W)) {
-        camera.move({0.0f, cameraSpeed});
-    } else if (input.isKeyDown(GLFW_KEY_S)) {
-        camera.move({0.0f, -cameraSpeed});
-    } else if (input.isKeyDown(GLFW_KEY_A)) {
-        camera.move({-cameraSpeed, 0.0f});
-    } else if (input.isKeyDown(GLFW_KEY_D)) {
-        camera.move({cameraSpeed, 0.0f});
-    }
-
     const double scrollY = input.getScrollY();
     if (scrollY != 0.0f) {
         const float zoomPerStep = 1.095f;
@@ -175,6 +179,53 @@ void Application::update(float dt) {
 
     scene.update(dt);
     tileCursor.update(input, camera, scene.getTileMap());
+
+    Entity* player = scene.findEntityByID("player");
+    if (player != nullptr) {
+        glm::vec2 movement(0.0f);
+        const float playerSpeed = 120.0f;
+
+        if (input.isKeyDown(GLFW_KEY_W)) movement.y += 1.0f;
+        if (input.isKeyDown(GLFW_KEY_S)) movement.y -= 1.0f;
+        if (input.isKeyDown(GLFW_KEY_A)) movement.x -= 1.0f;
+        if (input.isKeyDown(GLFW_KEY_D)) movement.x += 1.0f;
+
+        AnimatedSprite* anim = player->getAnimatedSprite();
+        if (movement.x != 0.0f || movement.y != 0.0f) {
+            movement = glm::normalize(movement);
+            player->transform.position += movement * playerSpeed * dt;
+            if (anim != nullptr) {
+                if (std::abs(movement.x) > std::abs(movement.y)) {
+                    if (movement.x > 0.0f) {
+                        if (player->getSprite()) player->getSprite()->setFlipX(false);
+                        anim->play(&testWalkRightClip, false);
+                    } else {
+                        if (player->getSprite()) player->getSprite()->setFlipX(true);
+                        anim->play(&testWalkRightClip, false);
+                    }
+                } else {
+                    if (movement.y > 0.0f) {
+                        anim->play(&testWalkUpClip, false);
+                    } else {
+                        anim->play(&testWalkDownClip, false);
+                    }
+
+                }
+            }
+        } else {
+            if (anim != nullptr) {
+                const AnimationClip* current = anim->getClip();
+                if (current == &testWalkUpClip) {
+                    anim->play(&testWalkUpClip, false);
+                } else if (current == &testWalkRightClip) {
+                    anim->play(&testWalkRightClip, false);
+                } else {
+                    anim->play(&testIdleClip, false);
+                }
+            }
+        }
+        camera.setPosition(player->transform.position);
+    }
 }
 
 void Application::render(float dt) {

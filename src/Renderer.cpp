@@ -44,9 +44,17 @@ void Renderer::drawQuad(const QuadDrawParams &params) {
             currentTexture = params.region.texture;
         }
 
+        glm::vec2 uvMin = params.region.uvMin;
+        glm::vec2 uvMax = params.region.uvMax;
+
+        if (params.flipX)
+            std::swap(uvMin.x, uvMax.x);
+        if (params.flipY)
+            std::swap(uvMin.y, uvMax.y);
+
         shader->setUniform1i("spriteTexture", 0);
-        shader->setUniformVec2("uvMin", params.region.uvMin);
-        shader->setUniformVec2("uvMax", params.region.uvMax);
+        shader->setUniformVec2("uvMin", uvMin);
+        shader->setUniformVec2("uvMax", uvMax);
     }
 
     shader->setUniformVec4("color", params.color);

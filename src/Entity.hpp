@@ -29,6 +29,12 @@ class Entity {
             }
         }
 
+        Sprite* getSprite() { return sprite.get(); }
+        const Sprite *getSprite() const { return sprite.get(); }
+
+        AnimatedSprite *getAnimatedSprite() { return animatedSprite.get(); }
+        const AnimatedSprite *getAnimatedSprite() const { return animatedSprite.get(); }
+
         void update(float dt) {
             if (animatedSprite)
                 animatedSprite->update(dt);

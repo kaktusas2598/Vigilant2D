@@ -11,6 +11,8 @@ struct QuadDrawParams {
     Transform2D transform;
     TextureRegion region;
     glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+    bool flipX = false;
+    bool flipY = false;
 };
 
 class Renderer{

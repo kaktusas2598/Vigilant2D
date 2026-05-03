@@ -12,11 +12,19 @@ public:
     void setColor(const glm::vec4& newColor) { color = newColor; }
     const glm::vec4& getColor() const { return color; }
 
+    void setFlipX(bool value) { flipX = value; }
+    void setFlipY(bool value) { flipY = value; }
+
+    bool isFlippedX() const { return flipX; }
+    bool isFlippedY() const { return flipY; }
+
     void draw(Renderer& renderer, const Transform2D& transform) const {
-        renderer.drawQuad({transform, region, color});
+        renderer.drawQuad({transform, region, color, flipX, flipY});
     }
 
 private:
     TextureRegion region;
     glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+    bool flipX = false;
+    bool flipY = false;
 };
