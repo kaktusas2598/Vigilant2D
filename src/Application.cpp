@@ -96,6 +96,16 @@ void Application::init() {
     uiLayer.addPanel("Particles", [this]() {
         ImGui::Text("Emitters: %d", static_cast<int>(particleSystem.getEmitterCount()));
     });
+    uiLayer.addPanel("Selection", [this]() {
+        const glm::ivec2 hoverTile = selectionManager.getHoveredTile();
+        const glm::ivec2 selectedTile = selectionManager.getSelectedTile();
+
+        ImGui::Text("Hovered Tile: %d, %d", hoverTile.x, hoverTile.y);
+        ImGui::Text("Selected Tile: %d, %d", selectedTile.x, selectedTile.y);
+        ImGui::Text("Hovered Entity: %s", selectionManager.getHoveredEntityId().empty() ? "None" : selectionManager.getHoveredEntityId().c_str());
+        ImGui::Text("Selected Entity: %s", selectionManager.getSelectedEntityId().empty() ? "None" : selectionManager.getSelectedEntityId().c_str());
+    });
+
 
 
     renderer.init();
@@ -209,7 +219,7 @@ void Application::update(float dt) {
     }
 
     scene.update(dt);
-    tileCursor.update(input, camera, scene.getTileMap());
+    selectionManager.update(input, camera, scene);
     particleSystem.update(dt);
 
     glm::vec2 mouseWorld = camera.screenToWorld({
@@ -298,7 +308,7 @@ void Application::render(float dt) {
 
     particleSystem.draw(renderer);
 
-    tileCursor.draw(renderer, scene.getTileMap());
+    selectionManager.draw(renderer, scene);
 
     // TEST textured quad render code
     renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});

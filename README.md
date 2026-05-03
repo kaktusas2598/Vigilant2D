@@ -13,6 +13,7 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 # Included features
 
  * Simple Scene-Entity Model
+ * Selectable tiles/entities
  * Particle System
  * ImgGui Debug tools
  * Tiled Map (.TMX) loading, selectable tile cursor
@@ -24,14 +25,14 @@ sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mes
 ```
 
 # TODO
-  * Selectable entities/tiles
+  * Box2D integration/Collision in tiled maps
   * UI System (world and screen space)
   * Scripting
   * Saving
-  * Box2D integration/Collision in tiled maps
   * Light source support
   * True type fonts
   * Sound
+  * Pathfinding
   *
   * ------
   * Cutscene, cinematic camera support (Lua Coroutines?)

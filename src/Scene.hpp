@@ -22,6 +22,7 @@ class Scene {
         TileMap* getTileMap() { return tileMap.get(); }
         const TileMap* getTileMap() const { return tileMap.get(); }
         
+        const std::vector<std::unique_ptr<Entity>>& getEntities() const { return entities; }
         unsigned int getEntityCount() const { return entities.size(); }
     private:
         // TODO: might want make more than 1 map available

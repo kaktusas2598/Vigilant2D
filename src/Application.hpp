@@ -14,7 +14,7 @@
 #include "Texture.hpp"
 #include "AnimationClip.hpp"
 #include "Scene.hpp"
-#include "TileCursor.hpp"
+#include "SelectionManager.hpp"
 #include "AssetManager.hpp"
 #include "ParticleSystem.hpp"
 
@@ -59,7 +59,7 @@ class Application {
         AnimationClip testWalkRightClip;
         AnimationClip testSlimeClip;
 
-        TileCursor tileCursor;
+        SelectionManager selectionManager;
         ParticleSystem particleSystem;
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;
