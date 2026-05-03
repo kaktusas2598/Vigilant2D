@@ -89,8 +89,8 @@ void Application::init() {
     map->loadFromFile("assets/farmMap.tmx");
     scene.setTileMap(std::move(map));
 
-    playerTexture = new Texture("assets/textures/player.png");
-    slimeTexture = new Texture("assets/textures/slime.png");
+    playerTexture = assetManager.loadTexture("player", "assets/textures/player.png");
+    slimeTexture = assetManager.loadTexture("slime", "assets/textures/slime.png");
     testIdleClip = AnimationClip("idle_down", true);
     for (int x = 0; x < 6; ++x) {
         testIdleClip.addFrame(makeRegionFromGrid(playerTexture, x, 0, 6, 10), 0.12f);
@@ -139,7 +139,7 @@ void Application::init() {
     //-------------- TEST CODE
     camera.setPosition({320.0f, 200.0f});
     camera.setZoom(4.0f);
-    boxTexture = new Texture("assets/textures/crate.png");
+    boxTexture = assetManager.loadTexture("crate", "assets/textures/crate.png");
 }
 
 void Application::run() {

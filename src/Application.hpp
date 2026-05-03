@@ -15,6 +15,7 @@
 #include "AnimationClip.hpp"
 #include "Scene.hpp"
 #include "TileCursor.hpp"
+#include "AssetManager.hpp"
 
 class Application {
     public:
@@ -48,6 +49,7 @@ class Application {
         Camera2D camera;
 
         Scene scene;
+        AssetManager assetManager;
         // TEMPORARY resources for testing - TODO: asset/resource manager!!
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
