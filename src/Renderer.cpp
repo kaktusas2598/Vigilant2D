@@ -7,7 +7,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 void Renderer::init() {
-    // TEST Render code below: Quad setup
     // TODO: probably not a good idea to have statuc shader in renderer in case we need more rendering options later
     shader = new Shader("shaders/texturedQuad.vert", "shaders/texturedQuad.frag");
 
@@ -35,8 +34,6 @@ Renderer::~Renderer() {
 }
 
 void Renderer::drawQuad(const QuadDrawParams &params) {
-    // shader->bind();
-
     const bool useTexture = params.region.texture != nullptr;
     shader->setUniform1i("useTexture", useTexture ? 1 : 0);
 
@@ -58,7 +55,6 @@ void Renderer::drawQuad(const QuadDrawParams &params) {
     shader->setUniform1i("remapUVs", 1);
     
     quadMesh->draw();
-    // shader->unbind();
 }
 
 void Renderer::drawMesh(const Mesh& mesh, Texture* texture,

@@ -52,6 +52,8 @@ class Application {
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
         AnimationClip testIdleClip;
+        Texture* slimeTexture = nullptr;
+        AnimationClip testSlimeClip;
 
         TileCursor tileCursor;
 };

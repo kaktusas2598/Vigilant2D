@@ -87,9 +87,14 @@ void Application::init() {
     scene.setTileMap(std::move(map));
 
     playerTexture = new Texture("assets/textures/player.png");
+    slimeTexture = new Texture("assets/textures/slime.png");
     testIdleClip = AnimationClip("idle_down", true);
     for (int x = 0; x < 6; ++x) {
         testIdleClip.addFrame(makeRegionFromGrid(playerTexture, x, 0, 6, 10), 0.12f);
+    }
+    testSlimeClip = AnimationClip("testSlime", true);
+    for (int x = 0; x < 7; ++x) {
+        testSlimeClip.addFrame(makeRegionFromGrid(slimeTexture, x, 2, 7, 5), 0.12f);
     }
 
     Entity& playerEntity = scene.createEntity("player");
@@ -102,6 +107,17 @@ void Application::init() {
     animatedSprite->play(&testIdleClip);
     playerEntity.setSprite(std::move(sprite));
     playerEntity.setAnimatedSprite(std::move(animatedSprite));
+
+    Entity& slimeEntity = scene.createEntity("slime");
+    slimeEntity.transform.position = {300.0f, 550.0f};
+    slimeEntity.transform.scale = {48.0f, 48.0f};
+
+    auto slimeSprite = std::make_unique<Sprite>();
+    auto slimeAnimSprite = std::make_unique<AnimatedSprite>();
+    slimeAnimSprite->setSprite(slimeSprite.get());
+    slimeAnimSprite->play(&testSlimeClip);
+    slimeEntity.setSprite(std::move(slimeSprite));
+    slimeEntity.setAnimatedSprite(std::move(slimeAnimSprite));
 
     //-------------- TEST CODE
     camera.setPosition({320.0f, 200.0f});
