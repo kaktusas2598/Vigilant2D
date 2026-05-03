@@ -15,7 +15,7 @@ void Window::init(int width, int height) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Vigilant2D", NULL, NULL);
     if (!window)
     {
         glfwTerminate();

@@ -14,6 +14,7 @@
 #include "Texture.hpp"
 #include "AnimationClip.hpp"
 #include "Scene.hpp"
+#include "TileCursor.hpp"
 
 class Application {
     public:
@@ -51,7 +52,6 @@ class Application {
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
         AnimationClip testIdleClip;
-        // TESTING members
-        glm::ivec2 tileHover{-1, -1};
-        glm::ivec2 tileSelected{-1, -1};
+
+        TileCursor tileCursor;
 };
