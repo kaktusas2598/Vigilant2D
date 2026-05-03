@@ -10,11 +10,11 @@
 #include "Texture.hpp"
 #include "Renderer.hpp"
 #include "Camera2D.hpp"
+#include "AssetManager.hpp"
 
 class TileMap {
     public:
-        bool loadFromFile(const std::string& fileName);
-        ~TileMap();
+        bool loadFromFile(const std::string& fileName, AssetManager& assets);
 
         void rebuildVisibleLayers(const Camera2D& camera, int viewportWidth, int viewportHeight);
         void draw(Renderer& renderer) const;

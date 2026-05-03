@@ -20,9 +20,6 @@
 
 class Application {
     public:
-        ~Application() {
-            delete boxTexture;
-        }
         void init();
         void run();
         void exit();
@@ -51,7 +48,7 @@ class Application {
 
         Scene scene;
         AssetManager assetManager;
-        // TEMPORARY resources for testing - TODO: asset/resource manager!!
+        // TEMPORARY resources for testing - owned by AssetManager 
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
         Texture* slimeTexture = nullptr;

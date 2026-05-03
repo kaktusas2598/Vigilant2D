@@ -80,6 +80,19 @@ void Application::init() {
     uiLayer.addPanel("Scene", [this]() {
         ImGui::Text("Entities: %d", scene.getEntityCount());
     });
+    uiLayer.addPanel("Assets", [this]() {
+        ImGui::Text("Textures: %d", static_cast<int>(assetManager.getTextureIDs().size()));
+        for (const auto& id : assetManager.getTextureIDs()) {
+            ImGui::BulletText("%s", id.c_str());
+        }
+
+        ImGui::Separator();
+
+        ImGui::Text("Shaders: %d", static_cast<int>(assetManager.getShaderIDs().size()));
+        for (const auto& id : assetManager.getShaderIDs()) {
+            ImGui::BulletText("%s", id.c_str());
+        }
+    });
     uiLayer.addPanel("Particles", [this]() {
         ImGui::Text("Emitters: %d", static_cast<int>(particleSystem.getEmitterCount()));
     });
@@ -89,7 +102,7 @@ void Application::init() {
 
     // -------- SCENE INIT --------
     auto map = std::make_unique<TileMap>();
-    map->loadFromFile("assets/farmMap.tmx");
+    map->loadFromFile("assets/farmMap.tmx", assetManager);
     scene.setTileMap(std::move(map));
 
     playerTexture = assetManager.loadTexture("player", "assets/textures/player.png");

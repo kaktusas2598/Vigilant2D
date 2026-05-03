@@ -2,13 +2,7 @@
 
 #include "TiledMapLoader.hpp"
 
-TileMap::~TileMap() {
-    for (Texture* texture : tilesetTextures) {
-        delete texture;
-    }
-}
-
-bool TileMap::loadFromFile(const std::string &fileName) {
+bool TileMap::loadFromFile(const std::string &fileName, AssetManager& assets) {
     TiledMapLoader loader;
     mapData = loader.loadFromFile(fileName);
 
@@ -16,8 +10,7 @@ bool TileMap::loadFromFile(const std::string &fileName) {
     layers.clear();
 
     for (const auto &tileset : mapData.tilesets) {
-        auto texture = new Texture();
-        texture->load2D(tileset.imagePath);
+        Texture* texture = assets.loadTexture(tileset.name, tileset.imagePath);
         tilesetTextures.push_back(texture);
     }
 
