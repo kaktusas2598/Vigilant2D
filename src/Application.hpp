@@ -16,6 +16,7 @@
 #include "Scene.hpp"
 #include "TileCursor.hpp"
 #include "AssetManager.hpp"
+#include "ParticleSystem.hpp"
 
 class Application {
     public:
@@ -62,4 +63,7 @@ class Application {
         AnimationClip testSlimeClip;
 
         TileCursor tileCursor;
+        ParticleSystem particleSystem;
+        ParticleEmitter* bloodEmitter = nullptr;
+        ParticleEmitter* textureEmitter = nullptr;
 };

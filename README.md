@@ -10,16 +10,12 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
  * [ImGui](https://github.com/ocornut/imgui) - Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies (docking branch)
  * [stb_image](https://github.com/nothings/stb) - Public Domain Image Loading Library for C++
 
-# Included features (from template)
+# Included features
 
- * OpenGL Abstractions:
-   - Texture with texture loading using stb_image
-   - Shader
-   - FrameBuffer
-   - GL Error handling macro
- * Helpers:
-   - Utility method to load file onto a buffer
-   - ImGui abstraction class
+ * Simple Scene-Entity Model
+ * Particle System
+ * ImgGui Debug tools
+ * Tiled Map (.TMX) loading, selectable tile cursor
 
 # Ubuntu instructions
 
@@ -30,8 +26,6 @@ sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mes
 # TODO in order of importance
   * Entity system (something simple, not ECS)
   * Selectable entities/tiles
-  * Resource/Asset manager class
-  * Particle System
   * UI System (world and screen space)
   * Scripting
   * Saving

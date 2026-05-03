@@ -80,6 +80,9 @@ void Application::init() {
     uiLayer.addPanel("Scene", [this]() {
         ImGui::Text("Entities: %d", scene.getEntityCount());
     });
+    uiLayer.addPanel("Particles", [this]() {
+        ImGui::Text("Emitters: %d", static_cast<int>(particleSystem.getEmitterCount()));
+    });
 
 
     renderer.init();
@@ -137,9 +140,24 @@ void Application::init() {
     slimeEntity.setAnimatedSprite(std::move(slimeAnimSprite));
 
     //-------------- TEST CODE
-    camera.setPosition({320.0f, 200.0f});
     camera.setZoom(4.0f);
     boxTexture = assetManager.loadTexture("crate", "assets/textures/crate.png");
+
+    bloodEmitter = &particleSystem.createEmitter();
+    bloodEmitter->init(512, TextureRegion::full(nullptr));
+    bloodEmitter->setBaseColor({0.8f, 0.1f, 0.1f, 0.9f});
+    bloodEmitter->setBaseSize(10.0f);
+    bloodEmitter->setBaseLifetime(0.6f);
+    bloodEmitter->setBaseVelocity({0.0f, 50.0f});
+    bloodEmitter->setVelocityVariance({80.0f, 80.0f});
+
+    textureEmitter = &particleSystem.createEmitter();
+    textureEmitter->init(256, TextureRegion::full(boxTexture));
+    textureEmitter->setBaseColor({1.0f, 1.0f, 1.0f, 0.9f});
+    textureEmitter->setBaseSize(14.0f);
+    textureEmitter->setBaseLifetime(1.0f);
+    textureEmitter->setBaseVelocity({0.0f, 30.0f});
+    textureEmitter->setVelocityVariance({50.0f, 50.0f});
 }
 
 void Application::run() {
@@ -179,6 +197,25 @@ void Application::update(float dt) {
 
     scene.update(dt);
     tileCursor.update(input, camera, scene.getTileMap());
+    particleSystem.update(dt);
+
+    glm::vec2 mouseWorld = camera.screenToWorld({
+    static_cast<float>(input.getMouseX()),
+    static_cast<float>(input.getMouseY())
+    });
+
+    if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (bloodEmitter) {
+            bloodEmitter->emit(mouseWorld, 20);
+        }
+    }
+
+    if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+        if (textureEmitter) {
+            textureEmitter->emit(mouseWorld, 12);
+        }
+    }
+
 
     Entity* player = scene.findEntityByID("player");
     if (player != nullptr) {
@@ -245,6 +282,8 @@ void Application::render(float dt) {
 
     // Main scene render
     scene.render(renderer, camera, display_w, display_h);
+
+    particleSystem.draw(renderer);
 
     tileCursor.draw(renderer, scene.getTileMap());
 
