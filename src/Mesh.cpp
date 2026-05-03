@@ -9,6 +9,53 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>&
     init(vertices, indices);
 }
 
+Mesh::Mesh(Mesh&& other) noexcept
+    : vaoID(other.vaoID),
+      vboID(other.vboID),
+      eboID(other.eboID),
+      indexCount(other.indexCount),
+      dynamic(other.dynamic),
+      vertexCapacity(other.vertexCapacity),
+      indexCapacity(other.indexCapacity) {
+    other.vaoID = 0;
+    other.vboID = 0;
+    other.eboID = 0;
+    other.indexCount = 0;
+    other.dynamic = false;
+    other.vertexCapacity = 0;
+    other.indexCapacity = 0;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+    if (this == &other)
+        return *this;
+
+    if (eboID != 0)
+        GLCall(glDeleteBuffers(1, &eboID));
+    if (vboID != 0)
+        GLCall(glDeleteBuffers(1, &vboID));
+    if (vaoID != 0)
+        GLCall(glDeleteVertexArrays(1, &vaoID));
+
+    vaoID = other.vaoID;
+    vboID = other.vboID;
+    eboID = other.eboID;
+    indexCount = other.indexCount;
+    dynamic = other.dynamic;
+    vertexCapacity = other.vertexCapacity;
+    indexCapacity = other.indexCapacity;
+
+    other.vaoID = 0;
+    other.vboID = 0;
+    other.eboID = 0;
+    other.indexCount = 0;
+    other.dynamic = false;
+    other.vertexCapacity = 0;
+    other.indexCapacity = 0;
+
+    return *this;
+}
+
 Mesh::~Mesh() {
     if (eboID != 0)
         GLCall(glDeleteBuffers(1, &eboID));

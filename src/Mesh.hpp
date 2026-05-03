@@ -11,6 +11,13 @@ class Mesh {
         Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
         ~Mesh();
 
+        // Make mesh non-copyable and movable
+        Mesh(const Mesh &) = delete;
+        Mesh &operator=(const Mesh &) = delete;
+
+        Mesh(Mesh &&other) noexcept;
+        Mesh &operator=(Mesh &&other) noexcept;
+
         // Static mesh 
         void init(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
         void initDynamic(size_t maxVertices, size_t maxIndices);

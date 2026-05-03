@@ -11,16 +11,19 @@ struct Tile {
     bool empty = true;
 };
 
+struct TileRenderBatch {
+    Texture* texture = nullptr;
+    Mesh mesh;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+};
+
 class TileLayer {
     public:
         TileLayer(int width, int height, glm::vec2 tileSize)
             : width(width), height(height), tileSize(tileSize), tiles(width * height) {
-
-                // Witch batching
-                const size_t maxVisibleTiles = 8192;
-                batchMesh.initDynamic(maxVisibleTiles * 4, maxVisibleTiles * 6);
-                batchVertices.reserve(maxVisibleTiles * 4);
-                batchIndices.reserve(maxVisibleTiles * 6);
+                // Reduce realocations and allow early 8 textures per layer
+                batches.reserve(8);
             }
 
         void setTile(int x, int y, const TextureRegion& region);
@@ -29,6 +32,8 @@ class TileLayer {
         void rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, int viewportHeight);
         void draw(Renderer& renderer) const;
 
+        TileRenderBatch* findOrCreateBatch(Texture* texture);
+
     private:
         int width;
         int height;
@@ -36,8 +41,6 @@ class TileLayer {
         // TODO: might want to store gid instead of region in Tile and resolve regions during draw?
         std::vector<Tile> tiles;
 
-        Texture* layerTexture = nullptr;
-        Mesh batchMesh;
-        std::vector<Vertex> batchVertices;
-        std::vector<unsigned int> batchIndices;
+        // Render batches for each texture
+        std::vector<TileRenderBatch> batches;
 };

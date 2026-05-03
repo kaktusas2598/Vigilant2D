@@ -7,13 +7,15 @@ void TileLayer::setTile(int x, int y, const TextureRegion& region) {
     tile.region = region;
     tile.empty = false;
 
-    if (layerTexture == nullptr)
-        layerTexture = region.texture;
+    // if (layerTexture == nullptr)
+        // layerTexture = region.texture;
 }
 
 void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, int viewportHeight) {
-    batchVertices.clear();
-    batchIndices.clear();
+    for (auto& batch : batches) {
+        batch.vertices.clear();
+        batch.indices.clear();
+    }
 
     // Camera culling to save on performance
     const float halfWidth = viewportWidth * 0.5f / camera.getZoom();
@@ -30,12 +32,14 @@ void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, in
     const int startY = std::max(0, static_cast<int>(std::floor(bottom / tileSize.y)));
     const int endY =   std::min(height, static_cast<int>(std::ceil(top / tileSize.y)) + 1);
 
-    unsigned int baseIndex = 0;
     for (int y = startY; y < endY; ++y) {
         for (int x = startX; x < endX; ++x) {
             const Tile& tile = tiles[y * width + x];
             if (tile.empty || tile.region.texture == nullptr)
                 continue;
+
+            TileRenderBatch* batch = findOrCreateBatch(tile.region.texture);
+            const unsigned int baseIndex = static_cast<unsigned int>(batch->vertices.size());
 
             const float x0 = x * tileSize.x;
             const float y0 = y * tileSize.y;
@@ -45,28 +49,48 @@ void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, in
             const glm::vec2 uvMin = tile.region.uvMin;
             const glm::vec2 uvMax = tile.region.uvMax;
 
-            batchVertices.push_back({{x0, y0, 0.0f}, {uvMin.x, uvMin.y}});
-            batchVertices.push_back({{x1, y0, 0.0f}, {uvMax.x, uvMin.y}});
-            batchVertices.push_back({{x1, y1, 0.0f}, {uvMax.x, uvMax.y}});
-            batchVertices.push_back({{x0, y1, 0.0f}, {uvMin.x, uvMax.y}});
+            batch->vertices.push_back({{x0, y0, 0.0f}, {uvMin.x, uvMin.y}});
+            batch->vertices.push_back({{x1, y0, 0.0f}, {uvMax.x, uvMin.y}});
+            batch->vertices.push_back({{x1, y1, 0.0f}, {uvMax.x, uvMax.y}});
+            batch->vertices.push_back({{x0, y1, 0.0f}, {uvMin.x, uvMax.y}});
 
-            batchIndices.push_back(baseIndex + 0);
-            batchIndices.push_back(baseIndex + 1);
-            batchIndices.push_back(baseIndex + 2);
-            batchIndices.push_back(baseIndex + 2);
-            batchIndices.push_back(baseIndex + 3);
-            batchIndices.push_back(baseIndex + 0);
-
-            baseIndex += 4;
+            batch->indices.push_back(baseIndex + 0);
+            batch->indices.push_back(baseIndex + 1);
+            batch->indices.push_back(baseIndex + 2);
+            batch->indices.push_back(baseIndex + 2);
+            batch->indices.push_back(baseIndex + 3);
+            batch->indices.push_back(baseIndex + 0);
         }
     }
 
-    batchMesh.upload(batchVertices, batchIndices);
+    for (auto& batch : batches) {
+        batch.mesh.upload(batch.vertices, batch.indices);
+    }
 }
 
 void TileLayer::draw(Renderer& renderer) const {
-    if (layerTexture == nullptr)
-        return;
+    for (const auto& batch : batches) {
+        if (batch.texture == nullptr)
+            continue;
+        renderer.drawMesh(batch.mesh, batch.texture);
+    }
+}
 
-    renderer.drawMesh(batchMesh, layerTexture);
+TileRenderBatch* TileLayer::findOrCreateBatch(Texture *texture) {
+    for (auto& batch : batches) {
+        if (batch.texture == texture) {
+            return &batch;
+        }
+    }
+
+    batches.push_back({});
+    TileRenderBatch& batch = batches.back();
+    batch.texture = texture;
+
+    const size_t maxVisibleTiles = 8192;
+    batch.mesh.initDynamic(maxVisibleTiles * 4, maxVisibleTiles * 6);
+    batch.vertices.reserve(maxVisibleTiles * 4);
+    batch.indices.reserve(maxVisibleTiles * 6);
+    
+    return &batch;
 }
