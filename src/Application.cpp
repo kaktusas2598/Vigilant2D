@@ -63,7 +63,7 @@ void Application::init() {
     uiLayer.addPanel("Renderer", [this]() {
         ImGui::ColorEdit4("Clear Color", (float*)&clearColour);
         ImGui::Text("FPS: %.1f", time.getFPS());
-        ImGui::Text("Frame: %.3f ms", time.getFrameTimeMs()); 
+        ImGui::Text("Frame: %.3f ms", time.getFrameTimeMs());
     });
     uiLayer.addPanel("Camera", [this]() {
         glm::vec2 position = camera.getPosition();
@@ -73,7 +73,7 @@ void Application::init() {
             camera.setPosition(position);
         }
 
-        if (ImGui::SliderFloat("Zoom", &zoom, 0.2f, 2.0f)) {
+        if (ImGui::SliderFloat("Zoom", &zoom, 1.0f, 8.0f)) {
             camera.setZoom(zoom);
         }
     });
@@ -105,6 +105,7 @@ void Application::init() {
 
     //-------------- TEST CODE
     camera.setPosition({320.0f, 200.0f});
+    camera.setZoom(4.0f);
     boxTexture = new Texture("assets/textures/crate.png");
 }
 
@@ -118,7 +119,7 @@ void Application::run() {
         glfwPollEvents();
 
         update(time.getDeltaTime());
-        
+
         render(time.getDeltaTime());
     }
 }

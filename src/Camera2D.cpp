@@ -5,8 +5,8 @@ void Camera2D::setPosition(const glm::vec2 &newPosition) { position = newPositio
 void Camera2D::move(const glm::vec2 &delta) { position += delta; }
 
 void Camera2D::setZoom(float newZoom) {
-    if (newZoom < 0.2f) newZoom = 0.2f;
-    if (newZoom > 2.0f) newZoom = 2.0f;
+    if (newZoom < 1.0f) newZoom = 1.0f;
+    if (newZoom > 4.0f) newZoom = 4.0f;
     zoom = newZoom;
 }
 
