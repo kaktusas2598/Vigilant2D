@@ -33,6 +33,35 @@ struct TileLayerData {
     }
 };
 
+// Stuff to do with Object layer
+enum class MapObjectShape {
+    Point,
+    Rectangle
+};
+
+struct MapObjectData {
+    std::string name;
+    std::string type;
+
+    float x = 0.0f;
+    float y = 0.0f;
+    float width = 0.0f;
+    float height = 0.0f;
+
+    bool visible = true;
+    bool collidable = false;
+
+    MapObjectShape shape = MapObjectShape::Rectangle;
+};
+
+struct ObjectLayerData {
+    std::string name;
+    bool visible = true;
+    bool collidable = false;
+
+    std::vector<MapObjectData> objects;
+};
+
 struct TileMapData {
     int tileWidth = 0;
     int tileHeight = 0;
@@ -41,6 +70,7 @@ struct TileMapData {
 
     std::vector<TilesetData> tilesets;
     std::vector<TileLayerData> layers;
+    std::vector<ObjectLayerData> objectLayers;
 };
 
 // TODO: Don't like these global methods just sittin there below data definitions

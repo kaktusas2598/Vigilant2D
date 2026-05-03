@@ -22,6 +22,7 @@ class TiledMapLoader {
                                 int firstGid,
                                 TileMapData &map);
         void parseTileLayer(tinyxml2::XMLElement *layerElement, TileMapData &map);
+        void parseObjectLayer(tinyxml2::XMLElement* objectGroupElement, TileMapData& map);
 
         std::vector<int> parseCsvTileData(const std::string &csv,
                                         int expectedWidth,

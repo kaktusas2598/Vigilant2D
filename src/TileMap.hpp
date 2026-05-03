@@ -26,6 +26,9 @@ class TileMap {
 
         int getTileWidth() const { return mapData.tileWidth; }
         int getTileHeight() const { return mapData.tileHeight; }
+
+        const TileMapData& getData() const { return mapData; }
+        const std::vector<ObjectLayerData>& getObjectLayers() const { return mapData.objectLayers; }
     private:
         std::unique_ptr<TileLayer> buildTileLayer(const TileLayerData& layerData);
         Texture* resolveTextureForTileset(const TilesetData* tileset);

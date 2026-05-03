@@ -27,6 +27,8 @@ TileMapData TiledMapLoader::loadFromFile(const std::string& fileName) {
             parseTilesetReference(element, mapDirectory, map);
         } else if (elementName == "layer") {
             parseTileLayer(element, map);
+        } else if (elementName == "objectGroup") {
+            parseObjectLayer(element, map);
         }
     }
 
@@ -136,6 +138,56 @@ void TiledMapLoader::parseTileLayer(tinyxml2::XMLElement *layerElement, TileMapD
 
     layer.tileIds = parseCsvTileData(csvText, layer.width, layer.height);
     map.layers.push_back(std::move(layer));
+}
+
+void TiledMapLoader::parseObjectLayer(tinyxml2::XMLElement* objectGroupElement, TileMapData& map) {
+    ObjectLayerData layer;
+
+    if (const char* name = objectGroupElement->Attribute("name")) {
+        layer.name = name;
+    }
+
+    int visible = 1;
+    objectGroupElement->QueryIntAttribute("visible", &visible);
+    layer.visible = (visible != 0);
+
+    layer.collidable = parseLayerPropertyBool(objectGroupElement, "collidable", false);
+
+    for (tinyxml2::XMLElement* objectElement = objectGroupElement->FirstChildElement("object");
+         objectElement != nullptr;
+         objectElement = objectElement->NextSiblingElement("object")) {
+        MapObjectData object;
+
+        if (const char* name = objectElement->Attribute("name")) {
+            object.name = name;
+        }
+
+        if (const char* type = objectElement->Attribute("type")) {
+            object.type = type;
+        }
+
+        int visibleObject = 1;
+        objectElement->QueryIntAttribute("visible", &visibleObject);
+        object.visible = (visibleObject != 0);
+
+        objectElement->QueryFloatAttribute("x", &object.x);
+        objectElement->QueryFloatAttribute("y", &object.y);
+        objectElement->QueryFloatAttribute("width", &object.width);
+        objectElement->QueryFloatAttribute("height", &object.height);
+
+        object.collidable = layer.collidable;
+
+        tinyxml2::XMLElement* pointElement = objectElement->FirstChildElement("point");
+        if (pointElement != nullptr || (object.width == 0.0f && object.height == 0.0f)) {
+            object.shape = MapObjectShape::Point;
+        } else {
+            object.shape = MapObjectShape::Rectangle;
+        }
+
+        layer.objects.push_back(std::move(object));
+    }
+
+    map.objectLayers.push_back(std::move(layer));
 }
 
 std::vector<int> TiledMapLoader::parseCsvTileData(const std::string &csv,
