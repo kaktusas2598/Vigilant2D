@@ -1,6 +1,7 @@
 #include "Scene.hpp"
 
 void Scene::update(float dt) {
+    physicsWorld.step(dt);
     for (auto& entity: entities) {
         entity->update(dt);
     }
@@ -26,6 +27,9 @@ Entity& Scene::createEntity(const std::string& id) {
 
 void Scene::setTileMap(std::unique_ptr<TileMap> newMap) {
     tileMap = std::move(newMap);
+    if (tileMap) {
+        physicsWorld.buildStaticCollisionFromMap(tileMap->getData());
+    }
 }
 
 Entity* Scene::findEntityByID(const std::string &id) {

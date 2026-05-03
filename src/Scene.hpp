@@ -7,6 +7,7 @@
 #include "TileMap.hpp"
 #include "Renderer.hpp"
 #include "Camera2D.hpp"
+#include "PhysicsWorld2D.hpp"
 
 class Scene {
     public:
@@ -28,5 +29,6 @@ class Scene {
         // TODO: might want make more than 1 map available
         std::unique_ptr<TileMap> tileMap;
         std::vector<std::unique_ptr<Entity>> entities;
+        PhysicsWorld2D physicsWorld;
 
 };
