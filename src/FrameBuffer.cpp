@@ -22,20 +22,59 @@ FrameBuffer::FrameBuffer(int w, int h, int textureCount, GLenum* attachments, bo
 }
 
 void FrameBuffer::initTextures(GLenum* attachments, GLenum target) {
-    GLCall(glGenTextures(numTextures, textureIDs));
     for (int i = 0; i < numTextures; i++) {
-        textures[i] = new Texture(target);
+        textures[i] = new Texture();
         if (attachments[i] == GL_DEPTH_ATTACHMENT) {
-            if (target == GL_TEXTURE_2D)
-                textures[i]->init(width, height, textureIDs[i], GL_NEAREST, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, true);
-            else
-                textures[i]->initCubeMap(width, height, textureIDs[i], GL_NEAREST, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT);
+            if (target == GL_TEXTURE_2D) {
+                TextureParams params;
+                params.minFilter = GL_NEAREST;
+                params.magFilter = GL_NEAREST;
+                params.wrapS = GL_CLAMP_TO_EDGE;
+                params.wrapT = GL_CLAMP_TO_EDGE;
+                textures[i]->initEmpty2D(
+                    width,
+                    height,
+                    GL_DEPTH_COMPONENT,
+                    GL_DEPTH_COMPONENT,
+                    GL_FLOAT,
+                    params
+                );
+            } else {
+                CubeMapParams params;
+                params.minFilter = GL_NEAREST;
+                params.magFilter = GL_NEAREST;
+                textures[i]->initDepthCubemap(width, height, params);
+            }
         } else {
-            if (target == GL_TEXTURE_2D)
-                textures[i]->init(width, height, textureIDs[i], GL_NEAREST, GL_RGBA, GL_RGBA, false);
-            else
-                textures[i]->initCubeMap(width, height, textureIDs[i], GL_NEAREST, GL_RGBA, GL_RGBA);
+            if (target == GL_TEXTURE_2D) {
+                TextureParams params;
+                params.minFilter = GL_NEAREST;
+                params.magFilter = GL_NEAREST;
+                params.wrapS = GL_CLAMP_TO_EDGE;
+                params.wrapT = GL_CLAMP_TO_EDGE;
+                params.generateMipmaps = false;
+                textures[i]->initEmpty2D(
+                    width,
+                    height,
+                    GL_RGBA,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    params
+                );
+            } else {
+                CubeMapParams params;
+                params.minFilter = GL_NEAREST;
+                params.magFilter = GL_NEAREST;
+                textures[i]->initEmptyCubemap(
+                    width,
+                    height,
+                    GL_RGBA,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    params);
+            }
         }
+        textureIDs[i] = textures[i]->getID();
     }
 }
 
@@ -100,7 +139,8 @@ void FrameBuffer::rescale(int w, int h) {
     // FIXME: had to remove couple of GLCall(), need to try recreating
     // fbo every time we resize viewport probably as some functions below were causing errors
     for (int i = 0; i < numTextures; i++) {
-        textures[i]->init(w, h, textureIDs[i]);
+        // FIXME: test and improve this function
+        // textures[i]->init(w, h, textureIDs[i]);
         // TODO: this is bad design once we start attaching depth and stencil attachments
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureIDs[i], 0);
 

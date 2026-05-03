@@ -7,7 +7,9 @@ Texture* AssetManager::loadTexture(const std::string &id,
         return it->second.get();
     }
 
-    auto texture = std::make_unique<Texture>(filePath);
+    auto texture = std::make_unique<Texture>();
+    texture->load2D(filePath);
+
     Texture* result = texture.get();
     textures[id] = std::move(texture);
     return result;

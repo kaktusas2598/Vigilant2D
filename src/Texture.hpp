@@ -27,21 +27,35 @@ static TextureParams Smooth() {
     return smoothParams;
 }
 
+struct CubeMapParams {
+    GLint wrapS = GL_CLAMP_TO_EDGE;
+    GLint wrapT = GL_CLAMP_TO_EDGE;
+    GLint wrapR = GL_CLAMP_TO_EDGE;
+    GLint minFilter = GL_LINEAR;
+    GLint magFilter = GL_LINEAR;
+    bool generateMipmaps = false;
+};
+
 class Texture {
     public:
-        // Initialise empty texture, used by framebuffers
-        Texture(GLenum targetType = GL_TEXTURE_2D, unsigned char* data = nullptr) : rendererID(0), target(targetType), localBuffer(data) {}
-        void init(int w, int h, unsigned int id = 0, GLfloat filter = GL_LINEAR, GLint internalFormat = GL_RGBA, GLenum format = GL_RGBA, bool clamp = false);
-        // Created specifically to init depth cubemap used for omnidirectional shadow mapping
-        void initCubeMap(int w, int h, unsigned int id = 0, GLfloat filter = GL_NEAREST, GLint internalFormat = GL_DEPTH_COMPONENT16, GLenum format = GL_DEPTH_COMPONENT);
-
-        // 2D Texture
-        Texture(const std::string& fileName, GLint wrappingMode = GL_CLAMP_TO_EDGE);
-
-        // Cubemap Texture
-        Texture(std::vector<std::string> faces);
-
+        Texture() = default;
         ~Texture();
+
+        bool load2D(const std::string& fileName, const TextureParams& params = PixelArt());
+        bool loadCubemap(std::vector<std::string> faces, const CubeMapParams& params = {});
+        void initEmpty2D(int w, int h, 
+            GLint internalFormat = GL_RGBA, 
+            GLenum format = GL_RGBA, 
+            GLenum type = GL_UNSIGNED_BYTE,
+            const TextureParams& params = {}
+        );
+        void initEmptyCubemap(int w, int h,
+            GLint internalFormat = GL_RGBA,
+            GLenum format = GL_RGBA,
+            GLenum type = GL_UNSIGNED_BYTE,
+            const CubeMapParams& params = {});
+
+        void initDepthCubemap(int w, int h, const CubeMapParams& params = {});
 
         void bind(unsigned int slot = 0) const;
         void unbind() const;
@@ -57,9 +71,13 @@ class Texture {
 
         unsigned int getID() { return rendererID; }
     private:
-        unsigned int rendererID;
+        void destroy();
+        void apply2DParams(const TextureParams& params);
+        void applyCubemapParams(const CubeMapParams& params);
+
+        unsigned int rendererID = 0;
         std::string filePath;
-        unsigned char* localBuffer;
+        unsigned char* localBuffer = nullptr;
         int width, height, BPP; // Bits per picture
         // Available types: texture_diffuse, texture_specular, texture_normal
         std::string type;

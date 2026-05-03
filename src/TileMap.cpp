@@ -16,7 +16,9 @@ bool TileMap::loadFromFile(const std::string &fileName) {
     layers.clear();
 
     for (const auto &tileset : mapData.tilesets) {
-        tilesetTextures.push_back(new Texture(tileset.imagePath));
+        auto texture = new Texture();
+        texture->load2D(tileset.imagePath);
+        tilesetTextures.push_back(texture);
     }
 
     for (const auto &layerData : mapData.layers) {
