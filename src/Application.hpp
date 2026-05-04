@@ -17,6 +17,7 @@
 #include "SelectionManager.hpp"
 #include "AssetManager.hpp"
 #include "ParticleSystem.hpp"
+#include "ScriptSystem.hpp"
 
 class Application {
     public:
@@ -66,6 +67,7 @@ class Application {
         AnimationClip testSlimeClip;
 
         SelectionManager selectionManager;
+        ScriptSystem scriptSystem;
         ParticleSystem particleSystem;
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;

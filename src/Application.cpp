@@ -266,6 +266,11 @@ void Application::init() {
     textureEmitter->setBaseLifetime(1.0f);
     textureEmitter->setBaseVelocity({0.0f, 30.0f});
     textureEmitter->setVelocityVariance({50.0f, 50.0f});
+
+    // ------------ LUA SCRIPTING TEST
+    scriptSystem.init();
+    scriptSystem.loadScript("scripts/test.lua");
+    scriptSystem.callGlobal("test");
 }
 
 void Application::run() {

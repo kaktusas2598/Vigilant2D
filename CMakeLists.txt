@@ -30,6 +30,8 @@ add_subdirectory(vendor/imgui)
 add_subdirectory(vendor/stb_image)
 add_subdirectory(vendor/tinyxml2)
 add_subdirectory(vendor/box2d)
+add_subdirectory(vendor/lua)
+
 
 # Set 3rd party include locations
 target_include_directories(${PROJECT_NAME} PUBLIC vendor)
@@ -39,4 +41,4 @@ message(STATUS "OpenGL LIBRARY:${OpenGL_LIBRARIES}")
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} ${OpenGL_LIBRARIES} ${GLEW_LIBRARIES} ${CMAKE_DL_LIBS} 
-    glfw glm imgui stb_image tinyxml2 box2d)
+    glfw glm imgui stb_image tinyxml2 box2d lua::lib)
