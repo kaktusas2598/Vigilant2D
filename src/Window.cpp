@@ -30,10 +30,15 @@ void Window::init(int width, int height) {
     if (glewInit() != GLEW_OK) {
         VG_ERROR("Could not initialise Glew.");
     }
+
+    windowedWidth = width;
+    windowedHeight = height;
 }
 
 Window::~Window() {
-    glfwDestroyWindow(window);
+    if (window != nullptr) {
+        glfwDestroyWindow(window);
+    }
     glfwTerminate();
 }
 
@@ -48,4 +53,48 @@ void Window::close() {
 void Window::swapBuffers() {
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
+}
+
+void Window::setFullscreen(bool enabled) {
+    if (window == nullptr || fullscreen == enabled)
+        return;
+
+    if (enabled) {
+        glfwGetWindowPos(window, &windowedX, &windowedY);
+        glfwGetWindowSize(window, &windowedWidth, &windowedHeight);
+
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        if (monitor == nullptr)
+            return;
+
+        const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+        if (videoMode == nullptr)
+            return;
+
+        glfwSetWindowMonitor(
+            window,
+            monitor,
+            0,
+            0,
+            videoMode->width,
+            videoMode->height,
+            videoMode->refreshRate
+        );
+    } else {
+        glfwSetWindowMonitor(
+            window,
+            nullptr,
+            windowedX,
+            windowedY,
+            windowedWidth,
+            windowedHeight,
+            0
+        );
+    }
+
+    fullscreen = enabled;
+}
+
+void Window::toggleFullscreen() {
+    setFullscreen(!fullscreen);
 }

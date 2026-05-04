@@ -64,6 +64,11 @@ void Application::init() {
         ImGui::ColorEdit4("Clear Color", (float*)&clearColour);
         ImGui::Text("FPS: %.1f", time.getFPS());
         ImGui::Text("Frame: %.3f ms", time.getFrameTimeMs());
+
+        bool fullscreen = window.isFullscreen();
+        if (ImGui::Checkbox("Fullscreen", &fullscreen)) {
+            window.setFullscreen(fullscreen);
+        }
     });
     uiLayer.addPanel("Camera", [this]() {
         glm::vec2 position = camera.getPosition();
