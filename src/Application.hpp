@@ -35,6 +35,8 @@ class Application {
 
         // TODO: probably best to do through scripting?
         void movePlayer();
+        void spawnSlime(const glm::vec2& position);
+        void spawnEmptyEntity(const glm::vec2& position);
 
         Window window;
         ImGuiLayer uiLayer;

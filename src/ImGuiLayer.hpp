@@ -30,6 +30,7 @@ class ImGuiLayer {
         void end();
 
         void addPanel(const std::string& name, std::function<void()> drawFunc);
+        bool wantsMouseCapture() const;
     private:
         std::vector<DebugPanel> panels;
 };

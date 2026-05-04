@@ -28,6 +28,13 @@ class ParticleEmitter {
         void setBaseColor(const glm::vec4& newColor) { baseColor = newColor; }
         void setBaseSize(float newSize) { baseSize = newSize; }
         void setBaseLifetime(float newLifetime) { baseLifetime = newLifetime; }
+        void setEnabled(bool value) { enabled = value; }
+
+        const glm::vec2& getBaseVelocity() const { return baseVelocity; }
+        const glm::vec4& getBaseColor() const { return baseColor; }
+        float getBaseSize() const { return baseSize; }
+        float getBaseLifetime() const { return baseLifetime; }
+        bool isEnabled() const { return enabled; }
 
     private:
         int findFreeParticle();
@@ -50,4 +57,5 @@ class ParticleEmitter {
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
         bool dirty = false;
+        bool enabled = true;
 };

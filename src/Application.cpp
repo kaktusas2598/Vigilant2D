@@ -60,6 +60,7 @@ void Application::init() {
     clearColour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     debugMode = false;
 
+    // --------- DEBUG PANEL INIT
     uiLayer.addPanel("Renderer", [this]() {
         ImGui::ColorEdit4("Clear Color", (float*)&clearColour);
         ImGui::Text("FPS: %.1f", time.getFPS());
@@ -70,6 +71,7 @@ void Application::init() {
             window.setFullscreen(fullscreen);
         }
     });
+
     uiLayer.addPanel("Camera", [this]() {
         glm::vec2 position = camera.getPosition();
         float zoom = camera.getZoom();
@@ -82,9 +84,49 @@ void Application::init() {
             camera.setZoom(zoom);
         }
     });
+
     uiLayer.addPanel("Scene", [this]() {
         ImGui::Text("Entities: %d", scene.getEntityCount());
+        const std::string& selectedId = selectionManager.getSelectedEntityId();
+        if (selectedId.empty()) {
+            ImGui::Text("No entity selected");
+        }
+        Entity* entity = scene.findEntityByID(selectedId);
+        if (entity == nullptr) {
+            ImGui::Text("Selected entity not found");
+        } else {
+            glm::vec2 pos = entity->transform.position;
+            glm::vec2 scale = entity->transform.scale;
+            glm::vec2 boundsOffset = entity->getBoundsOffset();
+            glm::vec2 boundsSize = entity->getBoundsSize();
+
+            if (ImGui::DragFloat2("Position", &pos.x, 1.0f)) {
+                entity->transform.position = pos;
+            }
+            if (ImGui::DragFloat2("Scale", &scale.x, 1.0f)) {
+                entity->transform.scale = scale;
+            }
+            if (ImGui::DragFloat2("Bounding Box Offset", &boundsOffset.x, 1.0f)) {
+                entity->setBounds(boundsOffset, boundsSize);
+            }
+            if (ImGui::DragFloat2("Bounding Box Size", &boundsSize.x, 1.0f)) {
+                entity->setBounds(boundsOffset, boundsSize);
+            }
+
+            ImGui::Text("Physics: %s", entity->hasPhysicsBody() ? "Yes" : "No");
+        }
+        ImGui::Separator();
+
+        static float spawnPos[2] = {200.0f, 200.0f};
+        ImGui::DragFloat2("Entity spawn position", spawnPos, 1.0f);
+        if (ImGui::Button("Spawn Slime")) {
+            spawnSlime({spawnPos[0], spawnPos[1]});
+        }
+        if (ImGui::Button("Spawn Empty Entity")) {
+            spawnEmptyEntity({spawnPos[0], spawnPos[1]});
+        }
     });
+
     uiLayer.addPanel("Assets", [this]() {
         ImGui::Text("Textures: %d", static_cast<int>(assetManager.getTextureIDs().size()));
         for (const auto& id : assetManager.getTextureIDs()) {
@@ -104,6 +146,33 @@ void Application::init() {
     });
     uiLayer.addPanel("Particles", [this]() {
         ImGui::Text("Emitters: %d", static_cast<int>(particleSystem.getEmitterCount()));
+
+        if (bloodEmitter) {
+            bool enabled = bloodEmitter->isEnabled();
+            if (ImGui::Checkbox("Blood particle enabled", &enabled)) {
+                bloodEmitter->setEnabled(enabled);
+            }
+
+            glm::vec4 color = bloodEmitter->getBaseColor();
+            if (ImGui::ColorEdit4("Particle color", &color.x)) {
+                bloodEmitter->setBaseColor(color);
+            }
+
+            glm::vec2 velocity = bloodEmitter->getBaseVelocity();
+            if (ImGui::DragFloat2("Base velocity", &velocity.x, 1.0f)) {
+                bloodEmitter->setBaseVelocity(velocity);
+            }
+
+            float size = bloodEmitter->getBaseSize();
+            if (ImGui::SliderFloat("Size", &size, 1.0f, 8.0f)) {
+                bloodEmitter->setBaseSize(size);
+            }
+
+            float lifetime = bloodEmitter->getBaseLifetime();
+            if (ImGui::SliderFloat("Lifetime", &lifetime, 1.0f, 8.0f)) {
+                bloodEmitter->setBaseLifetime(lifetime);
+            }
+        }
     });
     uiLayer.addPanel("Selection", [this]() {
         const glm::ivec2 hoverTile = selectionManager.getHoveredTile();
@@ -111,9 +180,8 @@ void Application::init() {
 
         ImGui::Text("Hovered Tile: %d, %d", hoverTile.x, hoverTile.y);
         ImGui::Text("Selected Tile: %d, %d", selectedTile.x, selectedTile.y);
-        ImGui::Text("Hovered Entity: %s", selectionManager.getHoveredEntityId().empty() ? "None" : selectionManager.getHoveredEntityId().c_str());
-        ImGui::Text("Selected Entity: %s", selectionManager.getSelectedEntityId().empty() ? "None" : selectionManager.getSelectedEntityId().c_str());
     });
+    // ---------
 
 
 
@@ -247,23 +315,26 @@ void Application::update(float dt) {
         // Centre camera on entity's centre
         camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
 
-    selectionManager.update(input, camera, scene);
     particleSystem.update(dt);
+    // Only update selected entities/tiles when not using engine editor tools
+    // Also same for emitting particles
+    if (!uiLayer.wantsMouseCapture()) {
+        selectionManager.update(input, camera, scene);
 
-    glm::vec2 mouseWorld = camera.screenToWorld({
-    static_cast<float>(input.getMouseX()),
-    static_cast<float>(input.getMouseY())
-    });
+        glm::vec2 mouseWorld = camera.screenToWorld({
+        static_cast<float>(input.getMouseX()),
+        static_cast<float>(input.getMouseY())
+        });
 
-    if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
-        if (bloodEmitter) {
-            bloodEmitter->emit(mouseWorld, 20);
+        if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+            if (bloodEmitter) {
+                bloodEmitter->emit(mouseWorld, 20);
+            }
         }
-    }
-
-    if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
-        if (textureEmitter) {
-            textureEmitter->emit(mouseWorld, 12);
+        if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+            if (textureEmitter) {
+                textureEmitter->emit(mouseWorld, 12);
+            }
         }
     }
 }
@@ -374,4 +445,25 @@ void Application::movePlayer() {
             }
         }
     }
+}
+
+void Application::spawnSlime(const glm::vec2& position) {
+    static int slimeIdPostfix = 0;
+    std::string slimeId = "Slime_" + slimeIdPostfix++;
+    Entity &slimeEntity = scene.createEntity(slimeId);
+    slimeEntity.transform.position = position;
+    slimeEntity.transform.scale = {48.0f, 48.0f};
+
+    auto slimeSprite = std::make_unique<Sprite>();
+    auto slimeAnimSprite = std::make_unique<AnimatedSprite>();
+    slimeAnimSprite->setSprite(slimeSprite.get());
+    slimeAnimSprite->play(&testSlimeClip);
+    slimeEntity.setSprite(std::move(slimeSprite));
+    slimeEntity.setAnimatedSprite(std::move(slimeAnimSprite));
+}
+
+void Application::spawnEmptyEntity(const glm::vec2& position) {
+    static int entityIdPostfix = 0;
+    std::string entityId = "Slime_" + entityIdPostfix++;
+    Entity &entity = scene.createEntity(entityId);
 }

@@ -57,3 +57,7 @@ void ImGuiLayer::end() {
 void ImGuiLayer::addPanel(const std::string& name, std::function<void()> drawFunc) {
     panels.push_back({name, std::move(drawFunc), true});
 }
+
+bool ImGuiLayer::wantsMouseCapture() const {
+    return ImGui::GetIO().WantCaptureMouse;
+}
