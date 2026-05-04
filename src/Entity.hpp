@@ -41,6 +41,16 @@ class Entity {
         b2BodyId getPhysicsBody() const { return physicsBody; }
         bool hasPhysicsBody() const { return B2_IS_NON_NULL(physicsBody); }
 
+        // For defining entity bounding box, used in collision, selection
+        void setBounds(const glm::vec2& offset, const glm::vec2& size) {
+            boundsOffset = offset;
+            boundsSize = size;
+            useCustomBounds = true;
+        }
+        glm::vec2 getBoundsOffset() const { return boundsOffset; }
+        glm::vec2 getBoundsSize() const { return useCustomBounds ? boundsSize : transform.scale; }
+        glm::vec2 getBoundsPosition() const { return transform.position + boundsOffset; }
+
         void update(float dt) {
             if (animatedSprite)
                 animatedSprite->update(dt);
@@ -56,4 +66,8 @@ class Entity {
         std::unique_ptr<AnimatedSprite> animatedSprite = nullptr;
         std::unique_ptr<Sprite> sprite = nullptr;
         b2BodyId physicsBody = b2_nullBodyId;
+
+        glm::vec2 boundsOffset{0.0f, 0.0f};
+        glm::vec2 boundsSize{0.0f, 0.0f};
+        bool useCustomBounds = false;
 };

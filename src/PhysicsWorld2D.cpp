@@ -27,10 +27,11 @@ b2BodyId PhysicsWorld2D::createStaticBox(float centerX, float centerY, float hal
     staticBodies.push_back(body);
     debugBodies.push_back({
         body,
-        {halfWidth * 2.0f, halfWidth * 2.0f},
+        {halfWidth * 2.0f, halfHeight * 2.0f},
         {0.2f, 0.8f, 1.0f, 0.22f},
         false
     });
+
     return body;
 }
 

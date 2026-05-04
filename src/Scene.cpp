@@ -6,7 +6,11 @@ void Scene::update(float dt) {
     for (auto& entity: entities) {
         if (entity->hasPhysicsBody()) {
             const glm::vec2 centre = physicsWorld.getBodyPositionPixels(entity->getPhysicsBody());
-            entity->transform.position = centre - entity->transform.scale * 0.5f;
+            // Only if body/bound size is same as sprite size
+            // entity->transform.position = centre - entity->transform.scale * 0.5f;
+            const glm::vec2 boundsSize = entity->getBoundsSize();
+            const glm::vec2 boundsPos = centre - boundsSize * 0.5f;
+            entity->transform.position = boundsPos - entity->getBoundsOffset();
         }
 
         entity->update(dt);

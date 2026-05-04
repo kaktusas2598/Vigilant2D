@@ -27,7 +27,7 @@ TileMapData TiledMapLoader::loadFromFile(const std::string& fileName) {
             parseTilesetReference(element, mapDirectory, map);
         } else if (elementName == "layer") {
             parseTileLayer(element, map);
-        } else if (elementName == "objectGroup") {
+        } else if (elementName == "objectgroup") {
             parseObjectLayer(element, map);
         }
     }

@@ -155,10 +155,11 @@ void Application::init() {
     playerEntity.setSprite(std::move(sprite));
     playerEntity.setAnimatedSprite(std::move(animatedSprite));
 
+    playerEntity.setBounds({20.0f, 5.0f}, {14.0f, 22.0f});
     playerEntity.setPhysicsBody(
         scene.getPhysicsWorld().createDynamicBox(
-            playerEntity.transform.position,
-            playerEntity.transform.scale
+            playerEntity.getBoundsPosition(),
+            playerEntity.getBoundsSize()
         )
     );
 
@@ -210,6 +211,10 @@ void Application::run() {
 }
 
 void Application::update(float dt) {
+    int display_w, display_h;
+    glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);
+    camera.setViewportSize((float)display_w, (float)display_h);
+
     // TODO: already regretting not getting variadic argument support from Villain Logger
     // VA_DEBUG("Mouse X:  %s", x)
 
@@ -234,7 +239,8 @@ void Application::update(float dt) {
 
     Entity *player = scene.findEntityByID("player");
     if (player != nullptr)
-        camera.setPosition(player->transform.position);
+        // Centre camera on entity's centre
+        camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
 
     selectionManager.update(input, camera, scene);
     particleSystem.update(dt);
@@ -351,15 +357,15 @@ void Application::movePlayer() {
                 }
             }
         } else {
+            if (player->hasPhysicsBody()) {
+                scene.getPhysicsWorld().setBodyLinearVelocityPixels(
+                    player->getPhysicsBody(),
+                    {0.0f, 0.0f}
+                );
+            }
+
             if (anim != nullptr) {
-                // const AnimationClip* current = anim->getClip();
-                // if (current == &testWalkUpClip) {
-                //     anim->play(&testWalkUpClip, false);
-                // } else if (current == &testWalkRightClip) {
-                //     anim->play(&testWalkRightClip, false);
-                // } else {
-                    anim->play(&testIdleClip, false);
-                // }
+                anim->play(&testIdleClip, false);
             }
         }
     }

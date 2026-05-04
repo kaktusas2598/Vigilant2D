@@ -69,7 +69,9 @@ void SelectionManager::draw(Renderer &renderer, Scene& scene) const {
     if (!selectedEntityId.empty()) {
         Entity* entity = scene.findEntityByID(selectedEntityId);
         if (entity) {
-            Transform2D t = entity->transform;
+            Transform2D t;
+            t.position = entity->getBoundsPosition();
+            t.scale = entity->getBoundsSize();
             renderer.drawQuad({
                 t,
                 TextureRegion::full(nullptr),
@@ -87,8 +89,8 @@ glm::vec2 SelectionManager::getMouseWorld(const Input& input, const Camera2D& ca
 }
 
 bool SelectionManager::pointInEntity(const glm::vec2& point, const Entity& entity) const {
-    const glm::vec2 pos = entity.transform.position;
-    const glm::vec2 size = entity.transform.scale;
+    const glm::vec2 pos = entity.getBoundsPosition();
+    const glm::vec2 size = entity.getBoundsSize();
 
     return point.x >= pos.x &&
            point.x <= pos.x + size.x &&
