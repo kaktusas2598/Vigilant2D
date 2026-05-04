@@ -6,9 +6,6 @@ void TileLayer::setTile(int x, int y, const TextureRegion& region) {
     Tile& tile = tiles[y * width + x];
     tile.region = region;
     tile.empty = false;
-
-    // if (layerTexture == nullptr)
-        // layerTexture = region.texture;
 }
 
 void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, int viewportHeight) {
