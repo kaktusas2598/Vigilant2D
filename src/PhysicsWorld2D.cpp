@@ -25,6 +25,12 @@ b2BodyId PhysicsWorld2D::createStaticBox(float centerX, float centerY, float hal
     b2CreatePolygonShape(body, &shapeDef, &polygon);
 
     staticBodies.push_back(body);
+    debugBodies.push_back({
+        body,
+        {halfWidth * 2.0f, halfWidth * 2.0f},
+        {0.2f, 0.8f, 1.0f, 0.22f},
+        false
+    });
     return body;
 }
 
@@ -88,8 +94,15 @@ b2BodyId PhysicsWorld2D::createDynamicBox(const glm::vec2 &positionPixels, const
     shapeDef.material.friction = 0.0f;
     b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
 
+    debugBodies.push_back({
+        bodyId,
+        sizePixels,
+        {1.0f, 0.3f, 0.2f, 0.28f},
+        true
+    });
     return bodyId;
 }
+
 glm::vec2 PhysicsWorld2D::getBodyPositionPixels(b2BodyId bodyId) const {
     b2Vec2 pos = b2Body_GetPosition(bodyId);
     return {toPixels(pos.x), toPixels(pos.y)};
@@ -100,4 +113,22 @@ void PhysicsWorld2D::setBodyLinearVelocityPixels(b2BodyId bodyId, const glm::vec
         toMeters(velocityPixelsPerSecond.x),
         toMeters(velocityPixelsPerSecond.y)
     });
+}
+
+void PhysicsWorld2D::drawDebug(Renderer& renderer) const {
+    for (const auto& debugBody : debugBodies) {
+        if (B2_IS_NULL(debugBody.bodyId) || !b2Body_IsValid(debugBody.bodyId))
+            continue;
+
+        const glm::vec2 centre = getBodyPositionPixels(debugBody.bodyId);
+        Transform2D transform;
+        transform.position = centre - debugBody.sizePixels * 0.5f;
+        transform.scale = debugBody.sizePixels;
+
+        renderer.drawQuad({
+            transform,
+            TextureRegion::full(nullptr),
+            debugBody.color
+        });
+    }
 }

@@ -24,6 +24,10 @@ void Scene::render(Renderer &renderer, const Camera2D &camera, int viewportWidth
     }
 }
 
+void Scene::drawPhysicsDebug(Renderer& renderer) const {
+    physicsWorld.drawDebug(renderer);
+}
+
 Entity& Scene::createEntity(const std::string& id) {
     entities.push_back(std::make_unique<Entity>());
     Entity& entity = *entities.back();

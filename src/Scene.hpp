@@ -25,6 +25,7 @@ class Scene {
 
         PhysicsWorld2D& getPhysicsWorld() { return physicsWorld; }
         const PhysicsWorld2D &getPhysicsWorld() const { return physicsWorld; }
+        void drawPhysicsDebug(Renderer& renderer) const;
 
         const std::vector<std::unique_ptr<Entity>>& getEntities() const { return entities; }
         unsigned int getEntityCount() const { return entities.size(); }

@@ -93,6 +93,10 @@ void Application::init() {
             ImGui::BulletText("%s", id.c_str());
         }
     });
+    uiLayer.addPanel("Physics", [this]() {
+        ImGui::Checkbox("Show Physics Debug", &showPhysicsDebug);
+        ImGui::Text("Static Bodies: %d", scene.getPhysicsWorld().getStaticBodyCount());
+    });
     uiLayer.addPanel("Particles", [this]() {
         ImGui::Text("Emitters: %d", static_cast<int>(particleSystem.getEmitterCount()));
     });
@@ -269,6 +273,10 @@ void Application::render(float dt) {
 
     // Main scene render
     scene.render(renderer, camera, display_w, display_h);
+
+    if (showPhysicsDebug) {
+        scene.drawPhysicsDebug(renderer);
+    }
 
     particleSystem.draw(renderer);
 

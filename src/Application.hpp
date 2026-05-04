@@ -55,6 +55,7 @@ class Application {
         Texture* boxTexture = nullptr;
         Texture* playerTexture = nullptr;
         Texture* slimeTexture = nullptr;
+        bool showPhysicsDebug = false;
 
         AnimationClip testIdleClip;
         AnimationClip testWalkDownClip;
