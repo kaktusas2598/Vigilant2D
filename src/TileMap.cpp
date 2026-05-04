@@ -66,7 +66,8 @@ std::unique_ptr<TileLayer> TileMap::buildTileLayer(const TileLayerData &layerDat
     auto layer = std::make_unique<TileLayer>(
         layerData.width,
         layerData.height,
-        glm::vec2(static_cast<float>(mapData.tileWidth), static_cast<float>(mapData.tileHeight))
+        glm::vec2(static_cast<float>(mapData.tileWidth), static_cast<float>(mapData.tileHeight)),
+        layerData.visible
     );
 
     for (int y = 0; y < layerData.height; ++y) {

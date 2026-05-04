@@ -9,6 +9,9 @@ void TileLayer::setTile(int x, int y, const TextureRegion& region) {
 }
 
 void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, int viewportHeight) {
+    if (!visible)
+        return;
+
     for (auto& batch : batches) {
         batch.vertices.clear();
         batch.indices.clear();
@@ -66,6 +69,9 @@ void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, in
 }
 
 void TileLayer::draw(Renderer& renderer) const {
+    if (!visible)
+        return;
+
     for (const auto& batch : batches) {
         if (batch.texture == nullptr)
             continue;

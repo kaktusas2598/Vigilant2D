@@ -230,11 +230,12 @@ void Application::update(float dt) {
     }
 
     movePlayer();
+    scene.update(dt);
+
     Entity *player = scene.findEntityByID("player");
     if (player != nullptr)
         camera.setPosition(player->transform.position);
 
-    scene.update(dt);
     selectionManager.update(input, camera, scene);
     particleSystem.update(dt);
 
