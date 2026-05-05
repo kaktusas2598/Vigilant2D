@@ -1,5 +1,6 @@
 return {
     texture = "slime",
+    animation = "slime_jump",
     scale = {48, 48},
     bounds_offset = {20, 5},
     bounds_size = {14, 22},

@@ -19,6 +19,9 @@
 #include "ParticleSystem.hpp"
 #include "ScriptSystem.hpp"
 
+#include "EntityFactory.hpp"
+#include "AnimationRegistry.hpp"
+
 class Application {
     public:
         void init();
@@ -60,11 +63,11 @@ class Application {
         Texture* slimeTexture = nullptr;
         bool showPhysicsDebug = false;
 
+        // Player animation clips
         AnimationClip testIdleClip;
         AnimationClip testWalkDownClip;
         AnimationClip testWalkUpClip;
         AnimationClip testWalkRightClip;
-        AnimationClip testSlimeClip;
 
         SelectionManager selectionManager;
         ScriptSystem scriptSystem;
@@ -72,4 +75,7 @@ class Application {
         ParticleSystem particleSystem;
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;
+
+        AnimationRegistry animationRegistry;
+        EntityFactory* entityFactory = nullptr;
 };

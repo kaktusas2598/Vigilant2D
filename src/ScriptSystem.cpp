@@ -2,6 +2,7 @@
 
 #include "Logger.hpp"
 
+// --------- STATIC HELPERS ---------
 static bool readVec2Field(lua_State* L, int tableIndex, const char* fieldName, glm::vec2& outVec) {
     lua_getfield(L, tableIndex, fieldName);
     if (!lua_istable(L, -1)) {
@@ -22,6 +23,37 @@ static bool readVec2Field(lua_State* L, int tableIndex, const char* fieldName, g
     lua_pop(L, 3);
     return true;
 }
+
+static bool readIntArrayField(lua_State* L, int tableIndex, const char* fieldName, std::vector<int>& outValues) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    const int arrayIndex = lua_gettop(L);
+    const int length = static_cast<int>(lua_rawlen(L, arrayIndex));
+    outValues.clear();
+    outValues.reserve(length);
+
+    for (int i = 1; i <= length; ++i) {
+        lua_geti(L, arrayIndex, i);
+        if (!lua_isnumber(L, -1)) {
+            lua_pop(L, 2); // pop bad value + array
+            return false;
+        }
+
+        outValues.push_back(static_cast<int>(lua_tointeger(L, -1)));
+        lua_pop(L, 1);
+    }
+    
+    lua_pop(L, 1); // pop array
+    return true;
+}
+// ----------------------------------
+
 
 bool ScriptSystem::init() {
     if (luaState != nullptr)
@@ -52,6 +84,7 @@ bool ScriptSystem::loadScript(const std::string &fileName) {
     return reportError(status, "loadScript(" + fileName + ")");
 }
 
+// TODO: A lot of internal lua code replicated in both methods! NON- DRY!!
 bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefinition& outDefinition) {
     if (luaState == nullptr && !init())
         return false;
@@ -109,6 +142,69 @@ bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefin
 
     lua_pop(luaState, 1); // pop returned table
     return true;
+}
+
+bool ScriptSystem::loadAnimationDefinition(const std::string& fileName, AnimationDefinition& outDefinition) {
+    if (luaState == nullptr && !init())
+        return false;
+
+    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
+    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+        return false;
+
+    const int callStatus = lua_pcall(luaState, 0, 1, 0);
+    if (!reportError(callStatus, "execute(" + fileName + ")"))
+        return false;
+
+    if (!lua_istable(luaState, -1)) {
+        VG_ERROR("[Lua] Animation definition '" + fileName + "' must return a table.");
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    const int tableIndex = lua_gettop(luaState);
+
+    lua_getfield(luaState, tableIndex, "texture");
+    if (lua_isstring(luaState, -1)) {
+        outDefinition.texture = lua_tostring(luaState, -1);
+    }
+    lua_pop(luaState, 1);
+
+    lua_getfield(luaState, tableIndex, "rows");
+    if (lua_isnumber(luaState, -1)) {
+        outDefinition.rows = lua_tonumber(luaState, -1);
+    }
+    lua_pop(luaState, 1);
+
+    lua_getfield(luaState, tableIndex, "columns");
+    if (lua_isnumber(luaState, -1)) {
+        outDefinition.columns = lua_tonumber(luaState, -1);
+    }
+    lua_pop(luaState, 1);
+
+    lua_getfield(luaState, tableIndex, "row");
+    if (lua_isnumber(luaState, -1)) {
+        outDefinition.row = lua_tonumber(luaState, -1);
+    }
+    lua_pop(luaState, 1);
+
+    readIntArrayField(luaState, tableIndex, "frames", outDefinition.frames);
+
+    lua_getfield(luaState, tableIndex, "frame_duration");
+    if (lua_isnumber(luaState, -1)) {
+        outDefinition.frameDuration = lua_tonumber(luaState, -1);
+    }
+    lua_pop(luaState, 1);
+
+    lua_getfield(luaState, tableIndex, "looping");
+    if (lua_isboolean(luaState, -1)) {
+        outDefinition.looping = lua_toboolean(luaState, -1) != 0;
+    }
+    lua_pop(luaState, 1);
+
+    lua_pop(luaState, 1); // pop returned table
+    return true;
+
 }
 
 bool ScriptSystem::callGlobal(const std::string &functionName) {

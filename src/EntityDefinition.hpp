@@ -4,7 +4,6 @@
 #include "glm/glm.hpp"
 
 // Used by EntityFactory to load Lua-returned table into Entity
-// TODO: NOTE: Is this DRY and Orthogonal? Easy to Change(ETC)?
 struct EntityDefinition {
     std::string texture;
     std::string animation;

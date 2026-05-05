@@ -7,13 +7,15 @@ class Scene;
 class AssetManager;
 class ScriptSystem;
 class Entity;
-class AnimationClip;
+class AnimationRegistry;
 
 class EntityFactory {
     public:
-        EntityFactory(Scene& scene, AssetManager& assetManager, ScriptSystem& scriptSystem);
+        EntityFactory(Scene& scene,
+                      AssetManager& assetManager, 
+                      ScriptSystem& scriptSystem, 
+                      AnimationRegistry& animationRegistry);
 
-        // TODO: probably makes more sense to load position from definition?
         Entity* spawnFromDefinition(const std::string& entityId,
                                     const std::string& definitionFile,
                                     const glm::vec2& position);
@@ -21,4 +23,5 @@ class EntityFactory {
         Scene& scene;
         AssetManager& assetManager;
         ScriptSystem& scriptSystem;
+        AnimationRegistry& animationRegistry;
 };
