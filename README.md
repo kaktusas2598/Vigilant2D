@@ -15,26 +15,35 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
  * Simple Scene-Entity Model
  * Selectable tiles/entities
  * Particle System
- * ImgGui Debug tools
+ * ImgGui Debug panels
+ * Integrated physics with Box2D engine
  * Tiled Map (.TMX) loading, selectable tile cursor
+ * Animated Sprites
 
 # Ubuntu instructions
 
+Install dependencies
 ```
 sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libglew-dev libassimp-dev libglfw3 libglfw3-dev
 ```
+Build 
+```
+git submodule init && git submodule update
+./configure.sh && ./build.sh
+```
 
 # TODO
-  * Box2D integration/Collision in tiled maps
   * UI System (world and screen space)
-  * Scripting
+  * Scripting (IN PROGRESS)
   * Saving
   * Light source support
   * True type fonts
   * Sound
   * Pathfinding
   *
+  * Real implemented game mechanics with scripting help like managing inventory, crop farming, fighting
   * ------
+  * More Box2D integration
   * Cutscene, cinematic camera support (Lua Coroutines?)
   * Hot Reload scripts, shaders, maps
 
