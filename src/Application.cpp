@@ -8,6 +8,8 @@
 #include "Sprite.hpp"
 #include "AnimatedSprite.hpp"
 
+#include "EntityFactory.hpp"
+
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -269,8 +271,12 @@ void Application::init() {
 
     // ------------ LUA SCRIPTING TEST
     scriptSystem.init();
-    scriptSystem.loadScript("scripts/test.lua");
+    testScriptInstance = scriptSystem.loadBehavior("scripts/test.lua");
+    scriptSystem.callOnCreate(testScriptInstance);
     scriptSystem.callGlobal("test");
+    // TEMP entity factory test (loading entity definitions, attaching behaviors)
+    EntityFactory entityFactory(scene, assetManager, scriptSystem);
+    entityFactory.spawnFromDefinition("slime_1", "scripts/entities/slime.lua", {100.0f, 100.0f});
 }
 
 void Application::run() {
@@ -314,6 +320,11 @@ void Application::update(float dt) {
 
     movePlayer();
     scene.update(dt);
+    for (const auto& entityPtr : scene.getEntities()) {
+        if (entityPtr && entityPtr->hasScript()) {
+            scriptSystem.callEntityOnUpdate(*entityPtr, dt);
+        }
+    }
 
     Entity *player = scene.findEntityByID("player");
     if (player != nullptr)

@@ -68,6 +68,7 @@ class Application {
 
         SelectionManager selectionManager;
         ScriptSystem scriptSystem;
+        ScriptInstance testScriptInstance;
         ParticleSystem particleSystem;
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;

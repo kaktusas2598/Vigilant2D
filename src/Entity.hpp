@@ -9,7 +9,7 @@
 #include "Renderer.hpp"
 #include <box2d/box2d.h>
 
-// TODO: I don't like Entity owning Sprites, animated sprites, physics handles etc.
+// TODO: I don't like Entity owning Sprites, animated sprites, physics handles, script etc.
 class Entity {
     public:
         Transform2D transform;
@@ -41,6 +41,10 @@ class Entity {
         b2BodyId getPhysicsBody() const { return physicsBody; }
         bool hasPhysicsBody() const { return B2_IS_NON_NULL(physicsBody); }
 
+        void setScript(const std::string& fileName) { scriptName = fileName; }
+        const std::string& getScriptName() const { return scriptName; }
+        bool hasScript() const { return !scriptName.empty(); }
+
         // For defining entity bounding box, used in collision, selection
         void setBounds(const glm::vec2& offset, const glm::vec2& size) {
             boundsOffset = offset;
@@ -66,6 +70,7 @@ class Entity {
         std::unique_ptr<AnimatedSprite> animatedSprite = nullptr;
         std::unique_ptr<Sprite> sprite = nullptr;
         b2BodyId physicsBody = b2_nullBodyId;
+        std::string scriptName;
 
         glm::vec2 boundsOffset{0.0f, 0.0f};
         glm::vec2 boundsSize{0.0f, 0.0f};
