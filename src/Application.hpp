@@ -20,6 +20,7 @@
 
 #include "EntityFactory.hpp"
 #include "AnimationRegistry.hpp"
+#include "TopDownControllerSystem.hpp"
 
 class Application {
     public:
@@ -36,8 +37,7 @@ class Application {
         void update(float dt);
         void render(float dt);
 
-        // TODO: probably best to do through scripting?
-        void movePlayer();
+        // TODO: probably temporary, create something better in debug tools
         void spawnSlime(const glm::vec2& position);
         void spawnEmptyEntity(const glm::vec2& position);
 
@@ -67,5 +67,6 @@ class Application {
         ParticleEmitter* textureEmitter = nullptr;
 
         AnimationRegistry animationRegistry;
-        EntityFactory* entityFactory = nullptr;
+        std::unique_ptr<EntityFactory> entityFactory = nullptr;
+        std::unique_ptr<TopDownControllerSystem> topDownControllerSystem = nullptr;
 };

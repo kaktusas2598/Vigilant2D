@@ -218,11 +218,22 @@ void Application::init() {
     std::string playerWalkRightPath = "scripts/animations/player_walk_right.lua";
     animationRegistry.loadClip("player_walk_right", playerWalkRightPath, assetManager, scriptSystem);
 
-
     // Register entities
-    entityFactory = new EntityFactory(scene, assetManager, scriptSystem, animationRegistry);
+    entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
     if (scene.getTileMap() != nullptr)
         entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
+
+    // Setup controller system by providing controller config
+    topDownControllerSystem = std::make_unique<TopDownControllerSystem>(scene, input, animationRegistry);
+    topDownControllerSystem->setControlledEntity({
+        .entityId = "player",
+        .moveSpeed = 120.0f,
+        .idleAnimation = "player_idle",
+        .walkUpAnimation = "player_walk_up",
+        .walkDownAnimation = "player_walk_down",
+        .walkRightAnimation = "player_walk_right",
+        .allowFlipX = true
+    });
 
     //-------------- TEST CODE
     camera.setZoom(4.0f); // set appropriate zoom for current game im working, probably better to be configured or scripted
@@ -285,7 +296,7 @@ void Application::update(float dt) {
         glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
     }
 
-    movePlayer();
+    topDownControllerSystem->update(dt);
     scene.update(dt);
     for (const auto& entityPtr : scene.getEntities()) {
         if (entityPtr && entityPtr->hasScript()) {
@@ -372,62 +383,6 @@ void Application::switchDebugMode() {
 
 bool Application::isDebugModeEnabled() {
     return debugMode;
-}
-
-void Application::movePlayer() {
-    Entity *player = scene.findEntityByID("player");
-    if (player != nullptr) {
-        glm::vec2 movement(0.0f);
-        const float playerSpeed = 120.0f;
-
-        if (input.isKeyDown(GLFW_KEY_W)) movement.y += 1.0f;
-        if (input.isKeyDown(GLFW_KEY_S)) movement.y -= 1.0f;
-        if (input.isKeyDown(GLFW_KEY_A)) movement.x -= 1.0f;
-        if (input.isKeyDown(GLFW_KEY_D)) movement.x += 1.0f;
-
-        AnimatedSprite* anim = player->getAnimatedSprite();
-        if (movement.x != 0.0f || movement.y != 0.0f) {
-            movement = glm::normalize(movement);
-
-            if (player->hasPhysicsBody()) {
-                scene.getPhysicsWorld().setBodyLinearVelocityPixels(
-                    player->getPhysicsBody(),
-                    movement * playerSpeed
-                );
-            }
-            // player->transform.position += movement * playerSpeed * dt;
-
-            if (anim != nullptr) {
-                if (std::abs(movement.x) > std::abs(movement.y)) {
-                    if (movement.x > 0.0f) {
-                        if (player->getSprite()) player->getSprite()->setFlipX(false);
-                        anim->play(animationRegistry.getClip("player_walk_right"), false);
-                    } else {
-                        if (player->getSprite()) player->getSprite()->setFlipX(true);
-                        anim->play(animationRegistry.getClip("player_walk_right"), false);
-                    }
-                } else {
-                    if (movement.y > 0.0f) {
-                        anim->play(animationRegistry.getClip("player_walk_up"), false);
-                    } else {
-                        anim->play(animationRegistry.getClip("player_walk_down"), false);
-                    }
-
-                }
-            }
-        } else {
-            if (player->hasPhysicsBody()) {
-                scene.getPhysicsWorld().setBodyLinearVelocityPixels(
-                    player->getPhysicsBody(),
-                    {0.0f, 0.0f}
-                );
-            }
-
-            if (anim != nullptr) {
-                anim->play(animationRegistry.getClip("player_idle"), false);
-            }
-        }
-    }
 }
 
 // Temporary method for testing
