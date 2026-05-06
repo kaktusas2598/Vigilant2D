@@ -189,34 +189,18 @@ void Application::init() {
 
     renderer.init();
 
-    // ------------ RESOURCES INIT
-    assetManager.loadTexture("player", "assets/textures/player.png");
-    assetManager.loadTexture("slime", "assets/textures/slime.png");
+    scriptSystem.init();
 
-    // -------- SCENE INIT --------
+    // ------------ PROJECT CONTENT BOOTSTRAPING
+    contentLoader = std::make_unique<ContentLoader>(assetManager, animationRegistry, scriptSystem);
+    // TODO: stop hardcoding these paths
+    contentLoader->loadAssets("scripts/assets.lua");
+    contentLoader->loadAnimations("scripts/animations.lua");
+
+    // -------- SCENE SETUP --------
     auto map = std::make_unique<TileMap>();
     map->loadFromFile("assets/farmMap.tmx", assetManager);
     scene.setTileMap(std::move(map));
-
-    // ------------ LUA SCRIPTING TEST
-    scriptSystem.init();
-
-    // Register animations
-    std::string slimeJumpPath = "scripts/animations/slime_jump.lua";
-    animationRegistry.loadClip("slime_jump", slimeJumpPath, assetManager, scriptSystem);
-    std::string slimeIdlePath = "scripts/animations/slime_idle.lua";
-    animationRegistry.loadClip("slime_idle", slimeIdlePath, assetManager, scriptSystem);
-    std::string slimeDiePath = "scripts/animations/slime_death.lua";
-    animationRegistry.loadClip("slime_death", slimeDiePath, assetManager, scriptSystem);
-
-    std::string playerIdlePath = "scripts/animations/player_idle.lua";
-    animationRegistry.loadClip("player_idle", playerIdlePath, assetManager, scriptSystem);
-    std::string playerWalkUpPath = "scripts/animations/player_walk_up.lua";
-    animationRegistry.loadClip("player_walk_up", playerWalkUpPath, assetManager, scriptSystem);
-    std::string playerWalkDownPath = "scripts/animations/player_walk_down.lua";
-    animationRegistry.loadClip("player_walk_down", playerWalkDownPath, assetManager, scriptSystem);
-    std::string playerWalkRightPath = "scripts/animations/player_walk_right.lua";
-    animationRegistry.loadClip("player_walk_right", playerWalkRightPath, assetManager, scriptSystem);
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
@@ -235,11 +219,10 @@ void Application::init() {
         .allowFlipX = true
     });
 
-    //-------------- TEST CODE
+    //-------------- Custom Scene Setup Code
     camera.setZoom(4.0f); // set appropriate zoom for current game im working, probably better to be configured or scripted
-    boxTexture = assetManager.loadTexture("crate", "assets/textures/crate.png");
 
-    // Particle system test
+    //-------------- Particle emitter initialisation
     bloodEmitter = &particleSystem.createEmitter();
     bloodEmitter->init(512, TextureRegion::full(nullptr));
     bloodEmitter->setBaseColor({0.8f, 0.1f, 0.1f, 0.9f});
@@ -249,7 +232,7 @@ void Application::init() {
     bloodEmitter->setVelocityVariance({80.0f, 80.0f});
 
     textureEmitter = &particleSystem.createEmitter();
-    textureEmitter->init(256, TextureRegion::full(boxTexture));
+    textureEmitter->init(256, TextureRegion::full(assetManager.getTexture("crate")));
     textureEmitter->setBaseColor({1.0f, 1.0f, 1.0f, 0.9f});
     textureEmitter->setBaseSize(14.0f);
     textureEmitter->setBaseLifetime(1.0f);
@@ -277,9 +260,6 @@ void Application::update(float dt) {
     glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);
     camera.setViewportSize((float)display_w, (float)display_h);
 
-    // TODO: already regretting not getting variadic argument support from Villain Logger
-    // VA_DEBUG("Mouse X:  %s", x)
-
     const double scrollY = input.getScrollY();
     if (scrollY != 0.0f) {
         const float zoomPerStep = 1.095f;
@@ -304,6 +284,7 @@ void Application::update(float dt) {
         }
     }
 
+    // TODO: probably best done from player on_update script func?
     Entity *player = scene.findEntityByID("player");
     if (player != nullptr)
         // Centre camera on entity's centre
@@ -359,8 +340,9 @@ void Application::render(float dt) {
 
     selectionManager.draw(renderer, scene);
 
+    // --------- TEST RENDERER CODE
     // TEST textured quad render code
-    renderer.drawQuad({boxTexture, {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
+    renderer.drawQuad({assetManager.getTexture("crate"), {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
     // TEST coloured quad render code
     renderer.drawQuad(
         {{{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f},

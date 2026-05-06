@@ -13,6 +13,16 @@ extern "C" {
 #include "EntityDefinition.hpp"
 #include "AnimationDefinition.hpp"
 
+struct AssetManifestEntry {
+    std::string id;
+    std::string path;
+};
+
+struct AnimationManifestEntry {
+    std::string id;
+    std::string path;
+};
+
 struct ScriptInstance {
     std::string fileName;
     int tableRef = LUA_NOREF;
@@ -30,8 +40,12 @@ class ScriptSystem {
 
         // Load Lua script into global stated owned by the engine
         bool loadScript(const std::string& fileName);
+        // TODO: should support all kinds of assets not just textures
+        bool loadAssetManifest(const std::string& fileName, std::vector<AssetManifestEntry>& outTextures);
+        bool loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations);
         bool loadEntityDefinition(const std::string& fileName, EntityDefinition& outDefinition);
         bool loadAnimationDefinition(const std::string& fileName, AnimationDefinition& outDefinition);
+
         // Call global Lua method
         bool callGlobal(const std::string& functionName);
         bool callGlobal(const std::string& functionName, float dt);

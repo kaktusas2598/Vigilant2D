@@ -11,7 +11,6 @@
 #include "Camera2D.hpp"
 #include "Time.hpp"
 
-#include "Texture.hpp"
 #include "Scene.hpp"
 #include "SelectionManager.hpp"
 #include "AssetManager.hpp"
@@ -21,6 +20,7 @@
 #include "EntityFactory.hpp"
 #include "AnimationRegistry.hpp"
 #include "TopDownControllerSystem.hpp"
+#include "ContentLoader.hpp"
 
 class Application {
     public:
@@ -57,16 +57,16 @@ class Application {
 
         Scene scene;
         AssetManager assetManager;
-        // TEMPORARY resources for testing - owned by AssetManager 
-        Texture* boxTexture = nullptr;
+        ScriptSystem scriptSystem;
 
         SelectionManager selectionManager;
-        ScriptSystem scriptSystem;
         ParticleSystem particleSystem;
+        // Temporary emitters
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;
 
         AnimationRegistry animationRegistry;
         std::unique_ptr<EntityFactory> entityFactory = nullptr;
         std::unique_ptr<TopDownControllerSystem> topDownControllerSystem = nullptr;
+        std::unique_ptr<ContentLoader> contentLoader = nullptr;
 };

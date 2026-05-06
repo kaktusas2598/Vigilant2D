@@ -52,6 +52,21 @@ static bool readIntArrayField(lua_State* L, int tableIndex, const char* fieldNam
     lua_pop(L, 1); // pop array
     return true;
 }
+
+static bool readStringField(lua_State* L, int tableIndex, const char* fieldName, std::string& outValue) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_isstring(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    outValue = lua_tostring(L, -1);
+    lua_pop(L, 1);
+    return true;
+}
+
 // ----------------------------------
 
 
@@ -82,6 +97,122 @@ bool ScriptSystem::loadScript(const std::string &fileName) {
 
     const int status = luaL_dofile(luaState, fileName.c_str());
     return reportError(status, "loadScript(" + fileName + ")");
+}
+
+bool ScriptSystem::loadAssetManifest(const std::string& fileName, std::vector<AssetManifestEntry>& outTextures) {
+    outTextures.clear();
+
+    if (luaState == nullptr && !init())
+        return false;
+
+    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
+    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+        return false;
+
+    const int callStatus = lua_pcall(luaState, 0, 1, 0);
+    if (!reportError(callStatus, "execute(" + fileName + ")"))
+        return false;
+
+    if (!lua_istable(luaState, -1)) {
+        VG_ERROR("[Lua] Asset manifest '" + fileName + "' must return a table.");
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    const int rootIndex = lua_gettop(luaState);
+
+    lua_getfield(luaState, rootIndex, "textures");
+    if (!lua_istable(luaState, -1)) {
+        lua_pop(luaState, 2); // textures + root
+        VG_ERROR("[Lua] Asset manifest '" + fileName + "' must contain a 'textures' table.");
+        return false;
+    }
+
+    const int texturesIndex = lua_gettop(luaState);
+    const int count = static_cast<int>(lua_rawlen(luaState, texturesIndex));
+
+    for (int i = 1; i <= count; ++i) {
+        lua_geti(luaState, texturesIndex, i);
+        if (!lua_istable(luaState, -1)) {
+            lua_pop(luaState, 3); // bad entry + textures + root
+            VG_ERROR("[Lua] Asset manifest '" + fileName + "' contains a non-table texture entry.");
+            return false;
+        }
+
+        const int entryIndex = lua_gettop(luaState);
+
+        AssetManifestEntry entry;
+        if (!readStringField(luaState, entryIndex, "id", entry.id) ||
+            !readStringField(luaState, entryIndex, "path", entry.path)) {
+            lua_pop(luaState, 3); // entry + textures + root
+            VG_ERROR("[Lua] Asset manifest '" + fileName + "' has a texture entry missing 'id' or 'path'.");
+            return false;
+        }
+
+        outTextures.push_back(std::move(entry));
+        lua_pop(luaState, 1); // entry
+    }
+
+    lua_pop(luaState, 2); // textures + root
+    return true;    
+}
+
+bool ScriptSystem::loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations) {
+    outAnimations.clear();
+
+    if (luaState == nullptr && !init())
+        return false;
+
+    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
+    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+        return false;
+
+    const int callStatus = lua_pcall(luaState, 0, 1, 0);
+    if (!reportError(callStatus, "execute(" + fileName + ")"))
+        return false;
+
+    if (!lua_istable(luaState, -1)) {
+        VG_ERROR("[Lua] Animation manifest '" + fileName + "' must return a table.");
+        lua_pop(luaState, 1);
+        return false;
+    }
+
+    const int rootIndex = lua_gettop(luaState);
+
+    lua_getfield(luaState, rootIndex, "animations");
+    if (!lua_istable(luaState, -1)) {
+        lua_pop(luaState, 2); // animations + root
+        VG_ERROR("[Lua] Animation manifest '" + fileName + "' must contain an 'animations' table.");
+        return false;
+    }
+
+    const int animationsIndex = lua_gettop(luaState);
+    const int count = static_cast<int>(lua_rawlen(luaState, animationsIndex));
+
+    for (int i = 1; i <= count; ++i) {
+        lua_geti(luaState, animationsIndex, i);
+        if (!lua_istable(luaState, -1)) {
+            lua_pop(luaState, 3); // bad entry + animations + root
+            VG_ERROR("[Lua] Animation manifest '" + fileName + "' contains a non-table animation entry.");
+            return false;
+        }
+
+        const int entryIndex = lua_gettop(luaState);
+
+        AnimationManifestEntry entry;
+        if (!readStringField(luaState, entryIndex, "id", entry.id) ||
+            !readStringField(luaState, entryIndex, "path", entry.path)) {
+            lua_pop(luaState, 3); // entry + animations + root
+            VG_ERROR("[Lua] Animation manifest '" + fileName + "' has an animation entry missing 'id' or 'path'.");
+            return false;
+        }
+
+        outAnimations.push_back(std::move(entry));
+        lua_pop(luaState, 1); // entry
+    }
+
+    lua_pop(luaState, 2); // animations + root
+    return true;
 }
 
 // TODO: A lot of internal lua code replicated in both methods! NON- DRY!!
