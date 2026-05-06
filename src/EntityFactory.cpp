@@ -72,3 +72,47 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
 
     return &entity;
 }
+
+void EntityFactory::spawnFromMapObjects(const TileMapData& mapData, const std::string& layerName) {
+    for (const auto& objectLayer : mapData.objectLayers) {
+        if (objectLayer.name != layerName)
+            continue;
+        
+        for (const auto& object : objectLayer.objects) {
+            if (object.shape != MapObjectShape::Point)
+                continue;
+            
+            const std::string* entityId = object.findProperty("entity");
+            if (entityId == nullptr || entityId->empty())
+                continue;
+            // TODO: get rid of hardcoded expected path
+            const std::string definitionFile = "scripts/entities/" + *entityId + ".lua";
+            glm::vec2 position(
+                object.x,
+                static_cast<float>(mapData.height * mapData.tileHeight) - object.y
+            );
+
+            // For unique Entity identifier we use objects name and "entity" attribute if its not found
+            std::string runtimeId = object.name;
+            if (runtimeId.empty()) {
+                static int spawnedEntityCounter = 0;
+                runtimeId = *entityId + "_" + std::to_string(spawnedEntityCounter++);
+            }
+
+            Entity* entity = spawnFromDefinition(runtimeId, definitionFile, position);
+            if (entity == nullptr)
+                continue;
+
+            // Custom properties
+            if (const std::string* animationId = object.findProperty("animation")) {
+                if (!animationId->empty()) {
+                    if (AnimatedSprite* animatedSprite = entity->getAnimatedSprite()) {
+                        if (const AnimationClip* clip = animationRegistry.getClip(*animationId)) {
+                            animatedSprite->play(clip);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

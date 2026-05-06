@@ -12,7 +12,6 @@
 #include "Time.hpp"
 
 #include "Texture.hpp"
-#include "AnimationClip.hpp"
 #include "Scene.hpp"
 #include "SelectionManager.hpp"
 #include "AssetManager.hpp"
@@ -47,7 +46,8 @@ class Application {
         Renderer renderer;
 
         ImVec4 clearColour;
-        bool debugMode;
+        bool debugMode = false;
+        bool showPhysicsDebug = false;
 
         Input input;
         Time time;
@@ -59,19 +59,9 @@ class Application {
         AssetManager assetManager;
         // TEMPORARY resources for testing - owned by AssetManager 
         Texture* boxTexture = nullptr;
-        Texture* playerTexture = nullptr;
-        Texture* slimeTexture = nullptr;
-        bool showPhysicsDebug = false;
-
-        // Player animation clips
-        AnimationClip testIdleClip;
-        AnimationClip testWalkDownClip;
-        AnimationClip testWalkUpClip;
-        AnimationClip testWalkRightClip;
 
         SelectionManager selectionManager;
         ScriptSystem scriptSystem;
-        ScriptInstance testScriptInstance;
         ParticleSystem particleSystem;
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;

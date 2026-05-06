@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "TextureRegion.hpp"
 
@@ -52,6 +53,14 @@ struct MapObjectData {
     bool collidable = false;
 
     MapObjectShape shape = MapObjectShape::Rectangle;
+    std::unordered_map<std::string, std::string> properties;
+
+    const std::string* findProperty(const std::string& key) const {
+        auto it = properties.find(key);
+        if (it == properties.end())
+            return nullptr;
+        return &it->second;
+    }
 };
 
 struct ObjectLayerData {

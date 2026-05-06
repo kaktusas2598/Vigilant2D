@@ -184,10 +184,36 @@ void TiledMapLoader::parseObjectLayer(tinyxml2::XMLElement* objectGroupElement, 
             object.shape = MapObjectShape::Rectangle;
         }
 
+        parseObjectProperties(objectElement, object);
         layer.objects.push_back(std::move(object));
     }
 
     map.objectLayers.push_back(std::move(layer));
+}
+
+void TiledMapLoader::parseObjectProperties(tinyxml2::XMLElement* objectElement, MapObjectData& object) {
+    tinyxml2::XMLElement* propertiesElement = objectElement->FirstChildElement("properties");
+    if (propertiesElement == nullptr)
+        return;
+
+    for (tinyxml2::XMLElement* propertyElement = propertiesElement->FirstChildElement("property");
+        propertyElement != nullptr;
+        propertyElement = propertyElement->NextSiblingElement("property")) {
+        const char* name = propertyElement->Attribute("name");
+        if (name == nullptr)
+            continue;
+
+        const char* value = propertyElement->Attribute("value");
+        if (value != nullptr) {
+            object.properties[name] = value;
+            continue;
+        }
+
+        const char* textValue = propertyElement->GetText();
+        if (textValue != nullptr) {
+            object.properties[name] = textValue;
+        }
+    }
 }
 
 std::vector<int> TiledMapLoader::parseCsvTileData(const std::string &csv,

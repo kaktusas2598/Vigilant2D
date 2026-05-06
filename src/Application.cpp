@@ -92,6 +92,8 @@ void Application::init() {
         const std::string& selectedId = selectionManager.getSelectedEntityId();
         if (selectedId.empty()) {
             ImGui::Text("No entity selected");
+        } else {
+            ImGui::Text("Selected entity: %s", selectedId.c_str());
         }
         Entity* entity = scene.findEntityByID(selectedId);
         if (entity == nullptr) {
@@ -183,36 +185,46 @@ void Application::init() {
         ImGui::Text("Hovered Tile: %d, %d", hoverTile.x, hoverTile.y);
         ImGui::Text("Selected Tile: %d, %d", selectedTile.x, selectedTile.y);
     });
-    // ---------
-
-
+    // --------------------------
 
     renderer.init();
+
+    // ------------ RESOURCES INIT
+    assetManager.loadTexture("player", "assets/textures/player.png");
+    assetManager.loadTexture("slime", "assets/textures/slime.png");
 
     // -------- SCENE INIT --------
     auto map = std::make_unique<TileMap>();
     map->loadFromFile("assets/farmMap.tmx", assetManager);
     scene.setTileMap(std::move(map));
 
-    playerTexture = assetManager.loadTexture("player", "assets/textures/player.png");
-    slimeTexture = assetManager.loadTexture("slime", "assets/textures/slime.png");
-    testIdleClip = AnimationClip("idle_down", true);
-    for (int x = 0; x < 6; ++x) {
-        testIdleClip.addFrame(makeRegionFromGrid(playerTexture, x, 0, 6, 10), 0.12f);
-    }
-    testWalkDownClip = AnimationClip("walk_down", true);
-    for (int x = 0; x < 6; ++x) {
-        testWalkDownClip.addFrame(makeRegionFromGrid(playerTexture, x, 3, 6, 10), 0.12f);
-    }
-    testWalkUpClip = AnimationClip("walk_up", true);
-    for (int x = 0; x < 6; ++x) {
-        testWalkUpClip.addFrame(makeRegionFromGrid(playerTexture, x, 2, 6, 10), 0.12f);
-    }
-    testWalkRightClip = AnimationClip("walk_right", true);
-    for (int x = 0; x < 6; ++x) {
-        testWalkRightClip.addFrame(makeRegionFromGrid(playerTexture, x, 4, 6, 10), 0.12f);
-    }
-    
+    // ------------ LUA SCRIPTING TEST
+    scriptSystem.init();
+
+    // Register animations
+    std::string slimeJumpPath = "scripts/animations/slime_jump.lua";
+    animationRegistry.loadClip("slime_jump", slimeJumpPath, assetManager, scriptSystem);
+    std::string slimeIdlePath = "scripts/animations/slime_idle.lua";
+    animationRegistry.loadClip("slime_idle", slimeIdlePath, assetManager, scriptSystem);
+    std::string slimeDiePath = "scripts/animations/slime_death.lua";
+    animationRegistry.loadClip("slime_death", slimeDiePath, assetManager, scriptSystem);
+
+    std::string playerIdlePath = "scripts/animations/player_idle.lua";
+    animationRegistry.loadClip("player_idle", playerIdlePath, assetManager, scriptSystem);
+    std::string playerWalkUpPath = "scripts/animations/player_walk_up.lua";
+    animationRegistry.loadClip("player_walk_up", playerWalkUpPath, assetManager, scriptSystem);
+    std::string playerWalkDownPath = "scripts/animations/player_walk_down.lua";
+    animationRegistry.loadClip("player_walk_down", playerWalkDownPath, assetManager, scriptSystem);
+    std::string playerWalkRightPath = "scripts/animations/player_walk_right.lua";
+    animationRegistry.loadClip("player_walk_right", playerWalkRightPath, assetManager, scriptSystem);
+
+
+    // Register entities
+    entityFactory = new EntityFactory(scene, assetManager, scriptSystem, animationRegistry);
+    if (scene.getTileMap() != nullptr)
+        entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
+
+    // Manual entity spawning in engine
     Entity& playerEntity = scene.createEntity("player");
     playerEntity.transform.position = {150.0f, 150.0f};
     playerEntity.transform.scale = {48.0f, 48.0f};
@@ -220,7 +232,7 @@ void Application::init() {
     auto sprite = std::make_unique<Sprite>();
     auto animatedSprite = std::make_unique<AnimatedSprite>();
     animatedSprite->setSprite(sprite.get());
-    animatedSprite->play(&testIdleClip);
+    animatedSprite->play(animationRegistry.getClip("player_idle"));
     playerEntity.setSprite(std::move(sprite));
     playerEntity.setAnimatedSprite(std::move(animatedSprite));
 
@@ -236,6 +248,7 @@ void Application::init() {
     camera.setZoom(4.0f);
     boxTexture = assetManager.loadTexture("crate", "assets/textures/crate.png");
 
+    // Particle system test
     bloodEmitter = &particleSystem.createEmitter();
     bloodEmitter->init(512, TextureRegion::full(nullptr));
     bloodEmitter->setBaseColor({0.8f, 0.1f, 0.1f, 0.9f});
@@ -251,41 +264,6 @@ void Application::init() {
     textureEmitter->setBaseLifetime(1.0f);
     textureEmitter->setBaseVelocity({0.0f, 30.0f});
     textureEmitter->setVelocityVariance({50.0f, 50.0f});
-
-    // ------------ LUA SCRIPTING TEST
-    scriptSystem.init();
-
-    animationRegistry.loadClip(
-        "slime_jump",
-        "scripts/animations/slime_jump.lua",
-        assetManager,
-        scriptSystem
-    );
-    animationRegistry.loadClip(
-        "slime_idle",
-        "scripts/animations/slime_idle.lua",
-        assetManager,
-        scriptSystem
-    );
-    animationRegistry.loadClip(
-        "slime_death",
-        "scripts/animations/slime_death.lua",
-        assetManager,
-        scriptSystem
-    );
-
-    entityFactory = new EntityFactory(scene, assetManager, scriptSystem, animationRegistry);
-    entityFactory->spawnFromDefinition("slime_scripted", "scripts/entities/slime.lua", {100.0f, 100.0f});
-    entityFactory->spawnFromDefinition("slime_scripted_idle", "scripts/entities/slime.lua", {200.0f, 100.0f});
-    entityFactory->spawnFromDefinition("slime_scripted_death", "scripts/entities/slime.lua", {200.0f, 100.0f});
-    Entity* e = scene.findEntityByID("slime_scripted_idle");
-    if (e != nullptr) {
-        e->getAnimatedSprite()->play(animationRegistry.getClip("slime_idle"));
-    }
-    Entity* e2 = scene.findEntityByID("slime_scripted_death");
-    if (e2 != nullptr) {
-        e2->getAnimatedSprite()->play(animationRegistry.getClip("slime_death"));
-    }
 }
 
 void Application::run() {
@@ -443,16 +421,16 @@ void Application::movePlayer() {
                 if (std::abs(movement.x) > std::abs(movement.y)) {
                     if (movement.x > 0.0f) {
                         if (player->getSprite()) player->getSprite()->setFlipX(false);
-                        anim->play(&testWalkRightClip, false);
+                        anim->play(animationRegistry.getClip("player_walk_right"), false);
                     } else {
                         if (player->getSprite()) player->getSprite()->setFlipX(true);
-                        anim->play(&testWalkRightClip, false);
+                        anim->play(animationRegistry.getClip("player_walk_right"), false);
                     }
                 } else {
                     if (movement.y > 0.0f) {
-                        anim->play(&testWalkUpClip, false);
+                        anim->play(animationRegistry.getClip("player_walk_up"), false);
                     } else {
-                        anim->play(&testWalkDownClip, false);
+                        anim->play(animationRegistry.getClip("player_walk_down"), false);
                     }
 
                 }
@@ -466,29 +444,20 @@ void Application::movePlayer() {
             }
 
             if (anim != nullptr) {
-                anim->play(&testIdleClip, false);
+                anim->play(animationRegistry.getClip("player_idle"), false);
             }
         }
     }
 }
 
+// Temporary method for testing
 void Application::spawnSlime(const glm::vec2& position) {
     static int slimeIdPostfix = 0;
-    std::string slimeId = "Slime_" + slimeIdPostfix++;
-    Entity &slimeEntity = scene.createEntity(slimeId);
-    slimeEntity.transform.position = position;
-    slimeEntity.transform.scale = {48.0f, 48.0f};
-
-    auto slimeSprite = std::make_unique<Sprite>();
-    auto slimeAnimSprite = std::make_unique<AnimatedSprite>();
-    slimeAnimSprite->setSprite(slimeSprite.get());
-    slimeAnimSprite->play(animationRegistry.getClip("slime_idle"));
-    slimeEntity.setSprite(std::move(slimeSprite));
-    slimeEntity.setAnimatedSprite(std::move(slimeAnimSprite));
+    entityFactory->spawnFromDefinition("slime_" + std::to_string(slimeIdPostfix++), "scripts/entities/slime.lua", position);
 }
 
 void Application::spawnEmptyEntity(const glm::vec2& position) {
     static int entityIdPostfix = 0;
-    std::string entityId = "Entity_" + entityIdPostfix++;
+    std::string entityId = "Entity_" + std::to_string(entityIdPostfix++);
     Entity &entity = scene.createEntity(entityId);
 }
