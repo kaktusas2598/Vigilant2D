@@ -75,11 +75,11 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
 
 void EntityFactory::spawnFromMapObjects(const TileMapData& mapData, const std::string& layerName) {
     for (const auto& objectLayer : mapData.objectLayers) {
-        if (objectLayer.name != layerName)
+        if (objectLayer.name != layerName || !objectLayer.visible)
             continue;
         
         for (const auto& object : objectLayer.objects) {
-            if (object.shape != MapObjectShape::Point)
+            if (object.shape != MapObjectShape::Point || !object.visible)
                 continue;
             
             const std::string* entityId = object.findProperty("entity");

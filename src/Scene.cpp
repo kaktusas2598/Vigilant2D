@@ -33,6 +33,8 @@ void Scene::drawPhysicsDebug(Renderer& renderer) const {
 }
 
 Entity& Scene::createEntity(const std::string& id) {
+    // TODO: We want to make sure ids are unique!! Not to be confused by definitionIds which refer
+    // to entity definitions to spawn many entities of same type
     entities.push_back(std::make_unique<Entity>());
     Entity& entity = *entities.back();
     entity.setID(id);

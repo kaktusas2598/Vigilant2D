@@ -224,28 +224,8 @@ void Application::init() {
     if (scene.getTileMap() != nullptr)
         entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
 
-    // Manual entity spawning in engine
-    Entity& playerEntity = scene.createEntity("player");
-    playerEntity.transform.position = {150.0f, 150.0f};
-    playerEntity.transform.scale = {48.0f, 48.0f};
-
-    auto sprite = std::make_unique<Sprite>();
-    auto animatedSprite = std::make_unique<AnimatedSprite>();
-    animatedSprite->setSprite(sprite.get());
-    animatedSprite->play(animationRegistry.getClip("player_idle"));
-    playerEntity.setSprite(std::move(sprite));
-    playerEntity.setAnimatedSprite(std::move(animatedSprite));
-
-    playerEntity.setBounds({20.0f, 5.0f}, {14.0f, 22.0f});
-    playerEntity.setPhysicsBody(
-        scene.getPhysicsWorld().createDynamicBox(
-            playerEntity.getBoundsPosition(),
-            playerEntity.getBoundsSize()
-        )
-    );
-
     //-------------- TEST CODE
-    camera.setZoom(4.0f);
+    camera.setZoom(4.0f); // set appropriate zoom for current game im working, probably better to be configured or scripted
     boxTexture = assetManager.loadTexture("crate", "assets/textures/crate.png");
 
     // Particle system test

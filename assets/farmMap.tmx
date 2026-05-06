@@ -382,7 +382,7 @@
   <properties>
    <property name="collidable" type="bool" value="true"/>
   </properties>
-  <object id="1" name="Player" x="185" y="1847">
+  <object id="1" name="player" x="185" y="1847">
    <properties>
     <property name="entity" value="player"/>
    </properties>
