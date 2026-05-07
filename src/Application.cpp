@@ -249,6 +249,13 @@ void Application::init() {
 
     //-------------- UI TEST
     uiRenderer = std::make_unique<UIRenderer>(renderer);
+
+    slotStrip.setSlotCount(8);
+    UISlotItem item;
+    item.occupied = true;
+    item.icon = TextureRegion::full(assetManager.getTexture("crate"));
+    slotStrip.setSlotItem(0, item);
+    slotStrip.setSelectedIndex(0);
 }
 
 void Application::run() {
@@ -324,6 +331,14 @@ void Application::update(float dt) {
             }
         }
     }
+
+    // For UI Hotbar test
+    if (input.isKeyPressed(GLFW_KEY_1))
+        slotStrip.setSelectedIndex(0);
+    if (input.isKeyPressed(GLFW_KEY_2))
+        slotStrip.setSelectedIndex(1);
+    if (input.isKeyPressed(GLFW_KEY_3))
+        slotStrip.setSelectedIndex(2);
 }
 
 void Application::render(float dt) {
@@ -374,23 +389,7 @@ void Application::render(float dt) {
     // UI RENDER 2nd Pass(Screen Space) TEST - Hotbar
     uiRenderer->beginScreen(display_w, display_h);
     renderer.begin(uiRenderer->getScreenCamera());
-    uiRenderer->drawQuad({
-        {{20.0f, 20.0f}, {260.0f, 64.0f}},
-        TextureRegion::full(nullptr),
-        {0.08f, 0.08f, 0.10f, 0.92f}
-    });
-
-    uiRenderer->drawQuadOutline({
-        {{20.0f, 20.0f}, {260.0f, 64.0f}},
-        2.0f,
-        {0.85f, 0.80f, 0.55f, 1.0f}
-    });
-
-    uiRenderer->drawQuad({
-        {{30.0f, 30.0f}, {44.0f, 44.0f}},
-        TextureRegion::full(assetManager.getTexture("crate")),
-        {1.0f, 1.0f, 1.0f, 1.0f}
-    });
+    slotStrip.draw(*uiRenderer, uiStyle, {20.0f, 20.0f}, {44.0f, 44.0f});
     uiRenderer->end();
 
     renderer.end();

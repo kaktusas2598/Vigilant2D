@@ -23,6 +23,7 @@
 #include "ContentLoader.hpp"
 
 #include "UIRenderer.hpp"
+#include "UISlotStrip.hpp"
 
 class Application {
     public:
@@ -74,4 +75,7 @@ class Application {
         bool cameraFollowPlayer = true;
 
         std::unique_ptr<UIRenderer> uiRenderer = nullptr;
+        // For UI Widget test
+        UISlotStrip slotStrip;
+        UIStyle uiStyle;
 };
