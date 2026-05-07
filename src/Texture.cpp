@@ -4,6 +4,48 @@
 #include "stb_image/stb_image.h"
 #include <iostream>
 
+Texture::Texture(Texture&& other) noexcept
+    : rendererID(other.rendererID),
+      filePath(std::move(other.filePath)),
+      localBuffer(other.localBuffer),
+      width(other.width),
+      height(other.height),
+      BPP(other.BPP),
+      type(std::move(other.type)),
+      target(other.target) {
+    other.rendererID = 0;
+    other.localBuffer = nullptr;
+    other.width = 0;
+    other.height = 0;
+    other.BPP = 0;
+    other.target = GL_TEXTURE_2D;
+}
+
+Texture& Texture::operator=(Texture&& other) noexcept {
+    if (this == &other)
+        return *this;
+
+    destroy();
+
+    rendererID = other.rendererID;
+    filePath = std::move(other.filePath);
+    localBuffer = other.localBuffer;
+    width = other.width;
+    height = other.height;
+    BPP = other.BPP;
+    type = std::move(other.type);
+    target = other.target;
+
+    other.rendererID = 0;
+    other.localBuffer = nullptr;
+    other.width = 0;
+    other.height = 0;
+    other.BPP = 0;
+    other.target = GL_TEXTURE_2D;
+
+    return *this;
+}
+
 bool Texture::load2D(const std::string& fileName, const TextureParams& params) {
     destroy();
     target = GL_TEXTURE_2D;
@@ -80,6 +122,42 @@ void Texture::initEmpty2D(int w, int h, GLint internalFormat, GLenum format, GLe
     apply2DParams(params);
 
     GLCall(glTexImage2D(target, 0, internalFormat, width, height, 0, format, type, nullptr));
+    GLCall(glBindTexture(target, 0));
+}
+
+void Texture::initFromBuffer2D(int w, int h,
+                               GLint internalFormat,
+                               GLenum format,
+                               GLenum type,
+                               const void* data,
+                               const TextureParams& params) {
+    destroy();
+
+    target = GL_TEXTURE_2D;
+    width = w;
+    height = h;
+
+    GLCall(glGenTextures(1, &rendererID));
+    GLCall(glBindTexture(target, rendererID));
+
+    apply2DParams(params);
+
+    GLCall(glTexImage2D(
+        target,
+        0,
+        internalFormat,
+        width,
+        height,
+        0,
+        format,
+        type,
+        data
+    ));
+
+    if (params.generateMipmaps) {
+        GLCall(glGenerateMipmap(target));
+    }
+
     GLCall(glBindTexture(target, 0));
 }
 

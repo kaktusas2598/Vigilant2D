@@ -24,6 +24,12 @@ class Shader {
         Shader(const std::string& vertexFile, const std::string& fragmentFile, const std::string geometryFile = std::string());
         ~Shader();
 
+        Shader(const Shader&) = delete;
+        Shader &operator=(const Shader &) = delete;
+
+        Shader(Shader &&other) noexcept;
+        Shader &operator=(Shader &&other) noexcept;
+
         // To be used with empty constructor if we don't want to load shaders from files
         void createFromSource(const std::string& vertexSource, const std::string& fragmentSource);
         void createFromSource(const std::string& source);

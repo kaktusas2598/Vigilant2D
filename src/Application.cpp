@@ -197,6 +197,10 @@ void Application::init() {
 
     renderer.init();
 
+    textRenderer.init();
+    // uiFont.loadFromFile("assets/fonts/WeddingdayPersonalUseRegular-1Gvo0.ttf", 24);
+    uiFont.loadFromFile("assets/fonts/Ithaca-LVB75.ttf", 24);
+
     scriptSystem.init();
 
     // ------------ PROJECT CONTENT BOOTSTRAPING
@@ -383,6 +387,18 @@ void Application::render(float dt) {
             TextureRegion::full(nullptr),
             {0.25f, 0.85f, 0.35f, 1.0f}
         });
+
+        // World space text test
+        textRenderer.begin(camera);
+        textRenderer.drawText(
+            uiFont,
+            "HELLO WORLD",
+            // "Player",
+            player->transform.position + glm::vec2(0.0f, 42.0f),
+            0.35f,
+            {1.0f, 1.0f, 1.0f, 1.0f}
+        );
+        textRenderer.end();
     }
     uiRenderer->end();
 
@@ -391,6 +407,17 @@ void Application::render(float dt) {
     renderer.begin(uiRenderer->getScreenCamera());
     slotStrip.draw(*uiRenderer, uiStyle, {20.0f, 20.0f}, {44.0f, 44.0f});
     uiRenderer->end();
+
+    // Screen space text test
+    textRenderer.beginScreen(display_w, display_h);
+    textRenderer.drawText(
+        uiFont,
+        "Hotbar",
+        {20.f, 96.0f},
+        1.0f,
+        {1.0f, 1.0f, 1.0f, 1.0f}
+    );
+    textRenderer.end();
 
     renderer.end();
 

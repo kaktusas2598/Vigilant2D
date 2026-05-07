@@ -5,7 +5,10 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${vcpkgRoot}/x64-windows/include",
-                "${vcpkgRoot}/x86-windows/include"
+                "${vcpkgRoot}/x86-windows/include",
+                "C:/msys64/mingw64/include",
+                "C:/msys64/mingw64/include/GL",
+                "C:/msys64/mingw64/include/freetype2"
             ],
             "defines": [
                 "_DEBUG",

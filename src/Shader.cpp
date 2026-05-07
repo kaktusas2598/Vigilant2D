@@ -8,6 +8,28 @@
 
 Shader::Shader(): rendererID(0) {}
 
+Shader::Shader(Shader&& other) noexcept
+    : rendererID(other.rendererID),
+      uniformLocationCache(std::move(other.uniformLocationCache)) {
+    other.rendererID = 0;
+}
+
+Shader& Shader::operator=(Shader&& other) noexcept {
+    if (this == &other)
+        return *this;
+
+    if (rendererID != 0) {
+        GLCall(glDeleteProgram(rendererID));
+    }
+
+    rendererID = other.rendererID;
+    uniformLocationCache = std::move(other.uniformLocationCache);
+
+    other.rendererID = 0;
+
+    return *this;
+}
+
 Shader::Shader(const std::string& fileName): rendererID(0) {
     createFromSource(FileUtils::loadFile(fileName));
 }

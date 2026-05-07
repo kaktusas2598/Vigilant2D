@@ -41,12 +41,25 @@ class Texture {
         Texture() = default;
         ~Texture();
 
+        Texture(const Texture &) = delete;
+        Texture &operator=(const Texture &) = delete;
+
+        Texture(Texture &&other) noexcept;
+        Texture &operator=(Texture &&other) noexcept;
+
         bool load2D(const std::string& fileName, const TextureParams& params = PixelArt());
         bool loadCubemap(std::vector<std::string> faces, const CubeMapParams& params = {});
         void initEmpty2D(int w, int h, 
             GLint internalFormat = GL_RGBA, 
             GLenum format = GL_RGBA, 
             GLenum type = GL_UNSIGNED_BYTE,
+            const TextureParams& params = {}
+        );
+        void initFromBuffer2D(int w, int h, 
+            GLint internalFormat, 
+            GLenum format, 
+            GLenum type,
+            const void* data,
             const TextureParams& params = {}
         );
         void initEmptyCubemap(int w, int h,

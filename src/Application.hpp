@@ -25,6 +25,9 @@
 #include "UIRenderer.hpp"
 #include "UISlotStrip.hpp"
 
+#include "Font.hpp"
+#include "TextRenderer.hpp"
+
 class Application {
     public:
         void init();
@@ -78,4 +81,8 @@ class Application {
         // For UI Widget test
         UISlotStrip slotStrip;
         UIStyle uiStyle;
+
+        // For text test
+        Font uiFont;
+        TextRenderer textRenderer;
 };

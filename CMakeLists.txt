@@ -21,6 +21,8 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
 
+find_package(Freetype REQUIRED)
+
 file(GLOB sources src/*.cpp)
 add_executable(${PROJECT_NAME} WIN32 ${sources})
 
@@ -34,11 +36,12 @@ add_subdirectory(vendor/lua)
 
 
 # Set 3rd party include locations
-target_include_directories(${PROJECT_NAME} PUBLIC vendor)
+target_include_directories(${PROJECT_NAME} PUBLIC vendor ${FREETYPE_INCLUDE_DIRS})
 
 message(STATUS "GLEW LIBRARY:${GLEW_LIBRARIES}")
 message(STATUS "OpenGL LIBRARY:${OpenGL_LIBRARIES}")
+message(STATUS "Freetype LIBRARY:${FREETYPE_LIBRARIES}")
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} ${OpenGL_LIBRARIES} ${GLEW_LIBRARIES} ${CMAKE_DL_LIBS} 
-    glfw glm imgui stb_image tinyxml2 box2d lua::lib)
+target_link_libraries(${PROJECT_NAME} ${OpenGL_LIBRARIES} ${GLEW_LIBRARIES} ${CMAKE_DL_LIBS}
+    glfw glm imgui stb_image tinyxml2 box2d lua::lib Freetype::Freetype)
