@@ -42,9 +42,12 @@ void ImGuiLayer::render() {
         if (!panel.enabled)
             continue;
 
+        // Set unique identifier for each panel to prevent issues appearing when widgets share the same name
+        ImGui::PushID(panel.name.c_str());
         if (ImGui::CollapsingHeader(panel.name.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
             panel.draw();
         }
+        ImGui::PopID();
     }
     ImGui::End();
 }
