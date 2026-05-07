@@ -1,5 +1,6 @@
 #include "ScriptSystem.hpp"
 
+#include <functional>
 #include "Logger.hpp"
 
 // --------- STATIC HELPERS ---------
@@ -67,6 +68,26 @@ static bool readStringField(lua_State* L, int tableIndex, const char* fieldName,
     return true;
 }
 
+static bool loadLuaFileResultTable(lua_State* L,
+                                   const std::string& fileName,
+                                   std::function<bool(int, const std::string&)> reportError) {
+    const int loadStatus = luaL_loadfile(L, fileName.c_str());
+    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+        return false;
+
+    const int callStatus = lua_pcall(L, 0, 1, 0);
+    if (!reportError(callStatus, "execute(" + fileName + ")"))
+        return false;
+
+    if (!lua_istable(L, -1)) {
+        VG_ERROR("[Lua] File '" + fileName + "' must return a table.");
+        lua_pop(L, 1);
+        return false;
+    }
+
+    return true;
+}
+
 // ----------------------------------
 
 
@@ -91,33 +112,17 @@ void ScriptSystem::shutdown() {
     }
 }
 
-bool ScriptSystem::loadScript(const std::string &fileName) {
-    if (luaState == nullptr && !init())
-        return false;
-
-    const int status = luaL_dofile(luaState, fileName.c_str());
-    return reportError(status, "loadScript(" + fileName + ")");
-}
-
 bool ScriptSystem::loadAssetManifest(const std::string& fileName, std::vector<AssetManifestEntry>& outTextures) {
     outTextures.clear();
 
     if (luaState == nullptr && !init())
         return false;
 
-    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
-    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+    auto reportLuaError = [this](int status, const std::string& context) {
+        return reportError(status, context);
+    };
+    if (!loadLuaFileResultTable(luaState, fileName, reportLuaError))
         return false;
-
-    const int callStatus = lua_pcall(luaState, 0, 1, 0);
-    if (!reportError(callStatus, "execute(" + fileName + ")"))
-        return false;
-
-    if (!lua_istable(luaState, -1)) {
-        VG_ERROR("[Lua] Asset manifest '" + fileName + "' must return a table.");
-        lua_pop(luaState, 1);
-        return false;
-    }
 
     const int rootIndex = lua_gettop(luaState);
 
@@ -163,19 +168,11 @@ bool ScriptSystem::loadAnimationManifest(const std::string& fileName, std::vecto
     if (luaState == nullptr && !init())
         return false;
 
-    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
-    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+    auto reportLuaError = [this](int status, const std::string& context) {
+        return reportError(status, context);
+    };
+    if (!loadLuaFileResultTable(luaState, fileName, reportLuaError))
         return false;
-
-    const int callStatus = lua_pcall(luaState, 0, 1, 0);
-    if (!reportError(callStatus, "execute(" + fileName + ")"))
-        return false;
-
-    if (!lua_istable(luaState, -1)) {
-        VG_ERROR("[Lua] Animation manifest '" + fileName + "' must return a table.");
-        lua_pop(luaState, 1);
-        return false;
-    }
 
     const int rootIndex = lua_gettop(luaState);
 
@@ -220,19 +217,11 @@ bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefin
     if (luaState == nullptr && !init())
         return false;
 
-    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
-    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+    auto reportLuaError = [this](int status, const std::string& context) {
+        return reportError(status, context);
+    };
+    if (!loadLuaFileResultTable(luaState, fileName, reportLuaError))
         return false;
-
-    const int callStatus = lua_pcall(luaState, 0, 1, 0);
-    if (!reportError(callStatus, "execute(" + fileName + ")"))
-        return false;
-
-    if (!lua_istable(luaState, -1)) {
-        VG_ERROR("[Lua] Entity definition '" + fileName + "' must return a table.");
-        lua_pop(luaState, 1);
-        return false;
-    }
 
     const int tableIndex = lua_gettop(luaState);
 
@@ -279,19 +268,11 @@ bool ScriptSystem::loadAnimationDefinition(const std::string& fileName, Animatio
     if (luaState == nullptr && !init())
         return false;
 
-    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
-    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+    auto reportLuaError = [this](int status, const std::string& context) {
+        return reportError(status, context);
+    };
+    if (!loadLuaFileResultTable(luaState, fileName, reportLuaError))
         return false;
-
-    const int callStatus = lua_pcall(luaState, 0, 1, 0);
-    if (!reportError(callStatus, "execute(" + fileName + ")"))
-        return false;
-
-    if (!lua_istable(luaState, -1)) {
-        VG_ERROR("[Lua] Animation definition '" + fileName + "' must return a table.");
-        lua_pop(luaState, 1);
-        return false;
-    }
 
     const int tableIndex = lua_gettop(luaState);
 
@@ -335,38 +316,6 @@ bool ScriptSystem::loadAnimationDefinition(const std::string& fileName, Animatio
 
     lua_pop(luaState, 1); // pop returned table
     return true;
-
-}
-
-bool ScriptSystem::callGlobal(const std::string &functionName) {
-     if (luaState == nullptr)
-        return false;
-
-    lua_getglobal(luaState, functionName.c_str());
-    if (!lua_isfunction(luaState, -1)) {
-        lua_pop(luaState, 1);
-        VG_ERROR("[Lua] Global '" + functionName + "' is not a function.");
-        return false;
-    }
-
-    const int status = lua_pcall(luaState, 0, 0, 0);
-    return reportError(status, "callGlobal(" + functionName + ")");
-}
-
-bool ScriptSystem::callGlobal(const std::string& functionName, float dt) {
-    if (luaState == nullptr)
-        return false;
-
-    lua_getglobal(luaState, functionName.c_str());
-    if (!lua_isfunction(luaState, -1)) {
-        lua_pop(luaState, 1);
-        VG_ERROR("[Lua] Global '" + functionName + "' is not a function.");
-        return false;
-    }
-
-    lua_pushnumber(luaState, dt);
-    const int status = lua_pcall(luaState, 1, 0, 0);
-    return reportError(status, "callGlobal(" + functionName + ")");
 
 }
 
