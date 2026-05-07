@@ -246,6 +246,9 @@ void Application::init() {
     textureEmitter->setBaseLifetime(1.0f);
     textureEmitter->setBaseVelocity({0.0f, 30.0f});
     textureEmitter->setVelocityVariance({50.0f, 50.0f});
+
+    //-------------- UI TEST
+    uiRenderer = std::make_unique<UIRenderer>(renderer);
 }
 
 void Application::run() {
@@ -293,13 +296,11 @@ void Application::update(float dt) {
     }
 
     // TODO: probably best done from player on_update script func?
-    if (cameraFollowPlayer) {
-        Entity *player = scene.findEntityByID("player");
-        if (player != nullptr)
-            // Centre camera on entity's centre
-            camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
+    Entity *player = scene.findEntityByID("player");
+    if (cameraFollowPlayer && player != nullptr) {
+        // Centre camera on entity's centre
+        camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
     }
-
 
     particleSystem.update(dt);
     // Only update selected entities/tiles when not using engine editor tools
@@ -314,12 +315,12 @@ void Application::update(float dt) {
 
         if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
             if (bloodEmitter) {
-                bloodEmitter->emit(mouseWorld, 20);
+                bloodEmitter->emit(mouseWorld, 100);
             }
         }
         if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
             if (textureEmitter) {
-                textureEmitter->emit(mouseWorld, 12);
+                textureEmitter->emit(mouseWorld, 60);
             }
         }
     }
@@ -340,7 +341,7 @@ void Application::render(float dt) {
     camera.setViewportSize((float)display_w, (float)display_h);
     renderer.begin(camera);
 
-    // Main scene render
+    // Main Scene Pass
     scene.render(renderer, camera, display_w, display_h);
 
     if (showPhysicsDebug) {
@@ -348,18 +349,49 @@ void Application::render(float dt) {
     }
 
     particleSystem.draw(renderer);
-
     selectionManager.draw(renderer, scene);
 
-    // --------- TEST RENDERER CODE
-    // TEST textured quad render code
-    renderer.drawQuad({assetManager.getTexture("crate"), {0.0f, 0.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {100.0f, 100.0f}, 0.0f});
-    // TEST coloured quad render code
-    renderer.drawQuad(
-        {{{200.0f, 0.0f}, {100.0f, 100.0f}, 0.0f},
+    // UI RENDER 1st Pass(World Space) TEST - HP bar
+    Entity* player = scene.findEntityByID("player");
+    if ( player != nullptr) {
+        const glm::vec2 barPos = player->transform.position + glm::vec2(6.0f, 32.0f);
+        uiRenderer->beginWorld(camera); // renderer begin already called with camera in main pass
+
+        uiRenderer->drawQuad({
+            {barPos, {32.0f, 5.0f}},
+            TextureRegion::full(nullptr),
+            {0.15f, 0.15f, 0.15f, 0.95f}
+        });
+
+        uiRenderer->drawQuad({
+            {barPos + glm::vec2(1.0f, 1.0f), {22.0f, 3.0f}},
+            TextureRegion::full(nullptr),
+            {0.25f, 0.85f, 0.35f, 1.0f}
+        });
+    }
+    uiRenderer->end();
+
+    // UI RENDER 2nd Pass(Screen Space) TEST - Hotbar
+    uiRenderer->beginScreen(display_w, display_h);
+    renderer.begin(uiRenderer->getScreenCamera());
+    uiRenderer->drawQuad({
+        {{20.0f, 20.0f}, {260.0f, 64.0f}},
         TextureRegion::full(nullptr),
-        {0.6f, 0.2f, 0.1f, 0.5f}}
-    );
+        {0.08f, 0.08f, 0.10f, 0.92f}
+    });
+
+    uiRenderer->drawQuadOutline({
+        {{20.0f, 20.0f}, {260.0f, 64.0f}},
+        2.0f,
+        {0.85f, 0.80f, 0.55f, 1.0f}
+    });
+
+    uiRenderer->drawQuad({
+        {{30.0f, 30.0f}, {44.0f, 44.0f}},
+        TextureRegion::full(assetManager.getTexture("crate")),
+        {1.0f, 1.0f, 1.0f, 1.0f}
+    });
+    uiRenderer->end();
 
     renderer.end();
 

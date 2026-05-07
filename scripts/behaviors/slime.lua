@@ -5,7 +5,7 @@ function M.on_create(self)
 end
 
 function M.on_update(self, dt)
-    -- print("slime on update")
+    -- print("Delta time: "..dt)
 end
 
 return M

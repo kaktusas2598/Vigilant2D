@@ -22,6 +22,8 @@
 #include "TopDownControllerSystem.hpp"
 #include "ContentLoader.hpp"
 
+#include "UIRenderer.hpp"
+
 class Application {
     public:
         void init();
@@ -70,4 +72,6 @@ class Application {
         std::unique_ptr<TopDownControllerSystem> topDownControllerSystem = nullptr;
         std::unique_ptr<ContentLoader> contentLoader = nullptr;
         bool cameraFollowPlayer = true;
+
+        std::unique_ptr<UIRenderer> uiRenderer = nullptr;
 };
