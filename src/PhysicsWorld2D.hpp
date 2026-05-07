@@ -28,6 +28,7 @@ class PhysicsWorld2D {
         b2BodyId createDynamicBox(const glm::vec2& positionPixels, const glm::vec2& sizePixels);
         glm::vec2 getBodyPositionPixels(b2BodyId bodyId) const;
         void setBodyLinearVelocityPixels(b2BodyId bodyId, const glm::vec2& velocityPixelsPerSecond);
+        void setBodyPositionPixels(b2BodyId bodyId, const glm::vec2& centrePixels);
 
         void drawDebug(Renderer& renderer) const;
         int getStaticBodyCount() const { return static_cast<int>(staticBodies.size()); }

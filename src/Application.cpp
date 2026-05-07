@@ -85,6 +85,7 @@ void Application::init() {
         if (ImGui::SliderFloat("Zoom", &zoom, 1.0f, 8.0f)) {
             camera.setZoom(zoom);
         }
+        ImGui::Checkbox("Follow Player", &cameraFollowPlayer);
     });
 
     uiLayer.addPanel("Scene", [this]() {
@@ -105,7 +106,14 @@ void Application::init() {
             glm::vec2 boundsSize = entity->getBoundsSize();
 
             if (ImGui::DragFloat2("Position", &pos.x, 1.0f)) {
-                entity->transform.position = pos;
+                if (entity->hasPhysicsBody()) {
+                   const glm::vec2 boundsSize = entity->getBoundsSize();
+                    const glm::vec2 boundsPos = pos + entity->getBoundsOffset();
+                    const glm::vec2 centre = boundsPos + boundsSize * 0.5f;
+                    scene.getPhysicsWorld().setBodyPositionPixels(entity->getPhysicsBody(), centre); 
+                } else {
+                    entity->transform.position = pos;
+                }
             }
             if (ImGui::DragFloat2("Scale", &scale.x, 1.0f)) {
                 entity->transform.scale = scale;
@@ -285,10 +293,13 @@ void Application::update(float dt) {
     }
 
     // TODO: probably best done from player on_update script func?
-    Entity *player = scene.findEntityByID("player");
-    if (player != nullptr)
-        // Centre camera on entity's centre
-        camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
+    if (cameraFollowPlayer) {
+        Entity *player = scene.findEntityByID("player");
+        if (player != nullptr)
+            // Centre camera on entity's centre
+            camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
+    }
+
 
     particleSystem.update(dt);
     // Only update selected entities/tiles when not using engine editor tools

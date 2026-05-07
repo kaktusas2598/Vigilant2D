@@ -69,4 +69,5 @@ class Application {
         std::unique_ptr<EntityFactory> entityFactory = nullptr;
         std::unique_ptr<TopDownControllerSystem> topDownControllerSystem = nullptr;
         std::unique_ptr<ContentLoader> contentLoader = nullptr;
+        bool cameraFollowPlayer = true;
 };

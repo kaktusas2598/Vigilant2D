@@ -116,6 +116,10 @@ void PhysicsWorld2D::setBodyLinearVelocityPixels(b2BodyId bodyId, const glm::vec
     });
 }
 
+void PhysicsWorld2D::setBodyPositionPixels(b2BodyId bodyId, const glm::vec2& centrePixels) {
+    b2Body_SetTransform(bodyId, {toMeters(centrePixels.x), toMeters(centrePixels.y)}, b2Rot_identity);
+}
+
 void PhysicsWorld2D::drawDebug(Renderer& renderer) const {
     for (const auto& debugBody : debugBodies) {
         if (B2_IS_NULL(debugBody.bodyId) || !b2Body_IsValid(debugBody.bodyId))
