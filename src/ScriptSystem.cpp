@@ -68,6 +68,20 @@ static bool readStringField(lua_State* L, int tableIndex, const char* fieldName,
     return true;
 }
 
+static bool readIntField(lua_State* L, int tableIndex, const char* fieldName, int& outValue) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_isnumber(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    outValue = static_cast<int>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+    return true;
+}
+
 static bool loadLuaFileResultTable(lua_State* L,
                                    const std::string& fileName,
                                    std::function<bool(int, const std::string&)> reportError) {
@@ -212,7 +226,6 @@ bool ScriptSystem::loadAnimationManifest(const std::string& fileName, std::vecto
     return true;
 }
 
-// TODO: A lot of internal lua code replicated in both methods! NON- DRY!!
 bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefinition& outDefinition) {
     if (luaState == nullptr && !init())
         return false;
@@ -225,21 +238,10 @@ bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefin
 
     const int tableIndex = lua_gettop(luaState);
 
-    lua_getfield(luaState, tableIndex, "texture");
-    if (lua_isstring(luaState, -1)) {
-        outDefinition.texture = lua_tostring(luaState, -1);
-    }
-    lua_pop(luaState, 1);
-
-    lua_getfield(luaState, tableIndex, "animation");
-    if (lua_isstring(luaState, -1)) {
-        outDefinition.animation = lua_tostring(luaState, -1);
-    }
-    lua_pop(luaState, 1);
-
+    readStringField(luaState, tableIndex, "texture", outDefinition.texture);
+    readStringField(luaState, tableIndex, "animation", outDefinition.animation);
     readVec2Field(luaState, tableIndex, "scale", outDefinition.scale);
 
-    glm::vec2 bounds;
     if (readVec2Field(luaState, tableIndex, "bounds_offset", outDefinition.boundsOffset)) {
         outDefinition.hasBounds = true;
     }
@@ -248,11 +250,7 @@ bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefin
         outDefinition.hasBounds = true;
     }
 
-    lua_getfield(luaState, tableIndex, "script");
-    if (lua_isstring(luaState, -1)) {
-        outDefinition.behaviorScript = lua_tostring(luaState, -1);
-    }
-    lua_pop(luaState, 1);
+    readStringField(luaState, tableIndex, "script", outDefinition.behaviorScript);
 
     lua_getfield(luaState, tableIndex, "physics_enabled");
     if (lua_isboolean(luaState, -1)) {
@@ -282,24 +280,9 @@ bool ScriptSystem::loadAnimationDefinition(const std::string& fileName, Animatio
     }
     lua_pop(luaState, 1);
 
-    lua_getfield(luaState, tableIndex, "rows");
-    if (lua_isnumber(luaState, -1)) {
-        outDefinition.rows = lua_tonumber(luaState, -1);
-    }
-    lua_pop(luaState, 1);
-
-    lua_getfield(luaState, tableIndex, "columns");
-    if (lua_isnumber(luaState, -1)) {
-        outDefinition.columns = lua_tonumber(luaState, -1);
-    }
-    lua_pop(luaState, 1);
-
-    lua_getfield(luaState, tableIndex, "row");
-    if (lua_isnumber(luaState, -1)) {
-        outDefinition.row = lua_tonumber(luaState, -1);
-    }
-    lua_pop(luaState, 1);
-
+    readIntField(luaState, tableIndex, "rows", outDefinition.rows);
+    readIntField(luaState, tableIndex, "columns", outDefinition.columns);
+    readIntField(luaState, tableIndex, "row", outDefinition.row);
     readIntArrayField(luaState, tableIndex, "frames", outDefinition.frames);
 
     lua_getfield(luaState, tableIndex, "frame_duration");
