@@ -50,12 +50,43 @@ const Shader* AssetManager::getShader(const std::string &id) const {
     return it != shaders.end() ? it->second.get() : nullptr;
 }
 
+Font* AssetManager::loadFont(const std::string& id, const std::string& filePath) {
+    auto it = fonts.find(id);
+    if (it != fonts.end()) {
+        return it->second.get();
+    }
+
+    auto font = std::make_unique<Font>();
+    // TODO: probably pass pixel size? or default and change when drawing?
+    if (!font->loadFromFile(filePath, 12.0f)) {
+        return nullptr;
+    }
+
+    Font* result = font.get();
+    fonts[id] = std::move(font);
+    return result;
+}
+
+Font* AssetManager::getFont(const std::string& id) {
+    auto it = fonts.find(id);
+    return it != fonts.end() ? it->second.get() : nullptr;
+}
+
+const Font* AssetManager::getFont(const std::string& id) const {
+    auto it = fonts.find(id);
+    return it != fonts.end() ? it->second.get() : nullptr;
+}
+
 bool AssetManager::hasTexture(const std::string &id) const {
     return textures.find(id) != textures.end();
 }
 
 bool AssetManager::hasShader(const std::string &id) const {
     return shaders.find(id) != shaders.end();
+}
+
+bool AssetManager::hasFont(const std::string& id) const {
+    return fonts.find(id) != fonts.end();
 }
 
 std::vector<std::string> AssetManager::getTextureIDs() const {
