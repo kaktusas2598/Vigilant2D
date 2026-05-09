@@ -211,6 +211,9 @@ void Application::init() {
     map->loadFromFile("assets/farmMap.tmx", assetManager);
     scene.setTileMap(std::move(map));
 
+    // Call before registering entities so they have scene context in scripts
+    scriptSystem.setRuntimeContext(scene, animationRegistry);
+
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
     if (scene.getTileMap() != nullptr)
@@ -373,6 +376,8 @@ void Application::render(float dt) {
 
     particleSystem.draw(renderer);
     selectionManager.draw(renderer, scene);
+
+    // FIXME: sort out this UI rendering mess below
 
     // UI RENDER 1st Pass(World Space) TEST - HP bar
     Entity* player = scene.findEntityByID("player");

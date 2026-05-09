@@ -3,6 +3,8 @@
 #include <functional>
 #include "Logger.hpp"
 
+#include "LuaBindings.hpp"
+
 // --------- STATIC HELPERS ---------
 static bool readVec2Field(lua_State* L, int tableIndex, const char* fieldName, glm::vec2& outVec) {
     lua_getfield(L, tableIndex, fieldName);
@@ -131,6 +133,7 @@ bool ScriptSystem::init() {
     }
 
     luaL_openlibs(luaState);
+    registerEngineBindings(luaState, *this);
     return true;
 }
 
@@ -379,10 +382,10 @@ bool ScriptSystem::callOnCreate(const ScriptInstance& instance) {
         return true;
     }
 
-    // Remove table at -2, leaving function at the top of the stack
-    lua_remove(luaState, -2);
+    lua_pushvalue(luaState, -2); // table, function, self
+    lua_remove(luaState, -3); // function, self
 
-    const int status = lua_pcall(luaState, 0, 0, 0);
+    const int status = lua_pcall(luaState, 1, 0, 0);
     return reportError(status, "callOnCreate(" + instance.fileName + ")");
 }
 
@@ -398,13 +401,12 @@ bool ScriptSystem::callOnUpdate(const ScriptInstance& instance, float dt) {
         return true;
     }
 
-    // Remove table at -2, leaving function at the top of the stack
-    lua_remove(luaState, -2);
+    lua_pushvalue(luaState, -2); // table, function, self
+    lua_remove(luaState, -3); // function, self
     lua_pushnumber(luaState, dt);
 
-    const int status = lua_pcall(luaState, 1, 0, 0);
+    const int status = lua_pcall(luaState, 2, 0, 0);
     return reportError(status, "callOnUpdate(" + instance.fileName + ")");
-
 }
 
 void ScriptSystem::releaseInstance(ScriptInstance& instance) {
@@ -429,6 +431,17 @@ bool ScriptSystem::attachToEntity(const Entity& entity) {
     ScriptInstance instance = loadBehavior(entity.getScriptName());
     if (instance.tableRef == LUA_NOREF)
         return false;
+
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instance.tableRef);
+
+    // Attach "id" and "entity_id" to table containing behavior scripts
+    lua_pushstring(luaState, entity.getID().c_str());
+    lua_setfield(luaState, -2, "id");
+
+    lua_pushstring(luaState, entity.getID().c_str());
+    lua_setfield(luaState, -2, "entity_id");
+
+    lua_pop(luaState, 1);
 
     entityScripts[entity.getID()] = std::move(instance);
     return true;
@@ -455,6 +468,11 @@ void ScriptSystem::detachFromEntity(const Entity& entity) {
 
     releaseInstance(it->second);
     entityScripts.erase(it);
+}
+
+void ScriptSystem::setRuntimeContext(Scene& scene, AnimationRegistry& newAnimationRegsitry) {
+    runtimeScene = &scene;
+    animationRegistry = &newAnimationRegsitry;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

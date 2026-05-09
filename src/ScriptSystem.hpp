@@ -13,6 +13,9 @@ extern "C" {
 #include "EntityDefinition.hpp"
 #include "AnimationDefinition.hpp"
 
+class Scene;
+class AnimationRegistry;
+
 // Raw assets
 struct TextureManifestEntry {
     std::string id;
@@ -64,9 +67,16 @@ class ScriptSystem {
         void detachFromEntity(const Entity& entity);
 
         lua_State* getState() const { return luaState; }
+
+        void setRuntimeContext(Scene& scene, AnimationRegistry& newAnimationRegsitry);
+        Scene* getRuntimeScene() const { return runtimeScene; }
+        AnimationRegistry* getAnimationRegistry() const { return animationRegistry; }
     private:
         bool reportError(int status, const std::string& context);
 
         lua_State* luaState = nullptr;
         std::unordered_map<std::string, ScriptInstance> entityScripts;
+
+        Scene* runtimeScene = nullptr;
+        AnimationRegistry* animationRegistry = nullptr;
 };
