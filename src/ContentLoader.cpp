@@ -10,22 +10,38 @@ ContentLoader::ContentLoader(AssetManager& assetManager,  AnimationRegistry& ani
 }
 
 bool ContentLoader::loadAssets(const std::string& manifestFile) {
-    std::vector<AssetManifestEntry> textures;
-    if (!scriptSystem.loadAssetManifest(manifestFile, textures)) {
+    std::vector<TextureManifestEntry> textures;
+    std::vector<FontManifestEntry> fonts;
+    if (!scriptSystem.loadAssetManifest(manifestFile, textures, fonts)) {
         VG_ERROR("Failed to load asset manifest: " + manifestFile);
         return false;
     }
 
     bool allLoaded = true;
+    // Bootstrap textures
     for (const auto& texture: textures) {
         if (texture.id.empty() || texture.path.empty()) {
-            VG_ERROR("Asset manifest entry is midding id or path in: " + manifestFile);
+            VG_ERROR("Texture Asset manifest entry is midding id or path in: " + manifestFile);
             allLoaded = false;
             continue;
         }
 
         if (assetManager.loadTexture(texture.id, texture.path) == nullptr) {
             VG_ERROR("Failed to load texture '" + texture.id + "' from '" + texture.path + "'");
+            allLoaded = false;
+        } 
+    }
+
+    // Bootstrap fonts
+    for (const auto& font: fonts) {
+        if (font.id.empty() || font.path.empty()) {
+            VG_ERROR("Font Asset manifest entry is midding id or path in: " + manifestFile);
+            allLoaded = false;
+            continue;
+        }
+
+        if (assetManager.loadFont(font.id, font.path, font.pixelSize) == nullptr) {
+            VG_ERROR("Failed to load font '" + font.id + "' from '" + font.path + "'");
             allLoaded = false;
         } 
     }

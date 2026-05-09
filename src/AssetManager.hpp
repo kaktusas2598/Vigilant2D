@@ -23,7 +23,7 @@ class AssetManager {
         Shader* getShader(const std::string& id);
         const Shader* getShader(const std::string& id) const; 
 
-        Font* loadFont(const std::string& id, const std::string& filePath);
+        Font* loadFont(const std::string& id, const std::string& filePath, int pixelSize);
 
         Font* getFont(const std::string& id);
         const Font* getFont(const std::string& id) const;

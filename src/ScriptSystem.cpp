@@ -102,6 +102,21 @@ static bool loadLuaFileResultTable(lua_State* L,
     return true;
 }
 
+// Gets lua table from manifest definition file and length of it
+static bool readManifestEntriesTable(lua_State* L, int rootIndex, const char* fieldName, int& outTableIndex, int& outCount) {
+    rootIndex = lua_absindex(L, rootIndex);
+
+    lua_getfield(L, rootIndex, fieldName);
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    outTableIndex = lua_gettop(L);
+    outCount = static_cast<int>(lua_rawlen(L, outTableIndex));
+    return true;
+}
+
 // ----------------------------------
 
 
@@ -126,8 +141,10 @@ void ScriptSystem::shutdown() {
     }
 }
 
-bool ScriptSystem::loadAssetManifest(const std::string& fileName, std::vector<AssetManifestEntry>& outTextures) {
+bool ScriptSystem::loadAssetManifest(const std::string& fileName,
+     std::vector<TextureManifestEntry>& outTextures, std::vector<FontManifestEntry>& outFonts) {
     outTextures.clear();
+    outFonts.clear();
 
     if (luaState == nullptr && !init())
         return false;
@@ -140,39 +157,62 @@ bool ScriptSystem::loadAssetManifest(const std::string& fileName, std::vector<As
 
     const int rootIndex = lua_gettop(luaState);
 
-    lua_getfield(luaState, rootIndex, "textures");
-    if (!lua_istable(luaState, -1)) {
-        lua_pop(luaState, 2); // textures + root
-        VG_ERROR("[Lua] Asset manifest '" + fileName + "' must contain a 'textures' table.");
-        return false;
+    int texturesIndex = 0;
+    int texturesCount = 0;
+    if (readManifestEntriesTable(luaState, rootIndex, "textures", texturesIndex, texturesCount)) {
+        for (int i = 1; i <= texturesCount; ++i) {
+            lua_geti(luaState, texturesIndex, i);
+            if (!lua_istable(luaState, -1)) {
+                lua_pop(luaState, 3); // bad entry + textures + root
+                VG_ERROR("[Lua] Asset manifest '" + fileName + "' contains a non-table texture entry.");
+                return false;
+            }
+
+            const int entryIndex = lua_gettop(luaState);
+
+            TextureManifestEntry entry;
+            if (!readStringField(luaState, entryIndex, "id", entry.id) ||
+                !readStringField(luaState, entryIndex, "path", entry.path)) {
+                lua_pop(luaState, 3); // entry + textures + root
+                VG_ERROR("[Lua] Asset manifest '" + fileName + "' has a texture entry missing 'id' or 'path'.");
+                return false;
+            }
+
+            outTextures.push_back(std::move(entry));
+            lua_pop(luaState, 1); // entry
+        }
+        lua_pop(luaState, 1); // textures table
     }
 
-    const int texturesIndex = lua_gettop(luaState);
-    const int count = static_cast<int>(lua_rawlen(luaState, texturesIndex));
+    int fontsIndex = 0;
+    int fontsCount = 0;
+    if (readManifestEntriesTable(luaState, rootIndex, "fonts", fontsIndex, fontsCount)) {
+        for (int i = 1; i <= fontsCount; ++i) {
+            lua_geti(luaState, fontsIndex, i);
+            if (!lua_istable(luaState, -1)) {
+                lua_pop(luaState, 3); // bad entry + fonts + root
+                VG_ERROR("[Lua] Asset manifest '" + fileName + "' contains a non-table font entry.");
+                return false;
+            }
 
-    for (int i = 1; i <= count; ++i) {
-        lua_geti(luaState, texturesIndex, i);
-        if (!lua_istable(luaState, -1)) {
-            lua_pop(luaState, 3); // bad entry + textures + root
-            VG_ERROR("[Lua] Asset manifest '" + fileName + "' contains a non-table texture entry.");
-            return false;
+            const int entryIndex = lua_gettop(luaState);
+
+            FontManifestEntry entry;
+            if (!readStringField(luaState, entryIndex, "id", entry.id) ||
+                !readStringField(luaState, entryIndex, "path", entry.path) ||
+                !readIntField(luaState, entryIndex, "pixel_size", entry.pixelSize)) {
+                lua_pop(luaState, 3); // entry + fonts + root
+                VG_ERROR("[Lua] Asset manifest '" + fileName + "' has a font entry missing 'id', 'path' or 'pixel_size.");
+                return false;
+            }
+
+            outFonts.push_back(std::move(entry));
+            lua_pop(luaState, 1); // entry
         }
-
-        const int entryIndex = lua_gettop(luaState);
-
-        AssetManifestEntry entry;
-        if (!readStringField(luaState, entryIndex, "id", entry.id) ||
-            !readStringField(luaState, entryIndex, "path", entry.path)) {
-            lua_pop(luaState, 3); // entry + textures + root
-            VG_ERROR("[Lua] Asset manifest '" + fileName + "' has a texture entry missing 'id' or 'path'.");
-            return false;
-        }
-
-        outTextures.push_back(std::move(entry));
-        lua_pop(luaState, 1); // entry
+        lua_pop(luaState, 1); // fonts table
     }
 
-    lua_pop(luaState, 2); // textures + root
+    lua_pop(luaState, 1); // root table
     return true;    
 }
 

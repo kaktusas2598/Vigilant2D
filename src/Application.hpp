@@ -24,8 +24,7 @@
 
 #include "UIRenderer.hpp"
 #include "UISlotStrip.hpp"
-
-#include "Font.hpp"
+#include "UILabel.hpp"
 #include "TextRenderer.hpp"
 
 class Application {
@@ -78,11 +77,9 @@ class Application {
         bool cameraFollowPlayer = true;
 
         std::unique_ptr<UIRenderer> uiRenderer = nullptr;
+        TextRenderer textRenderer;
         // For UI Widget test
         UISlotStrip slotStrip;
         UIStyle uiStyle;
-
-        // For text test
-        Font uiFont;
-        TextRenderer textRenderer;
+        UILabel label;
 };

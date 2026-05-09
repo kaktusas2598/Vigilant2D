@@ -5,9 +5,6 @@
 #include "Input.hpp"
 
 #include "TileMap.hpp"
-#include "Sprite.hpp"
-#include "AnimatedSprite.hpp"
-
 #include "EntityFactory.hpp"
 
 void errorCallback(int error, const char* description) {
@@ -141,12 +138,14 @@ void Application::init() {
 
     uiLayer.addPanel("Assets", [this]() {
         ImGui::Text("Textures: %d", static_cast<int>(assetManager.getTextureIDs().size()));
-        for (const auto& id : assetManager.getTextureIDs()) {
-            ImGui::BulletText("%s", id.c_str());
-        }
+        // for (const auto& id : assetManager.getTextureIDs()) {
+            // ImGui::BulletText("%s", id.c_str());
+        // }
 
         ImGui::Separator();
+        ImGui::Text("Fonts: %d", static_cast<int>(assetManager.getFontIDs().size()));
 
+        ImGui::Separator();
         ImGui::Text("Shaders: %d", static_cast<int>(assetManager.getShaderIDs().size()));
         for (const auto& id : assetManager.getShaderIDs()) {
             ImGui::BulletText("%s", id.c_str());
@@ -198,8 +197,6 @@ void Application::init() {
     renderer.init();
 
     textRenderer.init();
-    // uiFont.loadFromFile("assets/fonts/WeddingdayPersonalUseRegular-1Gvo0.ttf", 24);
-    uiFont.loadFromFile("assets/fonts/Ithaca-LVB75.ttf", 24);
 
     scriptSystem.init();
 
@@ -260,6 +257,13 @@ void Application::init() {
     item.icon = TextureRegion::full(assetManager.getTexture("crate"));
     slotStrip.setSlotItem(0, item);
     slotStrip.setSelectedIndex(0);
+
+    label.setText("Hotbar");
+    label.setPosition({20.0f, 96.0f});
+    label.setScale(1.0f);
+    label.setTextColor({1.0f, 1.0f, 1.0f, 1.0f});
+    label.setBackgroundEnabled(true);
+    label.setBorderEnabled(true);
 }
 
 void Application::run() {
@@ -388,17 +392,12 @@ void Application::render(float dt) {
             {0.25f, 0.85f, 0.35f, 1.0f}
         });
 
-        // World space text test
-        textRenderer.begin(camera);
-        textRenderer.drawText(
-            uiFont,
-            "HELLO WORLD",
-            // "Player",
-            player->transform.position + glm::vec2(0.0f, 42.0f),
-            0.35f,
-            {1.0f, 1.0f, 1.0f, 1.0f}
-        );
-        textRenderer.end();
+        // World space UI text test
+        UILabel worldLabel;
+        worldLabel.setText("Player");
+        worldLabel.setPosition(player->transform.position + glm::vec2(0.0f, 42.0f));
+        worldLabel.setScale(0.35f);
+        worldLabel.drawWorld(*uiRenderer, textRenderer, *assetManager.getFont("ui"), camera);
     }
     uiRenderer->end();
 
@@ -406,18 +405,8 @@ void Application::render(float dt) {
     uiRenderer->beginScreen(display_w, display_h);
     renderer.begin(uiRenderer->getScreenCamera());
     slotStrip.draw(*uiRenderer, uiStyle, {20.0f, 20.0f}, {44.0f, 44.0f});
+    label.drawScreen(*uiRenderer, textRenderer, *assetManager.getFont("ui"), display_w, display_h);
     uiRenderer->end();
-
-    // Screen space text test
-    textRenderer.beginScreen(display_w, display_h);
-    textRenderer.drawText(
-        uiFont,
-        "Hotbar",
-        {20.f, 96.0f},
-        1.0f,
-        {1.0f, 1.0f, 1.0f, 1.0f}
-    );
-    textRenderer.end();
 
     renderer.end();
 

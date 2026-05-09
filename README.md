@@ -17,10 +17,11 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
  * Particle System
  * ImgGui Debug panels
  * Integrated physics with Box2D engine
- * Tiled Map (.TMX) loading, selectable tile cursor
+ * Tiled Map (.TMX) loading, selectable tile cursor, entity spawning from object layers
  * Animated Sprites
  * Project Content Bootstraping system using Lua scripts
  * Entity definition files and behavior scripts (Bindings to come)
+ * True type fonts
 
 # Ubuntu instructions
 
@@ -35,11 +36,10 @@ git submodule init && git submodule update
 ```
 
 # TODO
-  * UI System (world and screen space)
+  * UI System (world and screen space) (IN PROGRESS)
   * Scripting, Engine to Lua bindings (IN PROGRESS)
   * Saving
   * Light source support
-  * True type fonts
   * Sound
   * Pathfinding
   *
@@ -48,4 +48,3 @@ git submodule init && git submodule update
   * More Box2D integration
   * Cutscene, cinematic camera support (Lua Coroutines?)
   * Hot Reload scripts, shaders, maps
-

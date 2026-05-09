@@ -56,3 +56,26 @@ void TextRenderer::drawText(const Font& font,
         pen.x += (glyph->advance >> 6) * scale;
     }
 }
+
+glm::vec2 TextRenderer::measureText(const Font& font, const std::string& text, float scale) const {
+    float width = 0.0f;
+    float maxTop = 0.0f;
+    float maxBottom = 0.0f;
+
+    for (char c : text) {
+        const Glyph* glyph = font.getGlyph(c);
+        if (glyph == nullptr)
+            continue;
+        
+        width += (glyph->advance >> 6) * scale;
+        const float top = glyph->bearing.y * scale;
+        const float bottom = (glyph->size.y - glyph->bearing.y) * scale;
+
+        if (top > maxTop)
+            maxTop = top;
+        if (bottom > maxBottom)
+            maxBottom = bottom;
+    }
+
+    return {width, maxTop + maxBottom};
+}

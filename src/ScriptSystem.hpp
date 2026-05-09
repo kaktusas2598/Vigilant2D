@@ -13,15 +13,25 @@ extern "C" {
 #include "EntityDefinition.hpp"
 #include "AnimationDefinition.hpp"
 
-struct AssetManifestEntry {
+// Raw assets
+struct TextureManifestEntry {
     std::string id;
     std::string path;
 };
 
+struct FontManifestEntry {
+    std::string id;
+    std::string path;
+    int pixelSize = 16;
+};
+
+// Built content 
+// TODO: particle emitters manifests and bootstraping?
 struct AnimationManifestEntry {
     std::string id;
     std::string path;
 };
+
 
 struct ScriptInstance {
     std::string fileName;
@@ -38,8 +48,8 @@ class ScriptSystem {
         bool init();
         void shutdown();
 
-        // TODO: should support all kinds of assets not just textures
-        bool loadAssetManifest(const std::string& fileName, std::vector<AssetManifestEntry>& outTextures);
+        bool loadAssetManifest(const std::string& fileName,
+            std::vector<TextureManifestEntry>& outTextures, std::vector<FontManifestEntry>& outFonts);
         bool loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations);
         bool loadEntityDefinition(const std::string& fileName, EntityDefinition& outDefinition);
         bool loadAnimationDefinition(const std::string& fileName, AnimationDefinition& outDefinition);

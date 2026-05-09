@@ -50,15 +50,14 @@ const Shader* AssetManager::getShader(const std::string &id) const {
     return it != shaders.end() ? it->second.get() : nullptr;
 }
 
-Font* AssetManager::loadFont(const std::string& id, const std::string& filePath) {
+Font* AssetManager::loadFont(const std::string& id, const std::string& filePath, int pixelSize) {
     auto it = fonts.find(id);
     if (it != fonts.end()) {
         return it->second.get();
     }
 
     auto font = std::make_unique<Font>();
-    // TODO: probably pass pixel size? or default and change when drawing?
-    if (!font->loadFromFile(filePath, 12.0f)) {
+    if (!font->loadFromFile(filePath, pixelSize)) {
         return nullptr;
     }
 
@@ -109,7 +108,18 @@ std::vector<std::string> AssetManager::getShaderIDs() const {
     return ids;
 }
 
+std::vector<std::string> AssetManager::getFontIDs() const {
+    std::vector<std::string> ids;
+    ids.reserve(fonts.size());
+
+    for (const auto& pair : fonts) {
+        ids.push_back(pair.first);
+    }
+    return ids;
+}
+
 void AssetManager::clear() {
     textures.clear();
     shaders.clear();
+    fonts.clear();
 }

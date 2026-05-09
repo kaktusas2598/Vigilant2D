@@ -20,6 +20,8 @@ class TextRenderer{
 
         void drawText(const Font& font,
              const std::string& text, const glm::vec2& position, float scale, const glm::vec4& color);
+
+        glm::vec2 measureText(const Font& font, const std::string& text, float scale) const;
     private:
         Mesh quadMesh;
         Shader shader;
