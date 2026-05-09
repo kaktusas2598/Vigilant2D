@@ -28,6 +28,7 @@
 #include "TextRenderer.hpp"
 
 #include "ParticlePresetRegistry.hpp"
+#include "ParticleEmitterRegistry.hpp"
 
 class Application {
     public:
@@ -67,11 +68,10 @@ class Application {
         ScriptSystem scriptSystem;
 
         SelectionManager selectionManager;
+
         ParticleSystem particleSystem;
         ParticlePresetRegistry  particlePresetRegistry;
-        // Temporary emitters
-        ParticleEmitter* bloodEmitter = nullptr;
-        ParticleEmitter* textureEmitter = nullptr;
+        ParticleEmitterRegistry  particleEmitterRegistry;
 
         AnimationRegistry animationRegistry;
         std::unique_ptr<EntityFactory> entityFactory = nullptr;

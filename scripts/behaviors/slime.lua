@@ -1,7 +1,7 @@
 local M = {}
 
 local FOLLOW_DISTANCE = 100.0
-local STOP_DISTANCE = 5.0
+local STOP_DISTANCE = 15.0
 local MOVE_SPEED = 20.0
 
 function M.on_create(self)

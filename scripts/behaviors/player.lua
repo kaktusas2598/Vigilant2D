@@ -9,9 +9,18 @@ function M.on_create(self)
 end
 
 function M.on_update(self, dt)
-    -- Input check for mouse clicks, keys
-    -- Get mouse pos
-    -- Fire of emitters, change animations
+    local mouseX, mouseY = engine.get_mouse_world_position()
+    if mouseX == nil then
+        return
+    end
+
+    if engine.is_mouse_button_pressed(0) then
+        engine.emit_particles("blood_0", mouseX, mouseY, 256)
+    end
+
+    if engine.is_mouse_button_pressed(1) then
+        engine.emit_particles("crates_0", mouseX, mouseY, 128)
+    end
 end
 
 return M

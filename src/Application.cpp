@@ -158,6 +158,7 @@ void Application::init() {
     uiLayer.addPanel("Particles", [this]() {
         ImGui::Text("Emitters: %d", static_cast<int>(particleSystem.getEmitterCount()));
 
+        ParticleEmitter* bloodEmitter = particleEmitterRegistry.getEmitter("blood_0");
         if (bloodEmitter) {
             bool enabled = bloodEmitter->isEnabled();
             if (ImGui::Checkbox("Blood particle enabled", &enabled)) {
@@ -213,7 +214,7 @@ void Application::init() {
     scene.setTileMap(std::move(map));
 
     // Call before registering entities so they have scene context in scripts
-    scriptSystem.setRuntimeContext(scene, animationRegistry);
+    scriptSystem.setRuntimeContext({&scene, &animationRegistry, &input, &camera, &particleEmitterRegistry});
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
@@ -236,10 +237,20 @@ void Application::init() {
     camera.setZoom(4.0f); // set appropriate zoom for current game im working, probably better to be configured or scripted
 
     //-------------- Particle emitter initialisation
-    bloodEmitter = &particleSystem.createEmitter();
-    particlePresetRegistry.applyPreset("blood", *bloodEmitter, assetManager);
-    textureEmitter = &particleSystem.createEmitter();
-    particlePresetRegistry.applyPreset("crate_burst", *textureEmitter, assetManager);
+    particleEmitterRegistry.createEmitterFromPreset(
+        "blood_0",
+        "blood",
+        particleSystem,
+        particlePresetRegistry,
+        assetManager
+    );
+    particleEmitterRegistry.createEmitterFromPreset(
+        "crates_0",
+        "crate_burst",
+        particleSystem,
+        particlePresetRegistry,
+        assetManager
+    );
 
     //-------------- UI TEST
     uiRenderer = std::make_unique<UIRenderer>(renderer);
@@ -312,25 +323,8 @@ void Application::update(float dt) {
 
     particleSystem.update(dt);
     // Only update selected entities/tiles when not using engine editor tools
-    // Also same for emitting particles
     if (!uiLayer.wantsMouseCapture()) {
         selectionManager.update(input, camera, scene);
-
-        glm::vec2 mouseWorld = camera.screenToWorld({
-        static_cast<float>(input.getMouseX()),
-        static_cast<float>(input.getMouseY())
-        });
-
-        if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
-            if (bloodEmitter) {
-                bloodEmitter->emit(mouseWorld, 100);
-            }
-        }
-        if (input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
-            if (textureEmitter) {
-                textureEmitter->emit(mouseWorld, 60);
-            }
-        }
     }
 
     // For UI Hotbar test

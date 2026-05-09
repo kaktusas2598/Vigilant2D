@@ -584,9 +584,12 @@ void ScriptSystem::detachFromEntity(const Entity& entity) {
     entityScripts.erase(it);
 }
 
-void ScriptSystem::setRuntimeContext(Scene& scene, AnimationRegistry& newAnimationRegsitry) {
-    runtimeScene = &scene;
-    animationRegistry = &newAnimationRegsitry;
+void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
+    runtimeContext.scene = newContext.scene;
+    runtimeContext.animationRegistry = newContext.animationRegistry;
+    runtimeContext.camera = newContext.camera;
+    runtimeContext.input = newContext.input;
+    runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

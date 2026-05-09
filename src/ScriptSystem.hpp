@@ -10,14 +10,19 @@ extern "C" {
 
 #include <unordered_map>
 #include "Entity.hpp"
+#include "ScriptRuntimeContext.hpp"
 
 // For content bootstrapping
 #include "EntityDefinition.hpp"
 #include "AnimationDefinition.hpp"
 #include "ParticlePreset.hpp"
 
+// For runtime script context
 class Scene;
+class Input;
+class Camera2D;
 class AnimationRegistry;
+class ParticleEmitterRegistry;
 
 // Raw assets manifest entry for each resource
 struct TextureManifestEntry {
@@ -79,15 +84,17 @@ class ScriptSystem {
 
         lua_State* getState() const { return luaState; }
 
-        void setRuntimeContext(Scene& scene, AnimationRegistry& newAnimationRegsitry);
-        Scene* getRuntimeScene() const { return runtimeScene; }
-        AnimationRegistry* getAnimationRegistry() const { return animationRegistry; }
+        void setRuntimeContext(ScriptRuntimeContext newContext);
+        Scene* getRuntimeScene() const { return runtimeContext.scene; }
+        Input* getRuntimeInput() const { return runtimeContext.input; }
+        Camera2D* getRuntimeCamera() const { return runtimeContext.camera; }
+        AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }
+        ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
     private:
         bool reportError(int status, const std::string& context);
 
         lua_State* luaState = nullptr;
         std::unordered_map<std::string, ScriptInstance> entityScripts;
 
-        Scene* runtimeScene = nullptr;
-        AnimationRegistry* animationRegistry = nullptr;
+        ScriptRuntimeContext runtimeContext;
 };
