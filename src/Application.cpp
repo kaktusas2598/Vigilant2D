@@ -187,6 +187,7 @@ void Application::init() {
         }
     });
     uiLayer.addPanel("Selection", [this]() {
+        ImGui::Checkbox("Selection manager enabled", &selectionManagerEnabled);
         const glm::ivec2 hoverTile = selectionManager.getHoveredTile();
         const glm::ivec2 selectedTile = selectionManager.getSelectedTile();
 
@@ -323,7 +324,7 @@ void Application::update(float dt) {
 
     particleSystem.update(dt);
     // Only update selected entities/tiles when not using engine editor tools
-    if (!uiLayer.wantsMouseCapture()) {
+    if (!uiLayer.wantsMouseCapture() && selectionManagerEnabled) {
         selectionManager.update(input, camera, scene);
     }
 

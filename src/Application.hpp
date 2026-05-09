@@ -56,6 +56,7 @@ class Application {
         ImVec4 clearColour;
         bool debugMode = false;
         bool showPhysicsDebug = false;
+        bool selectionManagerEnabled = false;
 
         Input input;
         Time time;
