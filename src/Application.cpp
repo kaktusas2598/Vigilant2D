@@ -201,10 +201,11 @@ void Application::init() {
     scriptSystem.init();
 
     // ------------ PROJECT CONTENT BOOTSTRAPING
-    contentLoader = std::make_unique<ContentLoader>(assetManager, animationRegistry, scriptSystem);
+    contentLoader = std::make_unique<ContentLoader>(assetManager, animationRegistry, particlePresetRegistry, scriptSystem);
     // TODO: stop hardcoding these paths
     contentLoader->loadAssets("scripts/assets.lua");
     contentLoader->loadAnimations("scripts/animations.lua");
+    contentLoader->loadParticlePresets("scripts/emitters.lua");
 
     // -------- SCENE SETUP --------
     auto map = std::make_unique<TileMap>();
@@ -236,20 +237,9 @@ void Application::init() {
 
     //-------------- Particle emitter initialisation
     bloodEmitter = &particleSystem.createEmitter();
-    bloodEmitter->init(512, TextureRegion::full(nullptr));
-    bloodEmitter->setBaseColor({0.8f, 0.1f, 0.1f, 0.9f});
-    bloodEmitter->setBaseSize(10.0f);
-    bloodEmitter->setBaseLifetime(0.6f);
-    bloodEmitter->setBaseVelocity({0.0f, 50.0f});
-    bloodEmitter->setVelocityVariance({80.0f, 80.0f});
-
+    particlePresetRegistry.applyPreset("blood", *bloodEmitter, assetManager);
     textureEmitter = &particleSystem.createEmitter();
-    textureEmitter->init(256, TextureRegion::full(assetManager.getTexture("crate")));
-    textureEmitter->setBaseColor({1.0f, 1.0f, 1.0f, 0.9f});
-    textureEmitter->setBaseSize(14.0f);
-    textureEmitter->setBaseLifetime(1.0f);
-    textureEmitter->setBaseVelocity({0.0f, 30.0f});
-    textureEmitter->setVelocityVariance({50.0f, 50.0f});
+    particlePresetRegistry.applyPreset("crate_burst", *textureEmitter, assetManager);
 
     //-------------- UI TEST
     uiRenderer = std::make_unique<UIRenderer>(renderer);

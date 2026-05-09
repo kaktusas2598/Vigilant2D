@@ -27,6 +27,8 @@
 #include "UILabel.hpp"
 #include "TextRenderer.hpp"
 
+#include "ParticlePresetRegistry.hpp"
+
 class Application {
     public:
         void init();
@@ -66,6 +68,7 @@ class Application {
 
         SelectionManager selectionManager;
         ParticleSystem particleSystem;
+        ParticlePresetRegistry  particlePresetRegistry;
         // Temporary emitters
         ParticleEmitter* bloodEmitter = nullptr;
         ParticleEmitter* textureEmitter = nullptr;

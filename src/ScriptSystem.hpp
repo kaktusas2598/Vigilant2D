@@ -10,13 +10,16 @@ extern "C" {
 
 #include <unordered_map>
 #include "Entity.hpp"
+
+// For content bootstrapping
 #include "EntityDefinition.hpp"
 #include "AnimationDefinition.hpp"
+#include "ParticlePreset.hpp"
 
 class Scene;
 class AnimationRegistry;
 
-// Raw assets
+// Raw assets manifest entry for each resource
 struct TextureManifestEntry {
     std::string id;
     std::string path;
@@ -28,9 +31,13 @@ struct FontManifestEntry {
     int pixelSize = 16;
 };
 
-// Built content 
-// TODO: particle emitters manifests and bootstraping?
+// Built content manifest entry for each resource
 struct AnimationManifestEntry {
+    std::string id;
+    std::string path;
+};
+
+struct ParticlePresetManifestEntry {
     std::string id;
     std::string path;
 };
@@ -53,9 +60,13 @@ class ScriptSystem {
 
         bool loadAssetManifest(const std::string& fileName,
             std::vector<TextureManifestEntry>& outTextures, std::vector<FontManifestEntry>& outFonts);
-        bool loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations);
         bool loadEntityDefinition(const std::string& fileName, EntityDefinition& outDefinition);
+        bool loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations);
         bool loadAnimationDefinition(const std::string& fileName, AnimationDefinition& outDefinition);
+        bool loadParticlePresetManifest(const std::string& fileName,
+                                std::vector<ParticlePresetManifestEntry>& outPresets);
+        bool loadParticlePresetDefinition(const std::string& fileName, ParticlePreset& outPreset);
+
 
         ScriptInstance loadBehavior(const std::string& fileName);
         bool callOnCreate(const ScriptInstance& instance);
