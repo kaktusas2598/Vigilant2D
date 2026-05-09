@@ -38,6 +38,8 @@ git submodule init && git submodule update
 # TODO
   * UI System (world and screen space) (IN PROGRESS)
   * Scripting, Engine to Lua bindings (IN PROGRESS)
+  * FIX Render flow, implement pos-process, maybe minimap, visual effects
+  * States
   * Saving
   * Light source support
   * Sound

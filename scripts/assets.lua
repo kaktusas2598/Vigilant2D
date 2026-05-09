@@ -2,7 +2,13 @@ return {
     textures = {
         { id = "player", path = "assets/textures/player.png" },
         { id = "slime", path = "assets/textures/slime.png" },
-        { id = "crate", path = "assets/textures/crate.png" }
+        { id = "crate", path = "assets/textures/crate.png" },
+        { id = "shovel", path = "assets/rpg_icons_free/shovel.png" },
+        { id = "pickaxe", path = "assets/rpg_icons_free/pickaxe.png" },
+        { id = "axe", path = "assets/rpg_icons_free/axe.png" },
+        { id = "sword", path = "assets/rpg_icons_free/sword.png" },
+        { id = "bucket", path = "assets/rpg_icons_free/empty_bucket.png" },
+        { id = "torch", path = "assets/rpg_icons_free/torch.png" },
     },
     fonts = {
         { id = "ui", path = "assets/fonts/Ithaca-LVB75.ttf", pixel_size = 24 },
