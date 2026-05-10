@@ -90,11 +90,14 @@ class UISystem {
 
         bool isWidgetVisible(const std::string& group, bool visible) const;
 
-        void drawLabel(const UILabelRecord& record,
+        void drawLabelGeometry(const UILabelRecord& record,
                        UIRenderer& uiRenderer,
                        TextRenderer& textRenderer,
-                       AssetManager& assetManager,
-                       int viewportWidth, int viewportHeight) const;
+                       AssetManager& assetManager) const;
+        void drawLabelText(const UILabelRecord& record,
+                       TextRenderer& textRenderer,
+                       AssetManager& assetManager) const;
+
         void drawSlotStrip(const UISlotStripRecord& record, UIRenderer& uiRenderer) const;
 
         std::unordered_map<std::string, UILabelRecord> labels;

@@ -28,15 +28,15 @@ class UILabel {
         const std::string& getText() const { return text; }
         const glm::vec2& getPosition() const { return position; }
 
-        void drawScreen(UIRenderer& uiRenderer,
+        void drawScreenGeometry(UIRenderer& uiRenderer,
                         TextRenderer& textRenderer,
-                        const Font& font,
-                        int viewportWidth, int viewportHeight) const;
+                        const Font& font) const;
+        void drawScreenText(TextRenderer& textRenderer, const Font& font) const;
 
-        void drawWorld(UIRenderer& uiRenderer,
-                        TextRenderer& textRenderer,
-                        const Font& font,
-                        const Camera2D& camera) const;
+        void drawWorldGeometry(UIRenderer& uiRenderer,
+                            TextRenderer& textRenderer,
+                            const Font& font) const;
+        void drawWorldText(TextRenderer& textRenderer,const Font& font) const;
 
     private:
         std::string text;

@@ -3,10 +3,9 @@
 #include "UIRenderer.hpp"
 #include "TextRenderer.hpp"
 
-void UILabel::drawScreen(UIRenderer& uiRenderer,
+void UILabel::drawScreenGeometry(UIRenderer& uiRenderer,
                 TextRenderer& textRenderer,
-                const Font& font,
-                int viewportWidth, int viewportHeight) const {
+                const Font& font) const {
     const glm::vec2 textSize = textRenderer.measureText(font, text, scale);
     const glm::vec2 boxSize = textSize + padding * 2.0f;
 
@@ -25,17 +24,15 @@ void UILabel::drawScreen(UIRenderer& uiRenderer,
             borderColor
         });
     }
-
-    // FIXME: having another pass with shader binding/unbinding here is not ideal, same for other draw method
-    textRenderer.beginScreen(viewportWidth, viewportHeight);
-    textRenderer.drawText(font, text, position + padding, scale, textColor);
-    textRenderer.end();
 }
 
-void UILabel::drawWorld(UIRenderer& uiRenderer,
-                TextRenderer& textRenderer,
-                const Font& font,
-                const Camera2D& camera) const {
+void UILabel::drawScreenText(TextRenderer& textRenderer, const Font& font) const {
+    textRenderer.drawText(font, text, position + padding, scale, textColor);
+}
+
+void UILabel::drawWorldGeometry(UIRenderer& uiRenderer,
+                    TextRenderer& textRenderer,
+                    const Font& font) const {
     const glm::vec2 textSize = textRenderer.measureText(font, text, scale);
     const glm::vec2 boxSize = textSize + padding * 2.0f;
 
@@ -54,9 +51,8 @@ void UILabel::drawWorld(UIRenderer& uiRenderer,
             borderColor
         });
     }
+}
 
-    textRenderer.begin(camera);
+void UILabel::drawWorldText(TextRenderer& textRenderer,const Font& font) const {
     textRenderer.drawText(font, text, position + padding, scale, textColor);
-    textRenderer.end();
-
 }

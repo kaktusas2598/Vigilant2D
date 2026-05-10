@@ -61,12 +61,10 @@ void UISystem::clear() {
     groupVisibility.clear();
 }
 
-void UISystem::drawLabel(const UILabelRecord& record,
+void UISystem::drawLabelGeometry(const UILabelRecord& record,
                          UIRenderer& uiRenderer,
                          TextRenderer& textRenderer,
-                         AssetManager& assetManager,
-                         int viewportWidth,
-                         int viewportHeight) const {
+                         AssetManager& assetManager) const {
     Font* font = assetManager.getFont(record.fontId);
     if (font == nullptr)
         return;
@@ -82,8 +80,28 @@ void UISystem::drawLabel(const UILabelRecord& record,
     label.setBorderEnabled(record.borderEnabled);
     label.setBorderColor(record.borderColor);
 
-    label.drawScreen(uiRenderer, textRenderer, *font, viewportWidth, viewportHeight);
+    label.drawScreenGeometry(uiRenderer, textRenderer, *font);
 }
+
+void UISystem::drawLabelText(const UILabelRecord& record, TextRenderer& textRenderer, AssetManager& assetManager) const {
+    Font* font = assetManager.getFont(record.fontId);
+    if (font == nullptr)
+        return;
+
+    UILabel label;
+    label.setText(record.text);
+    label.setPosition(record.position);
+    label.setScale(record.scale);
+    label.setTextColor(record.textColor);
+    label.setPadding(record.padding);
+    label.setBackgroundEnabled(record.backgroundEnabled);
+    label.setBackgroundColor(record.backgroundColor);
+    label.setBorderEnabled(record.borderEnabled);
+    label.setBorderColor(record.borderColor);
+
+    label.drawScreenText(textRenderer, *font);
+}
+
 
 void UISystem::drawSlotStrip(const UISlotStripRecord& record,
                              UIRenderer& uiRenderer) const {
@@ -109,40 +127,52 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
                           AssetManager& assetManager,
                           int viewportWidth,
                           int viewportHeight) const {
-    std::vector<DrawRef> drawRefs;
-
+    std::vector<const UISlotStripRecord*> visibleSlotStrips;
+    std::vector<const UILabelRecord*> visibleLabels;
 
     // FIXME: Currently labels are drawn last because they are binding and unbinding different("text") shader
     // This is less than ideal
     for (const auto& pair : slotStrips) {
         const UISlotStripRecord& record = pair.second;
         if (isWidgetVisible(record.group, record.visible)) {
-            drawRefs.push_back({WidgetType::SlotStrip, pair.first, record.order});
+            visibleSlotStrips.push_back(&record);
         }
     }
 
     for (const auto& pair : labels) {
         const UILabelRecord& record = pair.second;
         if (isWidgetVisible(record.group, record.visible)) {
-            drawRefs.push_back({WidgetType::Label, pair.first, record.order});
+            visibleLabels.push_back(&record);
         }
     }
 
-    std::sort(drawRefs.begin(), drawRefs.end(), [](const DrawRef& a, const DrawRef& b) {
-        return a.order < b.order;
-    });
+    std::sort(visibleSlotStrips.begin(), visibleSlotStrips.end(),
+        [](const UISlotStripRecord* a, const UISlotStripRecord* b) {
+            return a->order < b->order;
+        });
 
-    for (const DrawRef& ref : drawRefs) {
-        if (ref.type == WidgetType::Label) {
-            auto it = labels.find(ref.id);
-            if (it != labels.end()) {
-                drawLabel(it->second, uiRenderer, textRenderer, assetManager, viewportWidth, viewportHeight);
-            }
-        } else if (ref.type == WidgetType::SlotStrip) {
-            auto it = slotStrips.find(ref.id);
-            if (it != slotStrips.end()) {
-                drawSlotStrip(it->second, uiRenderer);
-            }
+    std::sort(visibleLabels.begin(), visibleLabels.end(),
+        [](const UILabelRecord* a, const UILabelRecord* b) {
+            return a->order < b->order;
+        });
+
+
+    // Phase 1: render all geometry first
+    for (const UISlotStripRecord* record : visibleSlotStrips) {
+        drawSlotStrip(*record, uiRenderer);
+    }
+    for (const UILabelRecord* record : visibleLabels) {
+        drawLabelGeometry(*record, uiRenderer, textRenderer, assetManager);
+    }
+
+    // Phase 2: render all text using different shader
+    if (!visibleLabels.empty()) {
+        textRenderer.beginScreen(viewportWidth, viewportHeight);
+
+        for (const UILabelRecord* record : visibleLabels) {
+            drawLabelText(*record, textRenderer, assetManager);
         }
+
+        textRenderer.end();
     }
 }

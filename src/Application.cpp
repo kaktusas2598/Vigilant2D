@@ -380,7 +380,10 @@ void Application::render(float dt) {
         worldLabel.setText("Player");
         worldLabel.setPosition(player->transform.position + glm::vec2(0.0f, 42.0f));
         worldLabel.setScale(0.35f);
-        worldLabel.drawWorld(*uiRenderer, textRenderer, *assetManager.getFont("ui"), camera);
+        worldLabel.drawWorldGeometry(*uiRenderer, textRenderer, *assetManager.getFont("ui"));
+        textRenderer.begin(camera);
+        worldLabel.drawWorldText(textRenderer, *assetManager.getFont("ui"));
+        textRenderer.end();
     }
     uiRenderer->end();
 
