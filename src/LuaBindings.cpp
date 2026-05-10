@@ -10,8 +10,10 @@
 #include "ParticleEmitter.hpp"
 #include "ParticleEmitterRegistry.hpp"
 #include "Input.hpp"
+#include "UISystem.hpp"
 #include "glm/glm.hpp"
 
+// --------- STATIC HELPERS
 static ScriptSystem* getScriptSystem(lua_State* L) {
     return static_cast<ScriptSystem*>(lua_touserdata(L, lua_upvalueindex(1)));
 }
@@ -24,6 +26,12 @@ static Entity* getEntityFromArg(lua_State* L, ScriptSystem* scriptSystem, int ar
     return scriptSystem->getRuntimeScene()->findEntityByID(entityId);
 }
 
+static UISystem* getUISystem(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    return scriptSystem != nullptr ? scriptSystem->getUISystem() : nullptr;
+}
+
+// --------- ENTITY BINDINGS
 static int l_get_entity_position(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     Entity* entity = getEntityFromArg(L, scriptSystem, 1);
@@ -143,6 +151,7 @@ static int l_is_mouse_button_pressed(lua_State* L) {
     return 1;
 }
 
+// --------- INPUT BINDINGS
 static int l_is_key_pressed(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
@@ -173,6 +182,7 @@ static int l_get_mouse_world_position(lua_State* L) {
     return 2;
 }
 
+// --------- PARTICLE BINDINGS
 static int l_emit_particles(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getParticleEmitterRegistry() == nullptr) {
@@ -196,6 +206,7 @@ static int l_emit_particles(lua_State* L) {
     return 1;
 }
 
+// --------- TILE MAP BINDINGS
 static int l_get_mouse_tile(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr ||
@@ -417,7 +428,289 @@ static int l_set_tile_tileset_override(lua_State* L) {
     return 1;
 }
 
+// --------- UI LABEL BINDINGS
+static int l_ui_create_label(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UILabelRecord& label = uiSystem->createLabel(id);
+
+    if (lua_gettop(L) >= 2 && lua_isstring(L, 2)) {
+        label.group = lua_tostring(L, 2);
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_label_text(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* text = luaL_checkstring(L, 2);
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->text = text;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_label_position(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_label_visible(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const bool visible = lua_toboolean(L, 2) != 0;
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->visible = visible;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- UI SLOT STRIP BINDINGS
+static int l_ui_create_slot_strip(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UISlotStripRecord& strip = uiSystem->createSlotStrip(id);
+
+    if (lua_gettop(L) >= 2 && lua_isstring(L, 2)) {
+        strip.group = lua_tostring(L, 2);
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_position(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    strip->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_slot_count(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int count = static_cast<int>(luaL_checkinteger(L, 2));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || count < 0) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    strip->slots.resize(static_cast<size_t>(count));
+    if (strip->selectedIndex >= count) {
+        strip->selectedIndex = count > 0 ? count - 1 : 0;
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_selected(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int index = static_cast<int>(luaL_checkinteger(L, 2));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || strip->slots.empty()) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    strip->selectedIndex = std::max(0, std::min(index, static_cast<int>(strip->slots.size()) - 1));
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_slot_texture(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int slotIndex = static_cast<int>(luaL_checkinteger(L, 2));
+    const char* textureId = luaL_checkstring(L, 3);
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || slotIndex < 0 || slotIndex >= static_cast<int>(strip->slots.size())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
+    slot.occupied = true;
+    slot.icon = TextureRegion::full(texture);
+    slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_slot_tileset_tile(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TileMap* map = scriptSystem->getRuntimeScene()->getTileMap();
+    if (map == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int slotIndex = static_cast<int>(luaL_checkinteger(L, 2));
+    const char* tilesetName = luaL_checkstring(L, 3);
+    const int localTileId = static_cast<int>(luaL_checkinteger(L, 4));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || slotIndex < 0 || slotIndex >= static_cast<int>(strip->slots.size())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TextureRegion region;
+    if (!map->tryMakeRegionForTilesetTileId(tilesetName, localTileId, region)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
+    slot.occupied = true;
+    slot.icon = region;
+    slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_visible(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const bool visible = lua_toboolean(L, 2) != 0;
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    strip->visible = visible;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- UI GENERAL BINDINGS
+static int l_ui_set_group_visible(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* group = luaL_checkstring(L, 1);
+    const bool visible = lua_toboolean(L, 2) != 0;
+
+    uiSystem->setGroupVisible(group, visible);
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
+
+    // Setup engine global table
     lua_newtable(luaState);
 
     lua_pushlightuserdata(luaState, &scriptSystem);
@@ -481,4 +774,58 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_tile_tileset_override");
 
     lua_setglobal(luaState, "engine");
+
+    // Setup UI global table
+    lua_newtable(luaState);
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_create_label, 1);
+    lua_setfield(luaState, -2, "create_label");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_text, 1);
+    lua_setfield(luaState, -2, "set_label_text");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_position, 1);
+    lua_setfield(luaState, -2, "set_label_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_visible, 1);
+    lua_setfield(luaState, -2, "set_label_visible");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_create_slot_strip, 1);
+    lua_setfield(luaState, -2, "create_slot_strip");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_position, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_count, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_slot_count");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_selected, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_selected");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_texture, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_slot_texture");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_tileset_tile, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_slot_tileset_tile");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_visible, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_visible");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_group_visible, 1);
+    lua_setfield(luaState, -2, "set_group_visible");
+
+    lua_setglobal(luaState, "ui");
+
 }

@@ -591,6 +591,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.input = newContext.input;
     runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
     runtimeContext.assetManager = newContext.assetManager;
+    runtimeContext.uiSystem = newContext.uiSystem;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

@@ -6,6 +6,7 @@ class Input;
 class Camera2D;
 class ParticleEmitterRegistry;
 class AssetManager;
+class UISystem;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
@@ -14,4 +15,5 @@ struct ScriptRuntimeContext {
     Camera2D* camera = nullptr;
     ParticleEmitterRegistry* particleEmitterRegistry = nullptr;
     AssetManager* assetManager = nullptr;
+    UISystem* uiSystem = nullptr;
 };

@@ -7,6 +7,20 @@ local MOVE_SPEED = 20.0
 function M.on_create(self)
     print("[LUA] Player created")
     self.selected_tool = "shovel"
+
+    -- Create Quickbar UI
+    ui.create_slot_strip("hud.hotbar", "hud")
+    ui.set_slot_strip_slot_count("hud.hotbar", 8)
+    ui.set_slot_strip_position("hud.hotbar", 20, 20)
+    ui.set_slot_strip_slot_texture("hud.hotbar", 0, "shovel")
+    ui.set_slot_strip_slot_tileset_tile("hud.hotbar", 1, "cozy_farm_free_version", 108)
+    ui.set_slot_strip_slot_texture("hud.hotbar", 2, "sword")
+    ui.set_slot_strip_slot_texture("hud.hotbar", 3, "bucket")
+    ui.set_slot_strip_selected("hud.hotbar", 0)
+
+    ui.create_label("hud.hotbar_label", "hud")
+    ui.set_label_text("hud.hotbar_label", "Hotbar")
+    ui.set_label_position("hud.hotbar_label", 20, 96)
 end
 
 function M.on_update(self, dt)
@@ -20,18 +34,32 @@ function M.on_update(self, dt)
         return
     end
 
+    -- Particle emitter test
     if engine.is_key_pressed(80) then -- 'p'
         engine.emit_particles("crates_0", mouseX, mouseY, 128)
+    elseif engine.is_key_pressed(66) then -- 'b'
+        engine.emit_particles("blood_0", mouseX, mouseY, 256)
     end
 
-
+    -- Hotbar/selected tool update based on input
     if engine.is_key_pressed(49) then -- '1'
         self.selected_tool = "shovel"
+        ui.set_slot_strip_selected("hud.hotbar", 0)
+        ui.set_label_text("hud.hotbar_label", "Shovel")
+    elseif engine.is_key_pressed(50) then -- '2'
+        self.selected_tool = "seeds"
+        ui.set_slot_strip_selected("hud.hotbar", 1)
+        ui.set_label_text("hud.hotbar_label", "Potato seeds")
+    elseif engine.is_key_pressed(51) then -- '3'
+        self.selected_tool = "bucket"
+        ui.set_label_text("hud.hotbar_label", "Bucket")
+        ui.set_slot_strip_selected("hud.hotbar", 2)
+    elseif engine.is_key_pressed(52) then -- '4'
+        self.selected_tool = "sword"
+        ui.set_slot_strip_selected("hud.hotbar", 3)
+        ui.set_label_text("hud.hotbar_label", "Sword")
     end
 
-    if engine.is_key_pressed(50) then -- '2'
-        self.selected_tool = "seeds"
-    end
 
     if engine.is_mouse_button_pressed(0) then -- LMB
         if self.selected_tool == "shovel" then
@@ -48,8 +76,6 @@ function M.on_update(self, dt)
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
             end
         end
-
-        engine.emit_particles("blood_0", mouseX, mouseY, 256)
 
         local tilled = farm.is_tilled(tileX, tileY)
 

@@ -24,6 +24,7 @@ class Camera2D;
 class AssetManager;
 class AnimationRegistry;
 class ParticleEmitterRegistry;
+class UISystem;
 
 // Raw assets manifest entry for each resource
 struct TextureManifestEntry {
@@ -92,6 +93,7 @@ class ScriptSystem {
         AssetManager* getAssetManager() const { return runtimeContext.assetManager; }
         AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }
         ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
+        UISystem* getUISystem() const { return runtimeContext.uiSystem; }
     private:
         bool reportError(int status, const std::string& context);
 

@@ -8,6 +8,7 @@
 #include "EntityFactory.hpp"
 
 #include "game/FarmBindings.hpp"
+#include "UILabel.hpp"
 
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
@@ -228,7 +229,8 @@ void Application::init() {
         &input,
         &camera,
         &particleEmitterRegistry,
-        &assetManager
+        &assetManager,
+        &uiSystem
     });
 
     // Register entities
@@ -269,35 +271,6 @@ void Application::init() {
 
     //-------------- UI TEST
     uiRenderer = std::make_unique<UIRenderer>(renderer);
-
-    slotStrip.setSlotCount(8);
-    UISlotItem item;
-    item.occupied = true;
-    item.icon = TextureRegion::full(assetManager.getTexture("shovel"));
-    slotStrip.setSlotItem(0, item);
-    slotStrip.setSelectedIndex(0);
-    TextureRegion seedRegion;
-    scene.getTileMap()->tryMakeRegionForTilesetTileId("cozy_farm_free_version", 108, seedRegion);
-    UISlotItem item2;
-    item2.occupied = true;
-    item2.icon = seedRegion;
-    slotStrip.setSlotItem(1, item2);
-    UISlotItem item3;
-    item3.occupied = true;
-    item3.icon = TextureRegion::full(assetManager.getTexture("sword"));
-    slotStrip.setSlotItem(2, item3);
-    UISlotItem item4;
-    item4.occupied = true;
-    item4.icon = TextureRegion::full(assetManager.getTexture("bucket"));
-    slotStrip.setSlotItem(3, item4);
-
-
-    label.setText("Hotbar");
-    label.setPosition({20.0f, 96.0f});
-    label.setScale(1.0f);
-    label.setTextColor({1.0f, 1.0f, 1.0f, 1.0f});
-    label.setBackgroundEnabled(true);
-    label.setBorderEnabled(true);
 }
 
 void Application::run() {
@@ -356,21 +329,6 @@ void Application::update(float dt) {
     if (!uiLayer.wantsMouseCapture() && selectionManagerEnabled) {
         selectionManager.update(input, camera, scene);
     }
-
-    // For UI Hotbar test
-    if (input.isKeyPressed(GLFW_KEY_1)) {
-        slotStrip.setSelectedIndex(0);
-        label.setText("Shovel");
-    } if (input.isKeyPressed(GLFW_KEY_2)) {
-        slotStrip.setSelectedIndex(1);
-        label.setText("Potato seeds");
-    } if (input.isKeyPressed(GLFW_KEY_3)) {
-        slotStrip.setSelectedIndex(2);
-        label.setText("Sword");
-    } if (input.isKeyPressed(GLFW_KEY_4)) {
-        slotStrip.setSelectedIndex(3);
-        label.setText("Bucket");
-    }
 }
 
 void Application::render(float dt) {
@@ -399,7 +357,6 @@ void Application::render(float dt) {
     selectionManager.draw(renderer, scene);
 
     // FIXME: sort out this UI rendering mess below
-
     // UI RENDER 1st Pass(World Space) TEST - HP bar
     Entity* player = scene.findEntityByID("player");
     if ( player != nullptr) {
@@ -427,11 +384,10 @@ void Application::render(float dt) {
     }
     uiRenderer->end();
 
-    // UI RENDER 2nd Pass(Screen Space) TEST - Hotbar
+    // UI RENDER 2nd Pass(Screen Space UI)
     uiRenderer->beginScreen(display_w, display_h);
     renderer.begin(uiRenderer->getScreenCamera());
-    slotStrip.draw(*uiRenderer, uiStyle, {20.0f, 20.0f}, {44.0f, 44.0f});
-    label.drawScreen(*uiRenderer, textRenderer, *assetManager.getFont("ui"), display_w, display_h);
+    uiSystem.drawScreen(*uiRenderer, textRenderer, assetManager, display_w, display_h);
     uiRenderer->end();
 
     renderer.end();

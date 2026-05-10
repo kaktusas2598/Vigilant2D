@@ -22,8 +22,7 @@
 #include "ContentLoader.hpp"
 
 #include "UIRenderer.hpp"
-#include "UISlotStrip.hpp"
-#include "UILabel.hpp"
+#include "UISystem.hpp"
 #include "TextRenderer.hpp"
 
 #include "ParticleSystem.hpp"
@@ -62,10 +61,7 @@ class Application {
 
         Input input;
         Time time;
-
-        // TODO: research whats best for Camera - probably not storing single insance in Application class!
         Camera2D camera;
-
         Scene scene;
         AssetManager assetManager;
         ScriptSystem scriptSystem;
@@ -84,10 +80,7 @@ class Application {
 
         std::unique_ptr<UIRenderer> uiRenderer = nullptr;
         TextRenderer textRenderer;
-        // For UI Widget test
-        UISlotStrip slotStrip;
-        UIStyle uiStyle;
-        UILabel label;
+        UISystem uiSystem;
 
         // Game specific members
         FarmWorldState farmWorldState;
