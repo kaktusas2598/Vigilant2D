@@ -33,9 +33,13 @@ class TileMap {
 
         TileRuntime& getRuntime() { return runtime; }
         const TileRuntime& getRuntime() const { return runtime; }
+
+        bool tryMakeRegionForGid(int gid, TextureRegion& outRegion) const;
+        bool tryMakeRegionForTilesetTileId(const std::string& tilesetName, int localTileId, TextureRegion& outRegion) const;
     private:
         std::unique_ptr<TileLayer> buildTileLayer(const TileLayerData& layerData);
         Texture* resolveTextureForTileset(const TilesetData* tileset);
+        const TilesetData* findTilesetByName(const std::string& name) const;
 
         bool loaded = false;
         TileMapData mapData;

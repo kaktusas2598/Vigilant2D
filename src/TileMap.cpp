@@ -108,3 +108,42 @@ Texture* TileMap::resolveTextureForTileset(const TilesetData *tileset) {
 
     return nullptr;
 }
+
+bool TileMap::tryMakeRegionForGid(int gid, TextureRegion& outRegion) const {
+    const TilesetData* tileset = findTilesetForGid(mapData, gid);
+    if (tileset == nullptr)
+        return false;
+
+    Texture* texture = nullptr;
+    for (size_t i = 0; i < mapData.tilesets.size(); ++i) {
+        if (&mapData.tilesets[i] == tileset) {
+            texture = tilesetTextures[i];
+            break;
+        }
+    }
+
+    if (texture == nullptr)
+        return false;
+
+    outRegion = makeRegionForGid(*tileset, texture, gid);
+    return true;
+}
+
+const TilesetData* TileMap::findTilesetByName(const std::string& name) const {
+    for (const auto& tileset : mapData.tilesets) {
+        if (tileset.name == name)
+            return &tileset;
+    }
+    return nullptr;
+}
+
+bool TileMap::tryMakeRegionForTilesetTileId(const std::string& tilesetName,
+                                            int localTileId,
+                                            TextureRegion& outRegion) const {
+    const TilesetData* tileset = findTilesetByName(tilesetName);
+    if (tileset == nullptr)
+        return false;
+
+    const int gid = tileset->firstGid + localTileId;
+    return tryMakeRegionForGid(gid, outRegion);
+}

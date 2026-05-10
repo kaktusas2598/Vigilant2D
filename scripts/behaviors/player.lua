@@ -27,7 +27,8 @@ function M.on_update(self, dt)
         engine.emit_particles("blood_0", mouseX, mouseY, 256)
 
 
-        engine.set_tile_region_from_grid("Ground", tileX, tileY, "cozyFarm", 80, 144, 54, 54)
+        -- engine.set_tile_region_from_grid("Ground", tileX, tileY, "cozyFarm", 80, 144, 54, 54)
+        engine.set_tile_tileset_override("Ground", tileX, tileY, "cozyFarm", 491)
         
 
         farm.set_tilled(tileX, tileY, true) -- custom game bindings

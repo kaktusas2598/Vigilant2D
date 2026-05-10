@@ -336,6 +336,86 @@ static int l_clear_tile_override(lua_State* L) {
     return 1;
 }
 
+static int l_set_tile_gid_override(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TileMap* map = scriptSystem->getRuntimeScene()->getTileMap();
+    if (map == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* layerName = luaL_checkstring(L, 1);
+    const int tileX = static_cast<int>(luaL_checkinteger(L, 2));
+    const int tileY = static_cast<int>(luaL_checkinteger(L, 3));
+    const int gid = static_cast<int>(luaL_checkinteger(L, 4));
+
+    if (!map->isTileInBounds(tileX, tileY)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TileVisualOverrideLayer* overrideLayer = map->getRuntime().getOverrideLayer(layerName);
+    if (overrideLayer == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TextureRegion region;
+    if (!map->tryMakeRegionForGid(gid, region)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const bool result = overrideLayer->set(tileX, tileY, TileVisual::fromRegion(region));
+    lua_pushboolean(L, result ? 1 : 0);
+    return 1;
+}
+
+static int l_set_tile_tileset_override(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TileMap* map = scriptSystem->getRuntimeScene()->getTileMap();
+    if (map == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* layerName = luaL_checkstring(L, 1);
+    const int tileX = static_cast<int>(luaL_checkinteger(L, 2));
+    const int tileY = static_cast<int>(luaL_checkinteger(L, 3));
+    const char* tilesetName = luaL_checkstring(L, 4);
+    const int localTileId = static_cast<int>(luaL_checkinteger(L, 5));
+
+    if (!map->isTileInBounds(tileX, tileY)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TileVisualOverrideLayer* overrideLayer = map->getRuntime().getOverrideLayer(layerName);
+    if (overrideLayer == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TextureRegion region;
+    if (!map->tryMakeRegionForTilesetTileId(tilesetName, localTileId, region)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const bool result = overrideLayer->set(tileX, tileY, TileVisual::fromRegion(region));
+    lua_pushboolean(L, result ? 1 : 0);
+    return 1;
+}
 
 void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_newtable(luaState);
@@ -391,6 +471,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_clear_tile_override, 1);
     lua_setfield(luaState, -2, "clear_tile_override");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_tile_gid_override, 1);
+    lua_setfield(luaState, -2, "set_tile_gid_override");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_tile_tileset_override, 1);
+    lua_setfield(luaState, -2, "set_tile_tileset_override");
 
     lua_setglobal(luaState, "engine");
 }
