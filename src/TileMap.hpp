@@ -7,6 +7,7 @@
 #include "TileMapData.hpp"
 #include "TileLayer.hpp"
 #include "TileLayer.hpp"
+#include "TileRuntime.hpp"
 #include "Texture.hpp"
 #include "Renderer.hpp"
 #include "Camera2D.hpp"
@@ -29,13 +30,16 @@ class TileMap {
 
         const TileMapData& getData() const { return mapData; }
         const std::vector<ObjectLayerData>& getObjectLayers() const { return mapData.objectLayers; }
+
+        TileRuntime& getRuntime() { return runtime; }
+        const TileRuntime& getRuntime() const { return runtime; }
     private:
         std::unique_ptr<TileLayer> buildTileLayer(const TileLayerData& layerData);
         Texture* resolveTextureForTileset(const TilesetData* tileset);
 
         bool loaded = false;
         TileMapData mapData;
+        TileRuntime runtime;
         std::vector<Texture*> tilesetTextures;
         std::vector<std::unique_ptr<TileLayer>> layers;
-
 };

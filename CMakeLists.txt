@@ -23,8 +23,11 @@ include_directories(${GLEW_INCLUDE_DIRS})
 
 find_package(Freetype REQUIRED)
 
-file(GLOB sources src/*.cpp)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.cpp)
 add_executable(${PROJECT_NAME} WIN32 ${sources})
+
+# Disable tinyxml2 xml test target before building tinyxm2
+set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/glm)
 add_subdirectory(vendor/glfw)
@@ -33,7 +36,6 @@ add_subdirectory(vendor/stb_image)
 add_subdirectory(vendor/tinyxml2)
 add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/lua)
-
 
 # Set 3rd party include locations
 target_include_directories(${PROJECT_NAME} PUBLIC vendor ${FREETYPE_INCLUDE_DIRS})

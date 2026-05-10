@@ -8,7 +8,8 @@ void TileLayer::setTile(int x, int y, const TextureRegion& region) {
     tile.empty = false;
 }
 
-void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, int viewportHeight) {
+void TileLayer::rebuildVisibleMesh(const Camera2D& camera,
+     int viewportWidth, int viewportHeight, const TileVisualOverrideLayer* overrides) {
     if (!visible)
         return;
 
@@ -35,10 +36,25 @@ void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, in
     for (int y = startY; y < endY; ++y) {
         for (int x = startX; x < endX; ++x) {
             const Tile& tile = tiles[y * width + x];
-            if (tile.empty || tile.region.texture == nullptr)
+
+            TextureRegion region = tile.region;
+            bool empty = tile.empty;
+
+            // Check if tile is overriden and needs to be rendererd differently            
+            if (overrides != nullptr) {
+                const TileVisual* visual = overrides->tryGet(x, y);
+                if (visual != nullptr && visual->isSet()) {
+                    if (visual->kind == TileVisualKind::StaticRegion) {
+                        region = visual->region;
+                        empty = (region.texture == nullptr);
+                    }
+                }
+            }
+
+            if (empty || region.texture == nullptr)
                 continue;
 
-            TileRenderBatch* batch = findOrCreateBatch(tile.region.texture);
+            TileRenderBatch* batch = findOrCreateBatch(region.texture);
             const unsigned int baseIndex = static_cast<unsigned int>(batch->vertices.size());
 
             const float x0 = x * tileSize.x;
@@ -46,8 +62,8 @@ void TileLayer::rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, in
             const float x1 = x0 + tileSize.x;
             const float y1 = y0 + tileSize.y;
 
-            const glm::vec2 uvMin = tile.region.uvMin;
-            const glm::vec2 uvMax = tile.region.uvMax;
+            const glm::vec2 uvMin = region.uvMin;
+            const glm::vec2 uvMax = region.uvMax;
 
             batch->vertices.push_back({{x0, y0, 0.0f}, {uvMin.x, uvMin.y}});
             batch->vertices.push_back({{x1, y0, 0.0f}, {uvMax.x, uvMin.y}});

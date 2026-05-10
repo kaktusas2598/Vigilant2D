@@ -14,21 +14,30 @@ function M.on_update(self, dt)
         return
     end
 
+    local tileX, tileY = engine.get_mouse_tile()
+    if tileX == nil then
+        return
+    end
+
+    if engine.is_key_pressed(80) then -- 'p'
+        engine.emit_particles("crates_0", mouseX, mouseY, 128)
+    end
+
     if engine.is_mouse_button_pressed(0) then
         engine.emit_particles("blood_0", mouseX, mouseY, 256)
 
-        local tileX, tileY = engine.get_mouse_tile()
-        if tileX ~= nul then
-            farm.set_tilled(tileX, tileY, true) -- custom game bindings
-            
-            local tilled = farm.is_tilled(tileX, tileY)
-            print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
-        end
-        print("Tile X: "..tileX..", Y: "..tileY)
+
+        engine.set_tile_region_from_grid("Ground", tileX, tileY, "cozyFarm", 80, 144, 54, 54)
+        
+
+        farm.set_tilled(tileX, tileY, true) -- custom game bindings
+        local tilled = farm.is_tilled(tileX, tileY)
+
+        print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
     end
 
     if engine.is_mouse_button_pressed(1) then
-        engine.emit_particles("crates_0", mouseX, mouseY, 128)
+        engine.clear_tile_override("Ground", tileX, tileY)
     end
 end
 

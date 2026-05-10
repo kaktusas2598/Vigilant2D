@@ -18,6 +18,7 @@ bool TileMap::loadFromFile(const std::string &fileName, AssetManager& assets) {
         layers.push_back(buildTileLayer(layerData));
     }
 
+    runtime.initFromMapData(mapData);
     loaded = true;
     return true;
 }
@@ -27,8 +28,11 @@ void TileMap::rebuildVisibleLayers(const Camera2D &camera, int viewportWidth, in
     if (!loaded)
         return;
     
-    for (const auto& layer : layers) {
-        layer->rebuildVisibleMesh(camera, viewportWidth, viewportHeight);
+    for (size_t i = 0; i < layers.size(); ++i) {
+        const std::string& layerName = mapData.layers[i].name;
+        const TileVisualOverrideLayer* overrides = runtime.getOverrideLayer(layerName);
+
+        layers[i]->rebuildVisibleMesh(camera, viewportWidth, viewportHeight, overrides);
     }
 }
 

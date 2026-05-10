@@ -21,6 +21,7 @@ extern "C" {
 class Scene;
 class Input;
 class Camera2D;
+class AssetManager;
 class AnimationRegistry;
 class ParticleEmitterRegistry;
 
@@ -88,6 +89,7 @@ class ScriptSystem {
         Scene* getRuntimeScene() const { return runtimeContext.scene; }
         Input* getRuntimeInput() const { return runtimeContext.input; }
         Camera2D* getRuntimeCamera() const { return runtimeContext.camera; }
+        AssetManager* getAssetManager() const { return runtimeContext.assetManager; }
         AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }
         ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
     private:

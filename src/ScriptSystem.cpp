@@ -590,6 +590,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.camera = newContext.camera;
     runtimeContext.input = newContext.input;
     runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
+    runtimeContext.assetManager = newContext.assetManager;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

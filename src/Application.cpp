@@ -140,9 +140,6 @@ void Application::init() {
 
     uiLayer.addPanel("Assets", [this]() {
         ImGui::Text("Textures: %d", static_cast<int>(assetManager.getTextureIDs().size()));
-        // for (const auto& id : assetManager.getTextureIDs()) {
-            // ImGui::BulletText("%s", id.c_str());
-        // }
 
         ImGui::Separator();
         ImGui::Text("Fonts: %d", static_cast<int>(assetManager.getFontIDs().size()));
@@ -225,7 +222,14 @@ void Application::init() {
     }
 
     // Call before registering entities so they have scene context in scripts
-    scriptSystem.setRuntimeContext({&scene, &animationRegistry, &input, &camera, &particleEmitterRegistry});
+    scriptSystem.setRuntimeContext({
+        &scene,
+        &animationRegistry,
+        &input,
+        &camera,
+        &particleEmitterRegistry,
+        &assetManager
+    });
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);

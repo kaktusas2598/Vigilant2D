@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 #include "TextureRegion.hpp"
 #include "Mesh.hpp"
+#include "TileVisualOverrideLayer.hpp"
 
 struct Tile {
     TextureRegion region;
@@ -29,8 +30,9 @@ class TileLayer {
         void setTile(int x, int y, const TextureRegion& region);
         bool isVisible() const { return visible; }
 
-        // TODO: Later might want to refactor this to the TileMapRenderer or sth
-        void rebuildVisibleMesh(const Camera2D& camera, int viewportWidth, int viewportHeight);
+        void rebuildVisibleMesh(const Camera2D& camera,
+                                int viewportWidth, int viewportHeight,
+                                const TileVisualOverrideLayer* overrides = nullptr);
         void draw(Renderer& renderer) const;
 
         TileRenderBatch* findOrCreateBatch(Texture* texture);

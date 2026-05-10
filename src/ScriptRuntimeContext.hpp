@@ -5,6 +5,7 @@ class AnimationRegistry;
 class Input;
 class Camera2D;
 class ParticleEmitterRegistry;
+class AssetManager;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
@@ -12,4 +13,5 @@ struct ScriptRuntimeContext {
     Input* input = nullptr;
     Camera2D* camera = nullptr;
     ParticleEmitterRegistry* particleEmitterRegistry = nullptr;
+    AssetManager* assetManager = nullptr;
 };
