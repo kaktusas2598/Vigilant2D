@@ -273,9 +273,24 @@ void Application::init() {
     slotStrip.setSlotCount(8);
     UISlotItem item;
     item.occupied = true;
-    item.icon = TextureRegion::full(assetManager.getTexture("crate"));
+    item.icon = TextureRegion::full(assetManager.getTexture("shovel"));
     slotStrip.setSlotItem(0, item);
     slotStrip.setSelectedIndex(0);
+    TextureRegion seedRegion;
+    scene.getTileMap()->tryMakeRegionForTilesetTileId("cozy_farm_free_version", 108, seedRegion);
+    UISlotItem item2;
+    item2.occupied = true;
+    item2.icon = seedRegion;
+    slotStrip.setSlotItem(1, item2);
+    UISlotItem item3;
+    item3.occupied = true;
+    item3.icon = TextureRegion::full(assetManager.getTexture("sword"));
+    slotStrip.setSlotItem(2, item3);
+    UISlotItem item4;
+    item4.occupied = true;
+    item4.icon = TextureRegion::full(assetManager.getTexture("bucket"));
+    slotStrip.setSlotItem(3, item4);
+
 
     label.setText("Hotbar");
     label.setPosition({20.0f, 96.0f});
@@ -343,12 +358,19 @@ void Application::update(float dt) {
     }
 
     // For UI Hotbar test
-    if (input.isKeyPressed(GLFW_KEY_1))
+    if (input.isKeyPressed(GLFW_KEY_1)) {
         slotStrip.setSelectedIndex(0);
-    if (input.isKeyPressed(GLFW_KEY_2))
+        label.setText("Shovel");
+    } if (input.isKeyPressed(GLFW_KEY_2)) {
         slotStrip.setSelectedIndex(1);
-    if (input.isKeyPressed(GLFW_KEY_3))
+        label.setText("Potato seeds");
+    } if (input.isKeyPressed(GLFW_KEY_3)) {
         slotStrip.setSelectedIndex(2);
+        label.setText("Sword");
+    } if (input.isKeyPressed(GLFW_KEY_4)) {
+        slotStrip.setSelectedIndex(3);
+        label.setText("Bucket");
+    }
 }
 
 void Application::render(float dt) {
