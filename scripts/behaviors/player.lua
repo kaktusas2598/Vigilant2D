@@ -16,6 +16,15 @@ function M.on_update(self, dt)
 
     if engine.is_mouse_button_pressed(0) then
         engine.emit_particles("blood_0", mouseX, mouseY, 256)
+
+        local tileX, tileY = engine.get_mouse_tile()
+        if tileX ~= nul then
+            farm.set_tilled(tileX, tileY, true) -- custom game bindings
+            
+            local tilled = farm.is_tilled(tileX, tileY)
+            print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
+        end
+        print("Tile X: "..tileX..", Y: "..tileY)
     end
 
     if engine.is_mouse_button_pressed(1) then

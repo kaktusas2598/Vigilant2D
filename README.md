@@ -50,3 +50,4 @@ git submodule init && git submodule update
   * More Box2D integration
   * Cutscene, cinematic camera support (Lua Coroutines?)
   * Hot Reload scripts, shaders, maps
+  * grep -Rni "TODO" src/

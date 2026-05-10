@@ -14,7 +14,6 @@
 #include "Scene.hpp"
 #include "SelectionManager.hpp"
 #include "AssetManager.hpp"
-#include "ParticleSystem.hpp"
 #include "ScriptSystem.hpp"
 
 #include "EntityFactory.hpp"
@@ -27,8 +26,11 @@
 #include "UILabel.hpp"
 #include "TextRenderer.hpp"
 
+#include "ParticleSystem.hpp"
 #include "ParticlePresetRegistry.hpp"
 #include "ParticleEmitterRegistry.hpp"
+
+#include "game/FarmWorldState.hpp"
 
 class Application {
     public:
@@ -86,4 +88,7 @@ class Application {
         UISlotStrip slotStrip;
         UIStyle uiStyle;
         UILabel label;
+
+        // Game specific members
+        FarmWorldState farmWorldState;
 };

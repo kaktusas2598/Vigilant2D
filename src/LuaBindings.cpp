@@ -195,6 +195,65 @@ static int l_emit_particles(lua_State* L) {
     return 1;
 }
 
+static int l_get_mouse_tile(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr ||
+        scriptSystem->getRuntimeInput() == nullptr ||
+        scriptSystem->getRuntimeCamera() == nullptr ||
+        scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const float mouseX = static_cast<float>(scriptSystem->getRuntimeInput()->getMouseX());
+    const float mouseY = static_cast<float>(scriptSystem->getRuntimeInput()->getMouseY());
+
+    const glm::vec2 world = scriptSystem->getRuntimeCamera()->screenToWorld({mouseX, mouseY});
+    TileMap* map = scriptSystem->getRuntimeScene()->getTileMap();
+    if (map == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const glm::ivec2 tile = map->worldToTile(world);
+    if (!map->isTileInBounds(tile.x, tile.y)) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua_pushinteger(L, tile.x);
+    lua_pushinteger(L, tile.y);
+    return 2;
+}
+
+static int l_get_tile_world_position(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    TileMap* map = scriptSystem->getRuntimeScene()->getTileMap();
+    if (map == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const int tileX = static_cast<int>(luaL_checkinteger(L, 1));
+    const int tileY = static_cast<int>(luaL_checkinteger(L, 2));
+
+    if (!map->isTileInBounds(tileX, tileY)) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const glm::vec2 world = map->tileToWorld(tileX, tileY);
+    lua_pushnumber(L, world.x);
+    lua_pushnumber(L, world.y);
+    return 2;
+}
+
+
 void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_newtable(luaState);
 
@@ -233,6 +292,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_emit_particles, 1);
     lua_setfield(luaState, -2, "emit_particles");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_mouse_tile, 1);
+    lua_setfield(luaState, -2, "get_mouse_tile");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_tile_world_position, 1);
+    lua_setfield(luaState, -2, "get_tile_world_position");
 
     lua_setglobal(luaState, "engine");
 }

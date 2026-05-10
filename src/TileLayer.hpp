@@ -45,6 +45,5 @@ class TileLayer {
         // Render batches for each texture
         std::vector<TileRenderBatch> batches;
 
-        // TODO: is it good idea to store it here as well because it is already stored in TIleLayerData
         bool visible = true;
 };

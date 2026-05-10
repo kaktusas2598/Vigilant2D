@@ -7,6 +7,8 @@
 #include "TileMap.hpp"
 #include "EntityFactory.hpp"
 
+#include "game/FarmBindings.hpp"
+
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -201,6 +203,8 @@ void Application::init() {
     textRenderer.init();
 
     scriptSystem.init();
+    //Custom game bindings registration
+    registerFarmBindings(scriptSystem.getState(), farmWorldState);
 
     // ------------ PROJECT CONTENT BOOTSTRAPING
     contentLoader = std::make_unique<ContentLoader>(assetManager, animationRegistry, particlePresetRegistry, scriptSystem);
@@ -213,6 +217,12 @@ void Application::init() {
     auto map = std::make_unique<TileMap>();
     map->loadFromFile("assets/farmMap.tmx", assetManager);
     scene.setTileMap(std::move(map));
+
+    // Iinitialise farm grid
+    if (scene.getTileMap() != nullptr) {
+        const TileMapData& mapData = scene.getTileMap()->getData();
+        farmWorldState.init(mapData.width, mapData.height);
+    }
 
     // Call before registering entities so they have scene context in scripts
     scriptSystem.setRuntimeContext({&scene, &animationRegistry, &input, &camera, &particleEmitterRegistry});
