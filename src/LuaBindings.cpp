@@ -31,6 +31,22 @@ static UISystem* getUISystem(lua_State* L) {
     return scriptSystem != nullptr ? scriptSystem->getUISystem() : nullptr;
 }
 
+static bool parseUIRenderSpace(const char* value, UIRenderSpace& outSpace) {
+    if (value == nullptr)
+        return false;
+    
+    const std::string s(value);
+    if (s == "screen") {
+        outSpace = UIRenderSpace::Screen;
+        return true;
+    }
+    if (s == "world") {
+        outSpace = UIRenderSpace::World;
+        return true;
+    }
+    return false;
+}
+
 // --------- ENTITY BINDINGS
 static int l_get_entity_position(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -490,6 +506,27 @@ static int l_ui_set_label_position(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_label_scale(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float scale = static_cast<float>(luaL_checknumber(L, 2));
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->scale = scale;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_ui_set_label_visible(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
     if (uiSystem == nullptr) {
@@ -507,6 +544,33 @@ static int l_ui_set_label_visible(lua_State* L) {
     }
 
     label->visible = visible;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_label_render_space(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* renderSpaceValue = luaL_checkstring(L, 2);
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UIRenderSpace renderSpace;
+    if (!parseUIRenderSpace(renderSpaceValue, renderSpace)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->renderSpace = renderSpace;
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -692,6 +756,188 @@ static int l_ui_set_slot_strip_visible(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_slot_strip_render_space(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* renderSpaceValue = luaL_checkstring(L, 2);
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UIRenderSpace renderSpace;
+    if (!parseUIRenderSpace(renderSpaceValue, renderSpace)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    strip->renderSpace = renderSpace;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- UI PROGRESS BAR BINDINGS
+static int l_ui_create_progress_bar(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UIProgressBarRecord& bar = uiSystem->createProgressBar(id);
+
+    if (lua_gettop(L) >= 2 && lua_isstring(L, 2)) {
+        bar.group = lua_tostring(L, 2);
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_progress_bar_render_space(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* renderSpaceValue = luaL_checkstring(L, 2);
+
+    UIProgressBarRecord* bar = uiSystem->getProgressBar(id);
+    if (bar == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UIRenderSpace renderSpace;
+    if (!parseUIRenderSpace(renderSpaceValue, renderSpace)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    bar->renderSpace = renderSpace;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_progress_bar_position(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIProgressBarRecord* bar = uiSystem->getProgressBar(id);
+    if (bar == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    bar->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_progress_bar_size(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float width = static_cast<float>(luaL_checknumber(L, 2));
+    const float height = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIProgressBarRecord* bar = uiSystem->getProgressBar(id);
+    if (bar == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    bar->size = {width, height};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_progress_bar_value(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float value = static_cast<float>(luaL_checknumber(L, 2));
+
+    UIProgressBarRecord* bar = uiSystem->getProgressBar(id);
+    if (bar == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    bar->value = value;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_progress_bar_range(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float minValue = static_cast<float>(luaL_checknumber(L, 2));
+    const float maxValue = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIProgressBarRecord* bar = uiSystem->getProgressBar(id);
+    if (bar == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    bar->minValue = minValue;
+    bar->maxValue = maxValue;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_progress_bar_visible(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const bool visible = lua_toboolean(L, 2) != 0;
+
+    UIProgressBarRecord* bar = uiSystem->getProgressBar(id);
+    if (bar == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    bar->visible = visible;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // --------- UI GENERAL BINDINGS
 static int l_ui_set_group_visible(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
@@ -791,8 +1037,16 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_label_position");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_scale, 1);
+    lua_setfield(luaState, -2, "set_label_scale");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_visible, 1);
     lua_setfield(luaState, -2, "set_label_visible");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_render_space, 1);
+    lua_setfield(luaState, -2, "set_label_render_space");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_slot_strip, 1);
@@ -821,6 +1075,38 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_slot_strip_visible, 1);
     lua_setfield(luaState, -2, "set_slot_strip_visible");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_render_space, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_render_space");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_create_progress_bar, 1);
+    lua_setfield(luaState, -2, "create_progress_bar");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_render_space, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_render_space");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_position, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_size, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_size");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_value, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_value");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_range, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_range");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_visible, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_visible");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_group_visible, 1);

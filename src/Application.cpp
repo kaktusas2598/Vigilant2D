@@ -8,7 +8,6 @@
 #include "EntityFactory.hpp"
 
 #include "game/FarmBindings.hpp"
-#include "UILabel.hpp"
 
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
@@ -206,7 +205,7 @@ void Application::init() {
 
     // ------------ PROJECT CONTENT BOOTSTRAPING
     contentLoader = std::make_unique<ContentLoader>(assetManager, animationRegistry, particlePresetRegistry, scriptSystem);
-    // TODO: stop hardcoding these paths
+    // TODO: stop hardcoding these paths and map below!
     contentLoader->loadAssets("scripts/assets.lua");
     contentLoader->loadAnimations("scripts/animations.lua");
     contentLoader->loadParticlePresets("scripts/emitters.lua");
@@ -239,6 +238,7 @@ void Application::init() {
         entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
 
     // Setup controller system by providing controller config
+    // TODO: set from script, similar for particle emitters
     topDownControllerSystem = std::make_unique<TopDownControllerSystem>(scene, input, animationRegistry);
     topDownControllerSystem->setControlledEntity({
         .entityId = "player",
@@ -339,7 +339,6 @@ void Application::render(float dt) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     uiLayer.begin();
-
     if (debugMode)
         uiLayer.render();
 
@@ -356,37 +355,9 @@ void Application::render(float dt) {
     particleSystem.draw(renderer);
     selectionManager.draw(renderer, scene);
 
-    // FIXME: sort out this UI rendering mess below
-    // UI RENDER 1st Pass(World Space) TEST - HP bar
-    Entity* player = scene.findEntityByID("player");
-    if ( player != nullptr) {
-        const glm::vec2 barPos = player->transform.position + glm::vec2(6.0f, 32.0f);
-        uiRenderer->beginWorld(camera); // renderer begin already called with camera in main pass
-        uiSystem.drawWorld(*uiRenderer, textRenderer, assetManager, camera);
-        // uiRenderer->end();
-
-        uiRenderer->drawQuad({
-            {barPos, {32.0f, 5.0f}},
-            TextureRegion::full(nullptr),
-            {0.15f, 0.15f, 0.15f, 0.95f}
-        });
-
-        uiRenderer->drawQuad({
-            {barPos + glm::vec2(1.0f, 1.0f), {22.0f, 3.0f}},
-            TextureRegion::full(nullptr),
-            {0.25f, 0.85f, 0.35f, 1.0f}
-        });
-
-        // World space UI text test
-        UILabel worldLabel;
-        worldLabel.setText("Player");
-        worldLabel.setPosition(player->transform.position + glm::vec2(0.0f, 42.0f));
-        worldLabel.setScale(0.35f);
-        worldLabel.drawWorldGeometry(*uiRenderer, textRenderer, *assetManager.getFont("ui"));
-        textRenderer.begin(camera);
-        worldLabel.drawWorldText(textRenderer, *assetManager.getFont("ui"));
-        textRenderer.end();
-    }
+    // UI RENDER 1st Pass(World Space)
+    uiRenderer->beginWorld(camera); // renderer begin already called with camera in main pass
+    uiSystem.drawWorld(*uiRenderer, textRenderer, assetManager, camera);
     uiRenderer->end();
 
     // UI RENDER 2nd Pass(Screen Space UI)

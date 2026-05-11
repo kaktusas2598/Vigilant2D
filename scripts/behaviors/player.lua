@@ -7,6 +7,8 @@ local MOVE_SPEED = 20.0
 function M.on_create(self)
     print("[LUA] Player created")
     self.selected_tool = "shovel"
+    self.health = 72;
+    self.max_health = 100;
 
     -- Create Quickbar UI
     ui.create_slot_strip("hud.hotbar", "hud")
@@ -22,16 +24,17 @@ function M.on_create(self)
     ui.set_label_text("hud.hotbar_label", "Hotbar")
     ui.set_label_position("hud.hotbar_label", 20, 96)
 
-    -- ui.create_progress_bar("player.health", "world")
-    -- ui.set_progress_bar_render_space("player.health", "world")
-    -- ui.set_progress_bar_position("player.health", x, y)
-    -- ui.set_progress_bar_value("player.health", self.health)
+    -- Create player HUD
+    ui.create_progress_bar("player.health", "world")
+    ui.set_progress_bar_render_space("player.health", "world")
+    ui.set_progress_bar_size("player.health", 32, 5)
+    ui.set_progress_bar_range("player.health", 0, self.max_health)
+    ui.set_progress_bar_value("player.health", self.health)
 
-    -- ui.create_label("player.name", "world")
-    -- ui.set_label_render_space("player.name", "world")
-    -- ui.set_label_text("player.name", "Player")
-    -- ui.set_label_position("player.name", x, y)
-
+    ui.create_label("player.name", "world")
+    ui.set_label_render_space("player.name", "world")
+    ui.set_label_text("player.name", "Player")
+    ui.set_label_scale("player.name", 0.35)
 end
 
 function M.on_update(self, dt)
@@ -43,6 +46,14 @@ function M.on_update(self, dt)
     local tileX, tileY = engine.get_mouse_tile()
     if tileX == nil then
         return
+    end
+
+    -- Update player UI based on player's current position
+    local playerX, playerY = engine.get_entity_position("player")
+    if playerX ~= nil then
+        ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
+        ui.set_progress_bar_value("player.health", self.health)
+        ui.set_label_position("player.name", playerX, playerY + 42)
     end
 
     -- Particle emitter test
