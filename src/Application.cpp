@@ -87,18 +87,45 @@ void Application::init() {
         ImGui::Checkbox("Follow Player", &cameraFollowPlayer);
     });
 
-    uiLayer.addPanel("Scene", [this]() {
+    uiLayer.addPanel("Hierarchy", [this]() {
         ImGui::Text("Entities: %d", scene.getEntityCount());
+        ImGui::Separator();
+
         const std::string& selectedId = selectionManager.getSelectedEntityId();
-        if (selectedId.empty()) {
-            ImGui::Text("No entity selected");
-        } else {
-            ImGui::Text("Selected entity: %s", selectedId.c_str());
+
+        for (const auto& entityPtr : scene.getEntities()) {
+            if (entityPtr == nullptr)
+                continue;
+
+            const bool isSelected = (selectedId == entityPtr->getID());
+            if (ImGui::Selectable(entityPtr->getID().c_str(), isSelected)) {
+                selectionManager.setSelectedEntityId(entityPtr->getID());
+                selectionManager.clearSelectedTile();
+            }
         }
+
+        ImGui::Separator();
+
+        static float spawnPos[2] = {200.0f, 200.0f};
+        ImGui::DragFloat2("Spawn Position", spawnPos, 1.0f);
+
+        if (ImGui::Button("Spawn Slime")) {
+            spawnSlime({spawnPos[0], spawnPos[1]});
+        }
+
+        if (ImGui::Button("Spawn Empty Entity")) {
+            spawnEmptyEntity({spawnPos[0], spawnPos[1]});
+        }
+    });
+
+    uiLayer.addPanel("Inspector", [this]() {
+        const std::string& selectedId = selectionManager.getSelectedEntityId();
         Entity* entity = scene.findEntityByID(selectedId);
-        if (entity == nullptr) {
-            ImGui::Text("Selected entity not found");
-        } else {
+
+        if (entity != nullptr) {
+            ImGui::Text("Entity: %s", selectedId.c_str());
+            ImGui::Separator();
+
             glm::vec2 pos = entity->transform.position;
             glm::vec2 scale = entity->transform.scale;
             glm::vec2 boundsOffset = entity->getBoundsOffset();
@@ -106,37 +133,49 @@ void Application::init() {
 
             if (ImGui::DragFloat2("Position", &pos.x, 1.0f)) {
                 if (entity->hasPhysicsBody()) {
-                   const glm::vec2 boundsSize = entity->getBoundsSize();
+                    const glm::vec2 updatedBoundsSize = entity->getBoundsSize();
                     const glm::vec2 boundsPos = pos + entity->getBoundsOffset();
-                    const glm::vec2 centre = boundsPos + boundsSize * 0.5f;
-                    scene.getPhysicsWorld().setBodyPositionPixels(entity->getPhysicsBody(), centre); 
+                    const glm::vec2 centre = boundsPos + updatedBoundsSize * 0.5f;
+                    scene.getPhysicsWorld().setBodyPositionPixels(entity->getPhysicsBody(), centre);
                 } else {
                     entity->transform.position = pos;
                 }
             }
+
             if (ImGui::DragFloat2("Scale", &scale.x, 1.0f)) {
                 entity->transform.scale = scale;
             }
+
             if (ImGui::DragFloat2("Bounding Box Offset", &boundsOffset.x, 1.0f)) {
                 entity->setBounds(boundsOffset, boundsSize);
             }
+
             if (ImGui::DragFloat2("Bounding Box Size", &boundsSize.x, 1.0f)) {
                 entity->setBounds(boundsOffset, boundsSize);
             }
 
+            ImGui::Separator();
             ImGui::Text("Physics: %s", entity->hasPhysicsBody() ? "Yes" : "No");
-        }
-        ImGui::Separator();
+            ImGui::Text("Script: %s", entity->hasScript() ? entity->getScriptName().c_str() : "None");
+            ImGui::Text("Animated Sprite: %s", entity->getAnimatedSprite() ? "Yes" : "No");
+            ImGui::Text("Sprite: %s", entity->getSprite() ? "Yes" : "No");
+        } else {
+            const glm::ivec2 selectedTile = selectionManager.getSelectedTile();
 
-        static float spawnPos[2] = {200.0f, 200.0f};
-        ImGui::DragFloat2("Entity spawn position", spawnPos, 1.0f);
-        if (ImGui::Button("Spawn Slime")) {
-            spawnSlime({spawnPos[0], spawnPos[1]});
-        }
-        if (ImGui::Button("Spawn Empty Entity")) {
-            spawnEmptyEntity({spawnPos[0], spawnPos[1]});
+            if (selectedTile.x >= 0 && selectedTile.y >= 0) {
+                ImGui::Text("Tile: %d, %d", selectedTile.x, selectedTile.y);
+
+                if (TileMap* map = scene.getTileMap()) {
+                    const glm::vec2 worldPos = map->tileToWorld(selectedTile.x, selectedTile.y);
+                    ImGui::Text("World Position: %.1f, %.1f", worldPos.x, worldPos.y);
+                    ImGui::Text("Tile Size: %d x %d", map->getTileWidth(), map->getTileHeight());
+                }
+            } else {
+                ImGui::Text("Nothing selected");
+            }
         }
     });
+
 
     uiLayer.addPanel("Assets", [this]() {
         ImGui::Text("Textures: %d", static_cast<int>(assetManager.getTextureIDs().size()));

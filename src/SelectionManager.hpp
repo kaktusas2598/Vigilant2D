@@ -22,6 +22,12 @@ class SelectionManager {
 
         const std::string& getHoveredEntityId() const { return hoveredEntityId; }
         const std::string& getSelectedEntityId() const { return selectedEntityId; }
+
+        void setSelectedEntityId(const std::string& id) { selectedEntityId = id; }
+        void clearSelectedEntityId() { selectedEntityId.clear(); }
+
+        void setSelectedTile(const glm::ivec2& tile) { selectedTile = tile; }
+        void clearSelectedTile() { selectedTile = {-1, -1}; }
     private:
         glm::vec2 getMouseWorld(const Input& input, const Camera2D& camera) const;
         bool pointInEntity(const glm::vec2& point, const Entity& entity) const;

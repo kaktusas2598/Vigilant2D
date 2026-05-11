@@ -12,6 +12,7 @@ struct DebugPanel {
     std::string name;
     std::function<void()> draw;
     bool enabled = true;
+    bool defaultOpen = true;
 };
 
 class ImGuiLayer {
@@ -33,4 +34,5 @@ class ImGuiLayer {
         bool wantsMouseCapture() const;
     private:
         std::vector<DebugPanel> panels;
+        bool dockspaceEnabled = true;
 };
