@@ -21,6 +21,17 @@ function M.on_create(self)
     ui.create_label("hud.hotbar_label", "hud")
     ui.set_label_text("hud.hotbar_label", "Hotbar")
     ui.set_label_position("hud.hotbar_label", 20, 96)
+
+    -- ui.create_progress_bar("player.health", "world")
+    -- ui.set_progress_bar_render_space("player.health", "world")
+    -- ui.set_progress_bar_position("player.health", x, y)
+    -- ui.set_progress_bar_value("player.health", self.health)
+
+    -- ui.create_label("player.name", "world")
+    -- ui.set_label_render_space("player.name", "world")
+    -- ui.set_label_text("player.name", "Player")
+    -- ui.set_label_position("player.name", x, y)
+
 end
 
 function M.on_update(self, dt)
@@ -79,13 +90,14 @@ function M.on_update(self, dt)
 
         local tilled = farm.is_tilled(tileX, tileY)
 
-        print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
+        -- print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
     end
 
     if engine.is_mouse_button_pressed(1) then -- RMB
         engine.clear_tile_override("Ground", tileX, tileY)
         engine.clear_tile_override("Farmland", tileX, tileY)
         engine.clear_tile_override("Crops", tileX, tileY)
+        farm.set_tilled(tileX, tileY, false) -- custom game bindings
     end
 end
 

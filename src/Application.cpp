@@ -362,6 +362,8 @@ void Application::render(float dt) {
     if ( player != nullptr) {
         const glm::vec2 barPos = player->transform.position + glm::vec2(6.0f, 32.0f);
         uiRenderer->beginWorld(camera); // renderer begin already called with camera in main pass
+        uiSystem.drawWorld(*uiRenderer, textRenderer, assetManager, camera);
+        // uiRenderer->end();
 
         uiRenderer->drawQuad({
             {barPos, {32.0f, 5.0f}},
