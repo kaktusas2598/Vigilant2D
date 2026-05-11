@@ -29,10 +29,14 @@
 #include "ParticlePresetRegistry.hpp"
 #include "ParticleEmitterRegistry.hpp"
 
+#include "EngineEditor.hpp"
+
 #include "game/FarmWorldState.hpp"
 
 class Application {
     public:
+        ~Application() {}
+
         void init();
         void run();
         void exit();
@@ -52,6 +56,7 @@ class Application {
 
         Window window;
         ImGuiLayer uiLayer;
+        std::unique_ptr<EngineEditor> engineEditor = nullptr;
         Renderer renderer;
 
         ImVec4 clearColour;
