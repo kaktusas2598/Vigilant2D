@@ -1,5 +1,15 @@
 local M = {}
 
+local function get_sword_hit_box(self)
+    local playerX, playerY = engine.get_entity_position(self.id)
+    if playerX == nil then
+        return nil
+    end
+
+    -- Simple first version: centered around player a bit wider than the body
+    return playerX - 8, playerY - 4, 32, 24
+end
+
 local FOLLOW_DISTANCE = 100.0
 local STOP_DISTANCE = 5.0
 local MOVE_SPEED = 20.0
@@ -49,7 +59,7 @@ function M.on_update(self, dt)
     end
 
     -- Update player UI based on player's current position
-    local playerX, playerY = engine.get_entity_position("player")
+    local playerX, playerY = engine.get_entity_position(self.id)
     if playerX ~= nil then
         ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
         ui.set_progress_bar_value("player.health", self.health)
@@ -73,13 +83,13 @@ function M.on_update(self, dt)
         ui.set_slot_strip_selected("hud.hotbar", 1)
         ui.set_label_text("hud.hotbar_label", "Potato seeds")
     elseif engine.is_key_pressed(51) then -- '3'
+        self.selected_tool = "sword"
+        ui.set_slot_strip_selected("hud.hotbar", 2)
+        ui.set_label_text("hud.hotbar_label", "Sword")
+    elseif engine.is_key_pressed(52) then -- '4'
         self.selected_tool = "bucket"
         ui.set_label_text("hud.hotbar_label", "Bucket")
-        ui.set_slot_strip_selected("hud.hotbar", 2)
-    elseif engine.is_key_pressed(52) then -- '4'
-        self.selected_tool = "sword"
         ui.set_slot_strip_selected("hud.hotbar", 3)
-        ui.set_label_text("hud.hotbar_label", "Sword")
     end
 
 
@@ -96,6 +106,21 @@ function M.on_update(self, dt)
             -- add crop on top of ground an farmland layer
             if farm.is_tilled(tileX, tileY) then
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
+            end
+        elseif self.selected_tool == "sword" then
+            -- TODO: define fight animations and play here
+            local hitX, hitY, hitW, hitH = get_sword_hit_box(self)
+            if hitX ~= nil then
+                local hits = engine.get_entities_in_box(hitX, hitY, hitW, hitH)
+                for _, entityId in ipairs(hits) do
+                    if entityId ~= self.id then
+                        print("Sword hit: "..entityId)
+                        local ex, ey = engine.get_entity_position(entityId)
+                        if ex~= nil then
+                            engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
+                        end
+                    end
+                end
             end
         end
 

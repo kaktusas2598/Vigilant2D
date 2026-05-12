@@ -155,6 +155,55 @@ static int l_set_entity_flip_x(lua_State* L) {
     return 1;
 }
 
+static int l_get_entities_in_box(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_newtable(L);
+        return 1;
+    }
+
+    const float x = static_cast<float>(luaL_checknumber(L, 1));
+    const float y = static_cast<float>(luaL_checknumber(L, 2));
+    const float width = static_cast<float>(luaL_checknumber(L, 3));
+    const float height = static_cast<float>(luaL_checknumber(L, 4));
+
+    const float minX = x;
+    const float minY = y;
+    const float maxX = x + width;
+    const float maxY = y + height;
+
+    lua_newtable(L);
+    int outIndex = 1;
+
+    for (const auto& entityPtr : scriptSystem->getRuntimeScene()->getEntities()) {
+        if (entityPtr == nullptr)
+            continue;
+
+        const glm::vec2 boundsPos = entityPtr->getBoundsPosition();
+        const glm::vec2 boundsSize = entityPtr->getBoundsSize();
+
+        const float entityMinX = boundsPos.x;
+        const float entityMinY = boundsPos.y;
+        const float entityMaxX = boundsPos.x + boundsSize.x;
+        const float entityMaxY = boundsPos.y + boundsSize.y;
+
+        const bool overlaps =
+            entityMaxX >= minX &&
+            entityMinX <= maxX &&
+            entityMaxY >= minY &&
+            entityMinY <= maxY;
+
+        if (!overlaps)
+            continue;
+
+        lua_pushstring(L, entityPtr->getID().c_str());
+        lua_seti(L, -2, outIndex++);
+    }
+
+    return 1;
+}
+
+// --------- INPUT BINDINGS
 static int l_is_mouse_button_pressed(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
@@ -167,7 +216,6 @@ static int l_is_mouse_button_pressed(lua_State* L) {
     return 1;
 }
 
-// --------- INPUT BINDINGS
 static int l_is_key_pressed(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
@@ -978,6 +1026,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_entity_flip_x, 1);
     lua_setfield(luaState, -2, "set_entity_flip_x");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_entities_in_box, 1);
+    lua_setfield(luaState, -2, "get_entities_in_box");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_is_mouse_button_pressed, 1);
