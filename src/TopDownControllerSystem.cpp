@@ -62,6 +62,8 @@ void TopDownControllerSystem::update(float dt) {
                 );
             }
 
+            // FIXME: Add animation locking mechanism to allow animations to be played and not
+            // imediately overriden the next frame by controlled system if its used alongside Lua
             if (anim != nullptr) {
                 anim->play(animationRegistry.getClip(controlConfig.idleAnimation), false);
             }

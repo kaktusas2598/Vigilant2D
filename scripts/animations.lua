@@ -6,6 +6,9 @@ return {
         { id = "player_idle", path = "scripts/animations/player_idle.lua" },
         { id = "player_walk_up", path = "scripts/animations/player_walk_up.lua" },
         { id = "player_walk_down", path = "scripts/animations/player_walk_down.lua" },
-        { id = "player_walk_right", path = "scripts/animations/player_walk_right.lua" }
+        { id = "player_walk_right", path = "scripts/animations/player_walk_right.lua" },
+        { id = "player_fight_up", path = "scripts/animations/player_fight_up.lua" },
+        { id = "player_fight_down", path = "scripts/animations/player_fight_down.lua" },
+        { id = "player_fight_right", path = "scripts/animations/player_fight_right.lua" }
     }
 }

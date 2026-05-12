@@ -108,7 +108,8 @@ function M.on_update(self, dt)
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
             end
         elseif self.selected_tool == "sword" then
-            -- TODO: define fight animations and play here
+            -- TODO: define animation based on players direction
+            engine.play_entity_animation(self.id, "player_fight_right", false)
             local hitX, hitY, hitW, hitH = get_sword_hit_box(self)
             if hitX ~= nil then
                 local hits = engine.get_entities_in_box(hitX, hitY, hitW, hitH)
