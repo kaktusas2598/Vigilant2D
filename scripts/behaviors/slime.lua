@@ -7,6 +7,7 @@ local MOVE_SPEED = 20.0
 function M.on_create(self)
     print("[LUA] Slime created")
     self.target_id = "player"
+    self.attack_cooldown = 0.0
 end
 
 function M.on_update(self, dt)
@@ -34,6 +35,14 @@ function M.on_update(self, dt)
         engine.play_entity_animation(self.id, "slime_jump", false)
     else
         engine.play_entity_animation(self.id, "slime_idle", false)
+    end
+
+    -- Attack!!
+    if distance < 10.0 then
+        local health = engine.get_entity_data(self.target_id, "health")
+        local damage = engine.get_entity_data(self.id, "damage")
+        engine.set_entity_data(self.target_id, "health", health - damage)
+        print("Slime hit Player! Player HP: "..health - damage)
     end
 end
 

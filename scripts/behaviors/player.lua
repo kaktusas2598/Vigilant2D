@@ -115,10 +115,20 @@ function M.on_update(self, dt)
                 local hits = engine.get_entities_in_box(hitX, hitY, hitW, hitH)
                 for _, entityId in ipairs(hits) do
                     if entityId ~= self.id then
-                        print("Sword hit: "..entityId)
-                        local ex, ey = engine.get_entity_position(entityId)
-                        if ex~= nil then
-                            engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
+                        -- No friendly fire!
+                        local type = engine.get_entity_data(entityId, "type")
+                        if type == "enemy" then
+                            local health = engine.get_entity_data(entityId, "health")
+                            local damage = engine.get_entity_data(self.id, "damage")
+                            engine.set_entity_data(entityId, "health", health - damage)
+                            print("Player hit "..entityId.." HP: "..health - damage)
+                            local ex, ey = engine.get_entity_position(entityId)
+                            if ex~= nil then
+                                engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
+                            end
+                            if health <= 0 then
+                                -- TODO: implement destroy entity
+                            end
                         end
                     end
                 end

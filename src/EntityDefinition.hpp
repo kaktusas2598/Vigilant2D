@@ -2,6 +2,7 @@
 
 #include <string>
 #include "glm/glm.hpp"
+#include "PropertyBag.hpp"
 
 // Used by EntityFactory to load Lua-returned table into Entity
 struct EntityDefinition {
@@ -15,4 +16,5 @@ struct EntityDefinition {
 
     std::string behaviorScript;
     bool physicsEnabled = false;
+    PropertyBag customData;
 };

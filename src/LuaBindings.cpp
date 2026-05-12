@@ -203,6 +203,72 @@ static int l_get_entities_in_box(lua_State* L) {
     return 1;
 }
 
+static int l_get_entity_data(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    Entity* entity = getEntityFromArg(L, scriptSystem, 1);
+    if (entity == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const char* key = luaL_checkstring(L, 2);
+    const CustomValue* value = entity->getCustomData().get(key);
+    if (value == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    if (std::holds_alternative<bool>(*value)) {
+        lua_pushboolean(L, std::get<bool>(*value) ? 1 : 0);
+        return 1;
+    }
+
+    if (std::holds_alternative<int>(*value)) {
+        lua_pushinteger(L, std::get<int>(*value));
+        return 1;
+    }
+
+    if (std::holds_alternative<float>(*value)) {
+        lua_pushnumber(L, std::get<float>(*value));
+        return 1;
+    }
+
+    if (std::holds_alternative<std::string>(*value)) {
+        lua_pushstring(L, std::get<std::string>(*value).c_str());
+        return 1;
+    }
+
+    lua_pushnil(L);
+    return 1;
+}
+
+static int l_set_entity_data(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    Entity* entity = getEntityFromArg(L, scriptSystem, 1);
+    if (entity == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* key = luaL_checkstring(L, 2);
+
+    if (lua_isboolean(L, 3)) {
+        entity->getCustomData().set(key, lua_toboolean(L, 3) != 0);
+    } else if (lua_isinteger(L, 3)) {
+        entity->getCustomData().set(key, static_cast<int>(lua_tointeger(L, 3)));
+    } else if (lua_isnumber(L, 3)) {
+        entity->getCustomData().set(key, static_cast<float>(lua_tonumber(L, 3)));
+    } else if (lua_isstring(L, 3)) {
+        entity->getCustomData().set(key, std::string(lua_tostring(L, 3)));
+    } else {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // --------- INPUT BINDINGS
 static int l_is_mouse_button_pressed(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -1030,6 +1096,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_entities_in_box, 1);
     lua_setfield(luaState, -2, "get_entities_in_box");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_entity_data, 1);
+    lua_setfield(luaState, -2, "get_entity_data");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_entity_data, 1);
+    lua_setfield(luaState, -2, "set_entity_data");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_is_mouse_button_pressed, 1);

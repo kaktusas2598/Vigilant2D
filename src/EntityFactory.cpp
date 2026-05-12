@@ -70,6 +70,8 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
         entity.setPhysicsBody(scene.getPhysicsWorld().createDynamicBox(bodyPos, bodySize));
     }
 
+    entity.getCustomData() = definition.customData;
+
     return &entity;
 }
 

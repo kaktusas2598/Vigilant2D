@@ -159,6 +159,66 @@ static bool readManifestEntriesTable(lua_State* L, int rootIndex, const char* fi
     return true;
 }
 
+static bool readCustomValue(lua_State* L, int index, CustomValue& outValue) {
+    index = lua_absindex(L, index);
+
+    if (lua_isboolean(L, index)) {
+        outValue = (lua_toboolean(L, index) != 0);
+        return true;
+    }
+
+    if (lua_isinteger(L, index)) {
+        outValue = static_cast<int>(lua_tointeger(L, index));
+        return true;
+    }
+
+    if (lua_isnumber(L, index)) {
+        outValue = static_cast<float>(lua_tonumber(L, index));
+        return true;
+    }
+
+    if (lua_isstring(L, index)) {
+        outValue = std::string(lua_tostring(L, index));
+        return true;
+    }
+
+    return false;
+}
+
+static bool readPropertyBagField(lua_State* L, int tableIndex, const char* fieldName, PropertyBag& outBag) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    const int dataIndex = lua_gettop(L);
+
+    lua_pushnil(L);
+    while (lua_next(L, dataIndex) != 0) {
+        if (!lua_isstring(L, -2)) {
+            lua_pop(L, 2);
+            lua_pop(L, 1);
+            return false;
+        }
+
+        const std::string key = lua_tostring(L, -2);
+        CustomValue value;
+        if (!readCustomValue(L, -1, value)) {
+            lua_pop(L, 2);
+            lua_pop(L, 1);
+            return false;
+        }
+
+        outBag.set(key, std::move(value));
+        lua_pop(L, 1); // pop value, keep key for next lua_next
+    }
+
+    lua_pop(L, 1); // pop data table
+    return true;
+}
 // ----------------------------------
 
 
@@ -340,6 +400,9 @@ bool ScriptSystem::loadEntityDefinition(const std::string& fileName, EntityDefin
         outDefinition.physicsEnabled = lua_toboolean(luaState, -1) != 0;
     }
     lua_pop(luaState, 1);
+
+    // Read optional custom data fields
+    readPropertyBagField(luaState, tableIndex, "data", outDefinition.customData);
 
     lua_pop(luaState, 1); // pop returned table
     return true;

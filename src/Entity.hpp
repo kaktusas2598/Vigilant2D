@@ -8,6 +8,7 @@
 #include "AnimatedSprite.hpp"
 #include "Renderer.hpp"
 #include <box2d/box2d.h>
+#include "PropertyBag.hpp"
 
 // TODO: I don't like Entity owning Sprites, animated sprites, physics handles, script etc.
 class Entity {
@@ -55,6 +56,9 @@ class Entity {
         glm::vec2 getBoundsSize() const { return useCustomBounds ? boundsSize : transform.scale; }
         glm::vec2 getBoundsPosition() const { return transform.position + boundsOffset; }
 
+        PropertyBag& getCustomData() {return customData; }
+        const PropertyBag& getCustomData() const {return customData; }
+
         void update(float dt) {
             if (animatedSprite)
                 animatedSprite->update(dt);
@@ -75,4 +79,6 @@ class Entity {
         glm::vec2 boundsOffset{0.0f, 0.0f};
         glm::vec2 boundsSize{0.0f, 0.0f};
         bool useCustomBounds = false;
+
+        PropertyBag customData;
 };
