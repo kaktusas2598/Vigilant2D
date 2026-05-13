@@ -28,6 +28,7 @@ class Mesh {
         void draw() const;
 
         static Mesh createQuad();
+        static Mesh createFullscreenQuad();
     private:
         void setupVertexAttributes();
 

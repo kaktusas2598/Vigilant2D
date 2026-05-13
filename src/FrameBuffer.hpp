@@ -1,32 +1,37 @@
-#ifndef __FRAMEBUFFER__
-#define __FRAMEBUFFER__
+#pragma once
 
+#include <vector>
 #include "Texture.hpp"
 
 class FrameBuffer {
     public:
-        // @param cubeMap - if true, generate and attach cubemap directly to a framebuffer, else use GL_TEXTURE_2D as attachments
-        FrameBuffer(int w, int h, int textureCount = 1, GLenum* attachments = new GLenum[1]{GL_COLOR_ATTACHMENT0}, bool cubeMap = false);
+        FrameBuffer() = default;
         ~FrameBuffer();
 
-        // NOTE: These are not great, in the future might need ability to get multiple textures
-        unsigned int getTextureID() const { return textureIDs[0]; }
-        Texture* getTexture() const { return textures[0]; }
+        FrameBuffer(const FrameBuffer&) = delete;
+        FrameBuffer operator=(const FrameBuffer&) = delete;
 
+        // Create colour attachment framebuffer
+        bool createColor(int w, int h);
+        void destroy();
         void rescale(int w, int h);
-        void initTextures(GLenum* attachments, GLenum target);
-        void initRenderTargets(GLenum* attachments);
 
         void bind() const;
         void unbind() const;
 
-    private:
-        unsigned int fboID; //<<< framebuffer id
-        unsigned int rboID; //<<< renderbuffer id
-        int width, height; //<<< framebuffer size
-        int numTextures = 1; //<<< number of attached textures
-        GLuint* textureIDs; //<<< textures attached to the framebuffer
-        Texture** textures;// <<< texture objects used in Rendering Engine
-};
+        int getWidth() const { return width; }
+        int getHeight() const { return height; }
 
-#endif // __FRAMEBUFFER__
+        Texture* getColorTexture() const { 
+            return colorTextures.empty() ? nullptr : colorTextures[0]; 
+        }
+
+    private:
+        void createDepthStencilRenderBuffer();
+        void attachColorTexture(int w, int h);
+
+        GLuint fboID = 0; //<<< framebuffer id
+        GLuint rboID = 0; //<<< renderbuffer id
+        int width = 0, height = 0; //<<< framebuffer size
+        std::vector<Texture*> colorTextures;
+};

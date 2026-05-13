@@ -43,7 +43,7 @@ Input* Application::getInput() {
 }
 
 void Application::init() {
-    window.init(1024, 768);
+    window.init(initialWindowWidth, initialWindowHeight);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -61,6 +61,10 @@ void Application::init() {
     clearColour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     debugMode = false;
 
+    // FIXME: Either dont pass factory to editor or fix hardcoded spawn slime method!
+    // Should probably be able to test and spawn based on available entity definitions!!
+    // Now because of this it causes segfault when spawning slime
+    EntityFactory eFactory(scene, assetManager, scriptSystem, animationRegistry);
     engineEditor = std::make_unique<EngineEditor>(EngineEditorContext{
         .window = window,
         .time = time,
@@ -74,19 +78,17 @@ void Application::init() {
         .showPhysicsDebug = showPhysicsDebug,
         .selectionManagerEnabled = selectionManagerEnabled,
         .cameraFollowPlayer = cameraFollowPlayer,
-        .spawnSlime = [this](const glm::vec2& position) {
-            spawnSlime(position);
-        },
-        .spawnEmptyEntity = [this](const glm::vec2& position) {
-            spawnEmptyEntity(position);
-        }
+        .entityFactory = eFactory
     });
 
     engineEditor->registerPanels(uiLayer);
 
     renderer.init();
-
     textRenderer.init();
+    postProcessPass.init();
+
+    sceneFrameBuffer = std::make_unique<FrameBuffer>();
+    sceneFrameBuffer->createColor(initialWindowWidth, initialWindowHeight);
 
     scriptSystem.init();
     //Custom game bindings registration
@@ -223,9 +225,15 @@ void Application::update(float dt) {
 void Application::render(float dt) {
     int display_w, display_h;
     glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);
+
+    if (sceneFrameBuffer) {
+        sceneFrameBuffer->rescale(display_w, display_h);
+        sceneFrameBuffer->bind();
+    }
+
     glViewport(0, 0, display_w, display_h);
     glClearColor(clearColour.x * clearColour.w, clearColour.y * clearColour.w, clearColour.z * clearColour.w, clearColour.w);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     uiLayer.begin();
     if (debugMode)
@@ -257,6 +265,18 @@ void Application::render(float dt) {
 
     renderer.end();
 
+    // POST PROCESS Pass
+    sceneFrameBuffer->unbind();
+    glViewport(0, 0, display_w, display_h);
+    glClear(GL_COLOR_BUFFER_BIT);
+    postProcessPass.draw(
+        sceneFrameBuffer->getColorTexture(),
+        postVignetteStrength,
+        postContrast,
+        postTint
+    );
+
+    // ImGui/Editor pass
     uiLayer.end();
     window.swapBuffers();
 }
@@ -270,16 +290,4 @@ void Application::switchDebugMode() {
 
 bool Application::isDebugModeEnabled() {
     return debugMode;
-}
-
-// Temporary method for testing
-void Application::spawnSlime(const glm::vec2& position) {
-    static int slimeIdPostfix = 0;
-    entityFactory->spawnFromDefinition("slime_" + std::to_string(slimeIdPostfix++), "scripts/entities/slime.lua", position);
-}
-
-void Application::spawnEmptyEntity(const glm::vec2& position) {
-    static int entityIdPostfix = 0;
-    std::string entityId = "Entity_" + std::to_string(entityIdPostfix++);
-    Entity &entity = scene.createEntity(entityId);
 }

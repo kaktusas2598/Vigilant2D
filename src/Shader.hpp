@@ -6,9 +6,6 @@
 
 #include "glm/glm.hpp"
 
-//#include "Camera.hpp"
-//#include "Transform.hpp"
-
 enum class ShaderType {
     NONE = -1, VERTEX = 0, FRAGMENT = 1, GEOMETRY = 2
 };
@@ -39,7 +36,6 @@ class Shader {
 
         unsigned int getRendererID() const { return rendererID; }
 
-        // Set uniforms, TODO: use templates to have multiple types of uniforms
         void setUniform1i(const std::string& name, int value);
         void setUniform1f(const std::string& name, float value);
         void setUniform3f(const std::string& name, float v0, float v1, float v2);

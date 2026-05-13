@@ -16,6 +16,9 @@
 #include "AssetManager.hpp"
 #include "ScriptSystem.hpp"
 
+#include "FrameBuffer.hpp"
+#include "PostProcessPass.hpp"
+
 #include "EntityFactory.hpp"
 #include "AnimationRegistry.hpp"
 #include "TopDownControllerSystem.hpp"
@@ -50,14 +53,12 @@ class Application {
         void update(float dt);
         void render(float dt);
 
-        // TODO: probably temporary, create something better in debug tools
-        void spawnSlime(const glm::vec2& position);
-        void spawnEmptyEntity(const glm::vec2& position);
-
         Window window;
         ImGuiLayer uiLayer;
         std::unique_ptr<EngineEditor> engineEditor = nullptr;
         Renderer renderer;
+        int initialWindowWidth = 1024;
+        int initialWindowHeight = 768;
 
         ImVec4 clearColour;
         bool debugMode = false;
@@ -70,6 +71,12 @@ class Application {
         Scene scene;
         AssetManager assetManager;
         ScriptSystem scriptSystem;
+
+        std::unique_ptr<FrameBuffer> sceneFrameBuffer = nullptr;
+        PostProcessPass postProcessPass;
+        float postVignetteStrength = 0.18f;
+        float postContrast = 1.0f;
+        glm::vec3 postTint{1.0f, 1.0f, 1.0f};
 
         SelectionManager selectionManager;
 

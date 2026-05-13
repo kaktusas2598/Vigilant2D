@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "glm/glm.hpp"
 #include "imgui/imgui.h"
 
@@ -14,6 +12,8 @@ class SelectionManager;
 class AssetManager;
 class ParticleSystem;
 class ParticleEmitterRegistry;
+
+class EntityFactory;
 
 struct EngineEditorContext {
     Window& window;
@@ -30,9 +30,7 @@ struct EngineEditorContext {
     bool& selectionManagerEnabled;
     bool& cameraFollowPlayer;
 
-    // TODO: probably temporary
-    std::function<void(const glm::vec2&)> spawnSlime;
-    std::function<void(const glm::vec2&)> spawnEmptyEntity;
+    EntityFactory& entityFactory;
 };
 
 class EngineEditor {
@@ -42,5 +40,9 @@ public:
     void registerPanels(ImGuiLayer& uiLayer);
 
 private:
+    // TODO: probably temporary, create something better in debug tools
+    void spawnSlime(const glm::vec2& position);
+    void spawnEmptyEntity(const glm::vec2& position);
+
     EngineEditorContext context;
 };

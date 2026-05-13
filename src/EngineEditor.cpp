@@ -13,6 +13,8 @@
 #include "Entity.hpp"
 #include "TileMap.hpp"
 
+#include "EntityFactory.hpp"
+
 EngineEditor::EngineEditor(EngineEditorContext context) : context{context} {}
 
 void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
@@ -64,11 +66,11 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
         ImGui::DragFloat2("Spawn Position", spawnPos, 1.0f);
 
         if (ImGui::Button("Spawn Slime")) {
-            context.spawnSlime({spawnPos[0], spawnPos[1]});
+            spawnSlime({spawnPos[0], spawnPos[1]});
         }
 
         if (ImGui::Button("Spawn Empty Entity")) {
-            context.spawnEmptyEntity({spawnPos[0], spawnPos[1]});
+            spawnEmptyEntity({spawnPos[0], spawnPos[1]});
         }
     });
 
@@ -186,4 +188,16 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
         ImGui::Text("Hovered Tile: %d, %d", hoverTile.x, hoverTile.y);
         ImGui::Text("Selected Tile: %d, %d", selectedTile.x, selectedTile.y);
     });
+}
+
+// Temporary method for testing
+void EngineEditor::spawnSlime(const glm::vec2& position) {
+    static int slimeIdPostfix = 0;
+    context.entityFactory.spawnFromDefinition("slime_" + std::to_string(slimeIdPostfix++), "scripts/entities/slime.lua", position);
+}
+
+void EngineEditor::spawnEmptyEntity(const glm::vec2& position) {
+    static int entityIdPostfix = 0;
+    std::string entityId = "Entity_" + std::to_string(entityIdPostfix++);
+    Entity &entity = context.scene.createEntity(entityId);
 }
