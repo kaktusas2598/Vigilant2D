@@ -61,28 +61,6 @@ void Application::init() {
     clearColour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     debugMode = false;
 
-    // FIXME: Either dont pass factory to editor or fix hardcoded spawn slime method!
-    // Should probably be able to test and spawn based on available entity definitions!!
-    // Now because of this it causes segfault when spawning slime
-    EntityFactory eFactory(scene, assetManager, scriptSystem, animationRegistry);
-    engineEditor = std::make_unique<EngineEditor>(EngineEditorContext{
-        .window = window,
-        .time = time,
-        .camera = camera,
-        .scene = scene,
-        .selectionManager = selectionManager,
-        .assetManager = assetManager,
-        .particleSystem = particleSystem,
-        .particleEmitterRegistry = particleEmitterRegistry,
-        .clearColour = clearColour,
-        .showPhysicsDebug = showPhysicsDebug,
-        .selectionManagerEnabled = selectionManagerEnabled,
-        .cameraFollowPlayer = cameraFollowPlayer,
-        .entityFactory = eFactory
-    });
-
-    engineEditor->registerPanels(uiLayer);
-
     renderer.init();
     textRenderer.init();
     postProcessPass.init();
@@ -128,6 +106,26 @@ void Application::init() {
     if (scene.getTileMap() != nullptr)
         entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
 
+    engineEditor = std::make_unique<EngineEditor>(EngineEditorContext{
+        .window = window,
+        .time = time,
+        .camera = camera,
+        .scene = scene,
+        .selectionManager = selectionManager,
+        .assetManager = assetManager,
+        .particleSystem = particleSystem,
+        .particleEmitterRegistry = particleEmitterRegistry,
+        .clearColour = clearColour,
+        .showPhysicsDebug = showPhysicsDebug,
+        .selectionManagerEnabled = selectionManagerEnabled,
+        .cameraFollowPlayer = cameraFollowPlayer,
+        .postVignetteStrength = postVignetteStrength,
+        .postContrast = postContrast,
+        .postTint = postTint,
+        .entityFactory = *entityFactory
+    });
+    engineEditor->registerPanels(uiLayer);
+
     // Setup controller system by providing controller config
     // TODO: set from script, similar for particle emitters
     topDownControllerSystem = std::make_unique<TopDownControllerSystem>(scene, input, animationRegistry);
@@ -142,7 +140,8 @@ void Application::init() {
     });
 
     //-------------- Custom Scene Setup Code
-    camera.setZoom(4.0f); // set appropriate zoom for current game im working, probably better to be configured or scripted
+    // TODO: move custom scene setup to scripting, things like this below
+    camera.setZoom(4.0f); 
 
     //-------------- Particle emitter initialisation
     particleEmitterRegistry.createEmitterFromPreset(
@@ -282,12 +281,4 @@ void Application::render(float dt) {
 }
 
 void Application::exit() {
-}
-
-void Application::switchDebugMode() {
-    debugMode = !debugMode;
-}
-
-bool Application::isDebugModeEnabled() {
-    return debugMode;
 }

@@ -30,6 +30,10 @@ struct EngineEditorContext {
     bool& selectionManagerEnabled;
     bool& cameraFollowPlayer;
 
+    float& postVignetteStrength;
+    float& postContrast;
+    glm::vec3& postTint;
+
     EntityFactory& entityFactory;
 };
 

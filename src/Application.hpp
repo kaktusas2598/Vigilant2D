@@ -44,8 +44,8 @@ class Application {
         void run();
         void exit();
 
-        void switchDebugMode();
-        bool isDebugModeEnabled();
+        void switchDebugMode() { debugMode = !debugMode; }
+        bool isDebugModeEnabled() { return debugMode; }
 
         Input* getInput();
 

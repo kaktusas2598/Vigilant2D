@@ -27,6 +27,12 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
         if (ImGui::Checkbox("Fullscreen", &fullscreen)) {
             context.window.setFullscreen(fullscreen);
         }
+
+        ImGui::Separator();
+        ImGui::Text("Post Process");
+        ImGui::SliderFloat("Vignette", &context.postVignetteStrength, 0.0f, 1.0f);
+        ImGui::SliderFloat("Contrast", &context.postContrast, 0.5f, 1.5f);
+        ImGui::ColorEdit3("Tint", &context.postTint.x);
     });
 
     uiLayer.addPanel("Camera", [this]() {
