@@ -41,6 +41,18 @@ Entity& Scene::createEntity(const std::string& id) {
     return entity;
 }
 
+// TODO: should also make sure script is detached, physics body and etc - proper cleanup
+bool Scene::destroyEntity(const std::string& id) {
+    for (auto it = entities.begin(); it != entities.end(); ++it) {
+        if (*it && (*it)->getID() == id) {
+            entities.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void Scene::setTileMap(std::unique_ptr<TileMap> newMap) {
     tileMap = std::move(newMap);
     if (tileMap) {

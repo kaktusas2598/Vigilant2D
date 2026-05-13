@@ -86,6 +86,26 @@ static int l_set_entity_position(lua_State* L) {
     return 1;
 }
 
+static int l_destroy_entity(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* entityId = luaL_checkstring(L, 1);
+    Entity* entity = scriptSystem->getRuntimeScene()->findEntityByID(entityId);
+    if (entity == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    scriptSystem->getRuntimeScene()->destroyEntity(entityId);
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_get_direction_to_entity(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     Entity* source = getEntityFromArg(L, scriptSystem, 1);
@@ -1084,6 +1104,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_direction_to_entity, 1);
     lua_setfield(luaState, -2, "get_direction_to_entity");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_destroy_entity, 1);
+    lua_setfield(luaState, -2, "destroy_entity");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_play_entity_animation, 1);

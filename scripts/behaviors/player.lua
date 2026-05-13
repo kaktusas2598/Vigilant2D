@@ -61,8 +61,9 @@ function M.on_update(self, dt)
     -- Update player UI based on player's current position
     local playerX, playerY = engine.get_entity_position(self.id)
     if playerX ~= nil then
+        local health = engine.get_entity_data(self.id, "health")
         ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
-        ui.set_progress_bar_value("player.health", self.health)
+        ui.set_progress_bar_value("player.health", health)
         ui.set_label_position("player.name", playerX, playerY + 42)
     end
 
@@ -127,7 +128,7 @@ function M.on_update(self, dt)
                                 engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
                             end
                             if health <= 0 then
-                                -- TODO: implement destroy entity
+                                engine.destroy_entity(entityId)
                             end
                         end
                     end

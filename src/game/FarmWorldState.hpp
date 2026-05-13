@@ -5,6 +5,8 @@
 // Custom game data, NOTE: not sure if I like having to implement custom c++ layer here
 // TODO: Do some research on how game engines handle custom game layer data, maybe not suitable 
 // for Lua scripting, but there might be some better answer here, maybe something data-defined
+// NOTE: This could use a similar approach to having PropertyBag in Entity, maybe a custom MapData, also 
+// might need somthing similar to global world data
 struct FarmTileState {
     bool tilled = false;
     bool watered = false;

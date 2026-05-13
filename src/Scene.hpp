@@ -15,6 +15,7 @@ class Scene {
         void render(Renderer& renderer, const Camera2D& camera, int viewportWidth, int viewportHeight);
 
         Entity& createEntity(const std::string& id);
+        bool destroyEntity(const std::string& id);
         void setTileMap(std::unique_ptr<TileMap> newMap);
     
         Entity* findEntityByID(const std::string& id);
