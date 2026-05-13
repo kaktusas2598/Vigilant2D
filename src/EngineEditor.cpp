@@ -29,10 +29,14 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
         }
 
         ImGui::Separator();
-        ImGui::Text("Post Process");
+        ImGui::Text("Post FX");
         ImGui::SliderFloat("Vignette", &context.postVignetteStrength, 0.0f, 1.0f);
         ImGui::SliderFloat("Contrast", &context.postContrast, 0.5f, 1.5f);
+        ImGui::SliderFloat("Brightness", &context.postBrightness, -0.5f, 0.5f);
+        ImGui::SliderFloat("Saturation", &context.postSaturation, 0.0f, 2.0f);
         ImGui::ColorEdit3("Tint", &context.postTint.x);
+        ImGui::ColorEdit4("Fade Colour", &context.postFadeColor.x);
+        ImGui::SliderFloat("Fade Amount", &context.postFadeAmount, 0.0f, 1.0f);
     });
 
     uiLayer.addPanel("Camera", [this]() {

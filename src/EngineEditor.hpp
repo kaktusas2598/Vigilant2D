@@ -32,7 +32,11 @@ struct EngineEditorContext {
 
     float& postVignetteStrength;
     float& postContrast;
+    float& postBrightness;
+    float& postSaturation;
     glm::vec3& postTint;
+    glm::vec4& postFadeColor;
+    float& postFadeAmount;
 
     EntityFactory& entityFactory;
 };

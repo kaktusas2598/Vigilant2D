@@ -121,7 +121,11 @@ void Application::init() {
         .cameraFollowPlayer = cameraFollowPlayer,
         .postVignetteStrength = postVignetteStrength,
         .postContrast = postContrast,
+        .postBrightness = postBrightness,
+        .postSaturation = postSaturation,
         .postTint = postTint,
+        .postFadeColor = postFadeColor,
+        .postFadeAmount = postFadeAmount,
         .entityFactory = *entityFactory
     });
     engineEditor->registerPanels(uiLayer);
@@ -272,7 +276,11 @@ void Application::render(float dt) {
         sceneFrameBuffer->getColorTexture(),
         postVignetteStrength,
         postContrast,
-        postTint
+        postBrightness,
+        postSaturation,
+        postTint,
+        postFadeColor,
+        postFadeAmount
     );
 
     // ImGui/Editor pass

@@ -11,7 +11,11 @@ public:
     void draw(Texture* sourceTexture,
               float vignetteStrength,
               float contrast,
-              const glm::vec3& tint);
+              float brightness,
+              float saturation,
+              const glm::vec3& tint,
+              const glm::vec4& fadeColor,
+              float fadeAmount);
 
 private:
     Shader shader;
