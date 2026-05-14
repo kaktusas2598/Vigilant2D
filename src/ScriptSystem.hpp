@@ -11,6 +11,7 @@ extern "C" {
 #include <vector>
 #include <unordered_map>
 #include "Entity.hpp"
+#include "ScriptTaskRunner.hpp"
 #include "ScriptRuntimeContext.hpp"
 
 // For content bootstrapping
@@ -54,23 +55,6 @@ struct ParticlePresetManifestEntry {
 struct ScriptInstance {
     std::string fileName;
     int tableRef = LUA_NOREF;
-};
-
-// Represents Lua coroutine allowing great many things to happen
-struct ScriptTask {
-    int threadRef = LUA_NOREF;
-    std::string ownerEntityId;
-    bool global = false;
-    bool finished = false;
-
-    enum class WaitMode {
-        None,
-        Seconds,
-        NextFrame
-    };
-
-    WaitMode waitMode = WaitMode::None;
-    float waitRemaining = 0.0f;
 };
 
 class ScriptSystem {
@@ -123,18 +107,9 @@ class ScriptSystem {
     private:
         bool reportError(int status, const std::string& context);
 
-        // Coroutine helpers
-        lua_State* getTaskThread(const ScriptTask& task) const;
-        bool startTask(ScriptTask& task, int argumentCount);
-        bool resumeTask(ScriptTask& task, float dt);
-        bool configureTaskWait(ScriptTask& task, lua_State* thread, int resultCount);
-        void releaseTask(ScriptTask& task);
-        bool reportThreadError(lua_State* thread, const std::string& context);
-
         lua_State* luaState = nullptr;
         std::unordered_map<std::string, ScriptInstance> entityScripts;
 
         ScriptRuntimeContext runtimeContext;
-
-        std::vector<ScriptTask> activeTasks;
+        ScriptTaskRunner taskRunner;
 };
