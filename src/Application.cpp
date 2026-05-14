@@ -210,6 +210,7 @@ void Application::update(float dt) {
             scriptSystem.callEntityOnUpdate(*entityPtr, dt);
         }
     }
+    scriptSystem.updateTasks(dt);
 
     // TODO: probably best done from player on_update script func?
     Entity *player = scene.findEntityByID("player");

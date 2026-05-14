@@ -47,6 +47,23 @@ static bool parseUIRenderSpace(const char* value, UIRenderSpace& outSpace) {
     return false;
 }
 
+static const char* getEntityIdFromSelf(lua_State* L, int argIndex) {
+    argIndex = lua_absindex(L, argIndex);
+
+    if (!lua_istable(L, argIndex))
+        return nullptr;
+
+    lua_getfield(L, argIndex, "id");
+    if (!lua_isstring(L, -1)) {
+        lua_pop(L, 1);
+        return nullptr;
+    }
+
+    const char* entityId = lua_tostring(L, -1);
+    lua_pop(L, 1);
+    return entityId;
+}
+
 // --------- ENTITY BINDINGS
 static int l_get_entity_position(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -578,6 +595,62 @@ static int l_set_tile_tileset_override(lua_State* L) {
     return 1;
 }
 
+// --------- COROUTINE BINDINGS
+static int l_wait_continue(lua_State* L, int status, lua_KContext ctx) {
+    return 0;
+}
+
+static int l_wait(lua_State* L) {
+    const float seconds = static_cast<float>(luaL_checknumber(L, 1));
+    lua_pushstring(L, "wait_seconds");
+    lua_pushnumber(L, seconds);
+    return lua_yieldk(L, 2, 0, l_wait_continue);
+}
+
+static int l_wait_frame_continue(lua_State* L, int status, lua_KContext ctx) {
+    return lua_gettop(L);
+}
+
+static int l_wait_frame(lua_State* L) {
+    lua_pushstring(L, "wait_frame");
+    return lua_yieldk(L, 1, 0, l_wait_frame_continue);
+}
+
+static int l_start_entity_coroutine(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* ownerEntityId = getEntityIdFromSelf(L, 1);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    if (ownerEntityId == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const bool ok = scriptSystem->startEntityCoroutine(ownerEntityId, 2, 1);
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
+static int l_start_global_coroutine(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    luaL_checktype(L, 1, LUA_TFUNCTION);
+
+    const bool ok = scriptSystem->startGlobalCoroutine(1);
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
+
 // --------- UI LABEL BINDINGS
 static int l_ui_create_label(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
@@ -1089,7 +1162,6 @@ static int l_ui_set_group_visible(lua_State* L) {
 }
 
 void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
-
     // Setup engine global table
     lua_newtable(luaState);
 
@@ -1168,6 +1240,22 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_tile_tileset_override, 1);
     lua_setfield(luaState, -2, "set_tile_tileset_override");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_start_entity_coroutine, 1);
+    lua_setfield(luaState, -2, "start_entity_coroutine");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_start_global_coroutine, 1);
+    lua_setfield(luaState, -2, "start_global_coroutine");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_wait, 1);
+    lua_setfield(luaState, -2, "wait");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_wait_frame, 1);
+    lua_setfield(luaState, -2, "wait_frame");
 
     lua_setglobal(luaState, "engine");
 
@@ -1263,5 +1351,4 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_group_visible");
 
     lua_setglobal(luaState, "ui");
-
 }
