@@ -11,6 +11,7 @@ extern "C" {
 #include <vector>
 #include <unordered_map>
 #include "Entity.hpp"
+#include "ScriptContentLoader.hpp"
 #include "ScriptTaskRunner.hpp"
 #include "ScriptRuntimeContext.hpp"
 
@@ -27,30 +28,6 @@ class AssetManager;
 class AnimationRegistry;
 class ParticleEmitterRegistry;
 class UISystem;
-
-// Raw assets manifest entry for each resource
-struct TextureManifestEntry {
-    std::string id;
-    std::string path;
-};
-
-struct FontManifestEntry {
-    std::string id;
-    std::string path;
-    int pixelSize = 16;
-};
-
-// Built content manifest entry for each resource
-struct AnimationManifestEntry {
-    std::string id;
-    std::string path;
-};
-
-struct ParticlePresetManifestEntry {
-    std::string id;
-    std::string path;
-};
-
 
 struct ScriptInstance {
     std::string fileName;
@@ -110,6 +87,7 @@ class ScriptSystem {
         lua_State* luaState = nullptr;
         std::unordered_map<std::string, ScriptInstance> entityScripts;
 
+        ScriptContentLoader contentLoader;
         ScriptRuntimeContext runtimeContext;
         ScriptTaskRunner taskRunner;
 };
