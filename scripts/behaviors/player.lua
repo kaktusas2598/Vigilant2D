@@ -125,10 +125,7 @@ function M.on_update(self, dt)
                             print("Player hit "..entityId.." HP: "..health - damage)
                             local ex, ey = engine.get_entity_position(entityId)
                             if ex~= nil then
-                                engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
-                            end
-                            if health <= 0 then
-                                engine.destroy_entity(entityId)
+                                -- engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
                             end
                         end
                     end
