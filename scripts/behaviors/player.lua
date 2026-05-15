@@ -48,6 +48,15 @@ function M.on_create(self)
 end
 
 function M.on_update(self, dt)
+    -- Update player UI based on player's current position
+    local playerX, playerY = engine.get_entity_position(self.id)
+    if playerX ~= nil then
+        local health = engine.get_entity_data(self.id, "health")
+        ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
+        ui.set_progress_bar_value("player.health", health)
+        ui.set_label_position("player.name", playerX, playerY + 42)
+    end
+
     local mouseX, mouseY = engine.get_mouse_world_position()
     if mouseX == nil then
         return
@@ -58,14 +67,6 @@ function M.on_update(self, dt)
         return
     end
 
-    -- Update player UI based on player's current position
-    local playerX, playerY = engine.get_entity_position(self.id)
-    if playerX ~= nil then
-        local health = engine.get_entity_data(self.id, "health")
-        ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
-        ui.set_progress_bar_value("player.health", health)
-        ui.set_label_position("player.name", playerX, playerY + 42)
-    end
 
     -- Particle emitter test
     if engine.is_key_pressed(80) then -- 'p'
@@ -149,8 +150,8 @@ function M.on_update(self, dt)
     if playerHealth ~= nil and playerHealth < 0 then
         ui.create_label("hud.game_over_label", "hud")
         ui.set_label_text("hud.game_over_label", "GameOver")
-        -- TODO: need a way to center on the screen (get screen w, h binding?)
-        -- TODO: need a binding to set text tint
+        -- TODO: need a way to center on the screen
+        ui.set_label_text_color("hud.game_over_label", 1.2, 0.2, 0.2, 1.0)
         ui.set_label_position("hud.game_over_label", 500, 500)
         ui.set_label_scale("hud.game_over_label", 2.0)
     end

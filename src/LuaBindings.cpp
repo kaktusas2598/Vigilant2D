@@ -836,6 +836,30 @@ static int l_ui_set_label_scale(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_label_text_color(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float r = static_cast<float>(luaL_checknumber(L, 2));
+    const float g = static_cast<float>(luaL_checknumber(L, 3));
+    const float b = static_cast<float>(luaL_checknumber(L, 4));
+    const float a = static_cast<float>(luaL_optnumber(L, 5, 1.0));
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->textColor = {r, g, b, a};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_ui_set_label_visible(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
     if (uiSystem == nullptr) {
@@ -1395,6 +1419,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_text, 1);
     lua_setfield(luaState, -2, "set_label_text");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_text_color, 1);
+    lua_setfield(luaState, -2, "set_label_text_color");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_position, 1);
