@@ -50,7 +50,7 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
         if (ImGui::SliderFloat("Zoom", &zoom, 1.0f, 8.0f)) {
             context.camera.setZoom(zoom);
         }
-        ImGui::Checkbox("Follow Player", &context.cameraFollowPlayer);
+        // ImGui::Checkbox("Follow Player", &context.cameraFollowPlayer);
     });
 
     uiLayer.addPanel("Hierarchy", [this]() {
@@ -92,6 +92,8 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
             ImGui::Text("Entity: %s", selectedId.c_str());
             ImGui::Separator();
 
+            // HACK: nice to pan to selected entity, but to regain player follow need to select playable entity
+            context.camera.setPosition(entity->transform.position);
             glm::vec2 pos = entity->transform.position;
             glm::vec2 scale = entity->transform.scale;
             glm::vec2 boundsOffset = entity->getBoundsOffset();

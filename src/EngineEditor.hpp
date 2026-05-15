@@ -7,6 +7,7 @@ class ImGuiLayer;
 class Window;
 class Time;
 class Camera2D;
+class CameraFollowState;
 class Scene;
 class SelectionManager;
 class AssetManager;
@@ -28,7 +29,7 @@ struct EngineEditorContext {
     ImVec4& clearColour;
     bool& showPhysicsDebug;
     bool& selectionManagerEnabled;
-    bool& cameraFollowPlayer;
+    CameraFollowState& cameraFollowState;
 
     float& postVignetteStrength;
     float& postContrast;

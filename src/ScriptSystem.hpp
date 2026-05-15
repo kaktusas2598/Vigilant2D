@@ -24,6 +24,7 @@ extern "C" {
 class Scene;
 class Input;
 class Camera2D;
+class CameraFollowState;
 class AssetManager;
 class AnimationRegistry;
 class ParticleEmitterRegistry;
@@ -72,15 +73,19 @@ class ScriptSystem {
         void cancelTasksForEntity(const std::string& entityId);
 
         lua_State* getState() const { return luaState; }
+        bool callNamedFunction(const ScriptInstance& instance, const char* functionName);
+        bool runGlobalScriptFunction(const std::string& fileName, const char* functionName);
 
         void setRuntimeContext(ScriptRuntimeContext newContext);
         Scene* getRuntimeScene() const { return runtimeContext.scene; }
         Input* getRuntimeInput() const { return runtimeContext.input; }
         Camera2D* getRuntimeCamera() const { return runtimeContext.camera; }
+        CameraFollowState* getRuntimeCameraFollowState() const { return runtimeContext.cameraFollowState; }
         AssetManager* getAssetManager() const { return runtimeContext.assetManager; }
         AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }
         ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
         UISystem* getUISystem() const { return runtimeContext.uiSystem; }
+        float *getPostFadeAmount() const { return runtimeContext.postFadeAmount; }
     private:
         bool reportError(int status, const std::string& context);
 

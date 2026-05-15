@@ -7,6 +7,7 @@ class Camera2D;
 class ParticleEmitterRegistry;
 class AssetManager;
 class UISystem;
+class CameraFollowState;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
@@ -16,4 +17,7 @@ struct ScriptRuntimeContext {
     ParticleEmitterRegistry* particleEmitterRegistry = nullptr;
     AssetManager* assetManager = nullptr;
     UISystem* uiSystem = nullptr;
+    CameraFollowState* cameraFollowState = nullptr;
+    // FIXME: Does not make much sense to store random post fx setting by itself here
+    float* postFadeAmount = nullptr;
 };

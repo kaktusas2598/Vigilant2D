@@ -98,7 +98,9 @@ void Application::init() {
         &camera,
         &particleEmitterRegistry,
         &assetManager,
-        &uiSystem
+        &uiSystem,
+        &cameraFollowState,
+        &postFadeAmount
     });
 
     // Register entities
@@ -118,7 +120,7 @@ void Application::init() {
         .clearColour = clearColour,
         .showPhysicsDebug = showPhysicsDebug,
         .selectionManagerEnabled = selectionManagerEnabled,
-        .cameraFollowPlayer = cameraFollowPlayer,
+        .cameraFollowState = cameraFollowState,
         .postVignetteStrength = postVignetteStrength,
         .postContrast = postContrast,
         .postBrightness = postBrightness,
@@ -146,6 +148,8 @@ void Application::init() {
     //-------------- Custom Scene Setup Code
     // TODO: move custom scene setup to scripting, things like this below
     camera.setZoom(4.0f); 
+    // Custom global automation/task/coroutine test
+    scriptSystem.runGlobalScriptFunction("scripts/automations/intro.lua", "start");
 
     //-------------- Particle emitter initialisation
     particleEmitterRegistry.createEmitterFromPreset(
@@ -212,12 +216,15 @@ void Application::update(float dt) {
     }
     scriptSystem.updateTasks(dt);
 
-    // TODO: probably best done from player on_update script func?
-    Entity *player = scene.findEntityByID("player");
-    if (cameraFollowPlayer && player != nullptr) {
-        // Centre camera on entity's centre
-        camera.setPosition(player->transform.position + player->transform.scale * 0.5f);
+    if (cameraFollowState.followEntity) {
+        Entity* target = scene.findEntityByID(cameraFollowState.targetEntityId);
+        if (target != nullptr) {
+            camera.setTargetPosition(target->transform.position + target->transform.scale * 0.5f);
+        } else {
+            camera.clearTargetPosition();
+        }
     }
+    camera.updateTarget();
 
     particleSystem.update(dt);
     // Only update selected entities/tiles when not using engine editor tools

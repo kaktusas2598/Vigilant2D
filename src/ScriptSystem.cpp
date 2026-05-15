@@ -1,8 +1,6 @@
 #include "ScriptSystem.hpp"
 
-#include <functional>
 #include "Logger.hpp"
-
 #include "LuaBindings.hpp"
 
 bool ScriptSystem::init() {
@@ -239,6 +237,33 @@ void ScriptSystem::cancelTasksForEntity(const std::string& entityId) {
     taskRunner.cancelTasksForEntity(entityId);
 }
 
+bool ScriptSystem::callNamedFunction(const ScriptInstance& instance, const char* functionName) {
+    if (luaState == nullptr || instance.tableRef == LUA_NOREF)
+        return false;
+
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instance.tableRef);
+    lua_getfield(luaState, -1, functionName);
+
+    if (!lua_isfunction(luaState, -1)) {
+        lua_pop(luaState, 2);
+        return true;
+    }
+
+    lua_remove(luaState, -2); // remove table, leave function
+    const int status = lua_pcall(luaState, 0, 0, 0);
+    return reportError(status, std::string("callNamedFunction(") + instance.fileName + ":" + functionName + ")");
+}
+
+bool ScriptSystem::runGlobalScriptFunction(const std::string& fileName, const char* functionName) {
+    ScriptInstance instance = loadBehavior(fileName);
+    if (instance.tableRef == LUA_NOREF)
+        return false;
+
+    const bool ok = callNamedFunction(instance, functionName);
+    releaseInstance(instance);
+    return ok;
+}
+
 void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.scene = newContext.scene;
     runtimeContext.animationRegistry = newContext.animationRegistry;
@@ -247,6 +272,8 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
     runtimeContext.assetManager = newContext.assetManager;
     runtimeContext.uiSystem = newContext.uiSystem;
+    runtimeContext.cameraFollowState = newContext.cameraFollowState;
+    runtimeContext.postFadeAmount = newContext.postFadeAmount;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

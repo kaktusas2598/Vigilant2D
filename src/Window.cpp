@@ -13,6 +13,7 @@ void Window::init(int width, int height) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(width, height, "Vigilant2D", NULL, NULL);
@@ -23,8 +24,8 @@ void Window::init(int width, int height) {
         return;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
+    glfwFocusWindow(window);
     glfwSwapInterval(1); // Enable vsync
 
     if (glewInit() != GLEW_OK) {

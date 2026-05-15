@@ -19,12 +19,32 @@ class Camera2D {
 
         glm::vec2 getPosition() const { return position; }
         float getZoom() const { return zoom; }
+        float getViewportWidth() const { return viewportWidth; }
+        float getViewportHeight() const { return viewportHeight; }
 
         glm::vec2 screenToWorld(const glm::vec2& screenPosition) const;
         glm::vec2 worldToScreen(const glm::vec2& worldPosition) const;
+
+        void setTargetPosition(const glm::vec2& target) {
+            targetPosition = target;
+            hasTargetPosition = true;
+        }
+        void clearTargetPosition() {
+            hasTargetPosition = false;
+        }
+        bool hasTarget() const { return hasTargetPosition; }
+        void updateTarget() {
+            if (hasTargetPosition) {
+                position = targetPosition;
+            }
+        }
+
     private:
         glm::vec2 position;
         float zoom;
         float viewportWidth;
         float viewportHeight;
+
+        bool hasTargetPosition = false;
+        glm::vec2 targetPosition{0.0f, 0.0f};
 };

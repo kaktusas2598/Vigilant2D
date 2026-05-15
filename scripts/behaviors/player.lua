@@ -144,6 +144,17 @@ function M.on_update(self, dt)
         engine.clear_tile_override("Crops", tileX, tileY)
         farm.set_tilled(tileX, tileY, false) -- custom game bindings
     end
+
+    local playerHealth = engine.get_entity_data(self.id, "health")
+    if playerHealth ~= nil and playerHealth < 0 then
+        ui.create_label("hud.game_over_label", "hud")
+        ui.set_label_text("hud.game_over_label", "GameOver")
+        -- TODO: need a way to center on the screen (get screen w, h binding?)
+        -- TODO: need a binding to set text tint
+        ui.set_label_position("hud.game_over_label", 500, 500)
+        ui.set_label_scale("hud.game_over_label", 2.0)
+    end
+
 end
 
 return M

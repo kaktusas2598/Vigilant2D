@@ -9,6 +9,7 @@
 #include "AnimationRegistry.hpp"
 #include "ParticleEmitter.hpp"
 #include "ParticleEmitterRegistry.hpp"
+#include "CameraFollowState.hpp"
 #include "Input.hpp"
 #include "UISystem.hpp"
 #include "glm/glm.hpp"
@@ -64,6 +65,93 @@ static const char* getEntityIdFromSelf(lua_State* L, int argIndex) {
     return entityId;
 }
 
+// --------- CAMERA BINDINGS
+static int l_get_camera_position(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeCamera() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const glm::vec2 position = scriptSystem->getRuntimeCamera()->getPosition();
+    lua_pushnumber(L, position.x);
+    lua_pushnumber(L, position.y);
+    return 2;
+}
+
+static int l_set_camera_position(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeCamera() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float x = static_cast<float>(luaL_checknumber(L, 1));
+    const float y = static_cast<float>(luaL_checknumber(L, 2));
+    scriptSystem->getRuntimeCamera()->setPosition({x, y});
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_camera_target_entity(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr ||
+        scriptSystem->getRuntimeCameraFollowState() == nullptr ||
+        scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* entityId = luaL_checkstring(L, 1);
+    Entity* entity = scriptSystem->getRuntimeScene()->findEntityByID(entityId);
+    if (entity == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    CameraFollowState* followState = scriptSystem->getRuntimeCameraFollowState();
+    followState->followEntity = true;
+    followState->targetEntityId = entityId;
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_clear_camera_target(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeCamera() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    scriptSystem->getRuntimeCamera()->clearTargetPosition();
+
+    CameraFollowState* followState = scriptSystem->getRuntimeCameraFollowState();
+    if (followState != nullptr) {
+        followState->followEntity = false;
+        followState->targetEntityId.clear();
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- POST-FX BINDINGS
+static int l_set_post_fade_amount(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getPostFadeAmount() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float amount = static_cast<float>(luaL_checknumber(L, 1));
+    *scriptSystem->getPostFadeAmount() = amount;
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // --------- ENTITY BINDINGS
 static int l_get_entity_position(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -101,6 +189,20 @@ static int l_set_entity_position(lua_State* L) {
 
     lua_pushboolean(L, 1);
     return 1;
+}
+
+static int l_get_entity_centre(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    Entity* entity = getEntityFromArg(L, scriptSystem, 1);
+    if (entity == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const glm::vec2 centre = entity->transform.position + entity->transform.scale * 0.5f;
+    lua_pushnumber(L, centre.x);
+    lua_pushnumber(L, centre.y);
+    return 2;
 }
 
 static int l_destroy_entity(lua_State* L) {
@@ -1166,6 +1268,26 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_newtable(luaState);
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_camera_position, 1);
+    lua_setfield(luaState, -2, "get_camera_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_camera_position, 1);
+    lua_setfield(luaState, -2, "set_camera_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_camera_target_entity, 1);
+    lua_setfield(luaState, -2, "set_camera_target_entity");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_clear_camera_target, 1);
+    lua_setfield(luaState, -2, "clear_camera_target");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_post_fade_amount, 1);
+    lua_setfield(luaState, -2, "set_post_fade_amount");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_entity_position, 1);
     lua_setfield(luaState, -2, "get_entity_position");
 
@@ -1176,6 +1298,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_direction_to_entity, 1);
     lua_setfield(luaState, -2, "get_direction_to_entity");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_entity_centre, 1);
+    lua_setfield(luaState, -2, "get_entity_centre");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_destroy_entity, 1);

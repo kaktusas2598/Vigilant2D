@@ -56,7 +56,7 @@ bool ScriptTaskRunner::startGlobalCoroutine(int functionIndex) {
     lua_pushvalue(luaState, functionIndex);
     lua_xmove(luaState, thread, 1);
 
-    const bool ok = startTask(task, 1);
+    const bool ok = startTask(task, 0);
     if (task.finished || !ok) {
         releaseTask(task);
         return ok;
@@ -126,7 +126,7 @@ bool ScriptTaskRunner::startTask(ScriptTask& task, int argumentCount) {
     }
 
     int resultCount = 0;
-    const int status = lua_resume(thread, luaState, argumentCount, &resultCount);
+    const int status = lua_resume(thread, nullptr, argumentCount, &resultCount);
 
     if (status == LUA_OK) {
         task.finished = true;
@@ -157,7 +157,7 @@ bool ScriptTaskRunner::resumeTask(ScriptTask& task, float dt) {
     }
 
     int resultCount = 0;
-    const int status = lua_resume(thread, luaState, argumentCount, &resultCount);
+    const int status = lua_resume(thread, nullptr, argumentCount, &resultCount);
 
     if (status == LUA_OK) {
         task.finished = true;
@@ -206,7 +206,7 @@ bool ScriptTaskRunner::configureTaskWait(ScriptTask& task, lua_State* thread, in
 }
 
 void ScriptTaskRunner::releaseTask(ScriptTask& task) {
-    if (luaState != nullptr || task.threadRef != LUA_NOREF)
+    if (luaState != nullptr && task.threadRef != LUA_NOREF)
         luaL_unref(luaState, LUA_REGISTRYINDEX, task.threadRef);
     
     task.threadRef = LUA_NOREF;
@@ -219,7 +219,7 @@ void ScriptTaskRunner::releaseTask(ScriptTask& task) {
 bool ScriptTaskRunner::reportThreadError(lua_State* thread, const std::string& context) {
     const char* message = lua_tostring(thread, -1);
     VG_ERROR("[Lua] " + context + " failed: " + (message != nullptr ? message : "unkown error"));
-    lua_pop(luaState, 1);
+    lua_pop(thread, 1);
     return false;
 
 }

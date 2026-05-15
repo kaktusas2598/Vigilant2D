@@ -23,6 +23,7 @@
 #include "AnimationRegistry.hpp"
 #include "TopDownControllerSystem.hpp"
 #include "ContentLoader.hpp"
+#include "CameraFollowState.hpp"
 
 #include "UIRenderer.hpp"
 #include "UISystem.hpp"
@@ -94,7 +95,7 @@ class Application {
         std::unique_ptr<EntityFactory> entityFactory = nullptr;
         std::unique_ptr<TopDownControllerSystem> topDownControllerSystem = nullptr;
         std::unique_ptr<ContentLoader> contentLoader = nullptr;
-        bool cameraFollowPlayer = true;
+        CameraFollowState cameraFollowState;
 
         std::unique_ptr<UIRenderer> uiRenderer = nullptr;
         TextRenderer textRenderer;
