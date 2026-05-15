@@ -12,16 +12,24 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 
 # Included features
 
- * Simple Scene-Entity Model
- * Selectable tiles/entities
- * Particle System
- * ImgGui Debug panels
- * Integrated physics with Box2D engine
- * Tiled Map (.TMX) loading, selectable tile cursor, entity spawning from object layers
- * Animated Sprites
- * Project Content Bootstraping system using Lua scripts
- * Entity definition files and behavior scripts (Bindings to come)
- * True type fonts
+ - Extended Scripting Support with Lua
+   - Project content bootstrapping
+   - Entity definitions and behavior scripts
+   - Entity-owned and global tasks for automation
+ - Tiled2D Map support
+   - External tileset loading
+   - Entity spawning from object layers using points
+   - Collision definitions using collidable tile layer or rects in object layer
+ - Simple Scene-Entity Model
+ - Selectable tiles/entities
+ - World and Screen space UI system
+ - Particle System
+ - ImgGui Debug panels
+ - Integrated physics with Box2D engine
+ - Animated Sprites
+ - True type fonts
+ - Post FX
+ - Sounds
 
 # Ubuntu instructions
 
@@ -36,18 +44,13 @@ git submodule init && git submodule update
 ```
 
 # TODO
-  * UI System (world and screen space) (IN PROGRESS)
-  * Scripting, Engine to Lua bindings (IN PROGRESS)
-  * post-process, maybe minimap, visual effects
   * States
   * Saving
   * Light source support
-  * Sound
   * Pathfinding
   *
   * Real implemented game mechanics with scripting help like managing inventory, crop farming, fighting
   * ------
   * More Box2D integration
-  * Cutscene, cinematic camera support (Lua Coroutines?)
   * Hot Reload scripts, shaders, maps
   * grep -Rni "TODO" src/

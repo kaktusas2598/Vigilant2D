@@ -29,6 +29,7 @@ class AssetManager;
 class AnimationRegistry;
 class ParticleEmitterRegistry;
 class UISystem;
+class AudioSystem;
 
 struct ScriptInstance {
     std::string fileName;
@@ -47,7 +48,9 @@ class ScriptSystem {
 
         // Content Bootstrapping Loaders
         bool loadAssetManifest(const std::string& fileName,
-            std::vector<TextureManifestEntry>& outTextures, std::vector<FontManifestEntry>& outFonts);
+            std::vector<TextureManifestEntry>& outTextures,
+            std::vector<FontManifestEntry>& outFonts,
+            std::vector<SoundManifestEntry>& outSounds);
         bool loadEntityDefinition(const std::string& fileName, EntityDefinition& outDefinition);
         bool loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations);
         bool loadAnimationDefinition(const std::string& fileName, AnimationDefinition& outDefinition);
@@ -85,6 +88,7 @@ class ScriptSystem {
         AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }
         ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
         UISystem* getUISystem() const { return runtimeContext.uiSystem; }
+        AudioSystem* getRuntimeAudioSystem() const { return runtimeContext.audioSystem; }
         float *getPostFadeAmount() const { return runtimeContext.postFadeAmount; }
     private:
         bool reportError(int status, const std::string& context);

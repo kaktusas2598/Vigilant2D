@@ -4,17 +4,19 @@
 #include "AnimationRegistry.hpp"
 #include "ParticlePresetRegistry.hpp"
 #include "ScriptSystem.hpp"
+#include "AudioSystem.hpp"
 #include "Logger.hpp"
 
 ContentLoader::ContentLoader(AssetManager& assetManager,  AnimationRegistry& animationRegistry,
-                      ParticlePresetRegistry& particlePresetRegistry, ScriptSystem& scriptSystem)
-    : assetManager(assetManager), animationRegistry(animationRegistry), particlePresetRegistry(particlePresetRegistry), scriptSystem(scriptSystem) {
+                      ParticlePresetRegistry& particlePresetRegistry, ScriptSystem& scriptSystem, AudioSystem& audioSystem)
+    : assetManager(assetManager), animationRegistry(animationRegistry), particlePresetRegistry(particlePresetRegistry), scriptSystem(scriptSystem), audioSystem(audioSystem) {
 }
 
 bool ContentLoader::loadAssets(const std::string& manifestFile) {
     std::vector<TextureManifestEntry> textures;
     std::vector<FontManifestEntry> fonts;
-    if (!scriptSystem.loadAssetManifest(manifestFile, textures, fonts)) {
+    std::vector<SoundManifestEntry> sounds;
+    if (!scriptSystem.loadAssetManifest(manifestFile, textures, fonts, sounds)) {
         VG_ERROR("Failed to load asset manifest: " + manifestFile);
         return false;
     }
@@ -46,6 +48,20 @@ bool ContentLoader::loadAssets(const std::string& manifestFile) {
             VG_ERROR("Failed to load font '" + font.id + "' from '" + font.path + "'");
             allLoaded = false;
         } 
+    }
+
+    // Bootstrap sounds
+    for (const auto& sound: sounds) {
+        if (sound.id.empty() || sound.path.empty()) {
+            VG_ERROR("Sound Asset manifest entry is midding id or path in: " + manifestFile);
+            allLoaded = false;
+            continue;
+        }
+
+        if (!audioSystem.loadSound(sound.id, sound.path)) {
+            VG_ERROR("Failed to load sound '" + sound.id + "' from '" + sound.path + "'");
+            allLoaded = false;
+        }
     }
 
     return allLoaded;

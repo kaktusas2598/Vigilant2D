@@ -15,6 +15,8 @@
 #include "SelectionManager.hpp"
 #include "AssetManager.hpp"
 #include "ScriptSystem.hpp"
+#include "AudioEngine.hpp"
+#include "AudioSystem.hpp"
 
 #include "FrameBuffer.hpp"
 #include "PostProcessPass.hpp"
@@ -72,6 +74,8 @@ class Application {
         Scene scene;
         AssetManager assetManager;
         ScriptSystem scriptSystem;
+        AudioEngine audioEngine;
+        std::unique_ptr<AudioSystem> audioSystem = nullptr;
 
         std::unique_ptr<FrameBuffer> sceneFrameBuffer = nullptr;
         PostProcessPass postProcessPass;

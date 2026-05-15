@@ -68,12 +68,19 @@ void Application::init() {
     sceneFrameBuffer = std::make_unique<FrameBuffer>();
     sceneFrameBuffer->createColor(initialWindowWidth, initialWindowHeight);
 
+    audioEngine.init();
+    audioSystem = std::make_unique<AudioSystem>(audioEngine);
     scriptSystem.init();
+
     //Custom game bindings registration
     registerFarmBindings(scriptSystem.getState(), farmWorldState);
 
     // ------------ PROJECT CONTENT BOOTSTRAPING
-    contentLoader = std::make_unique<ContentLoader>(assetManager, animationRegistry, particlePresetRegistry, scriptSystem);
+    contentLoader = std::make_unique<ContentLoader>(assetManager,
+        animationRegistry,
+        particlePresetRegistry,
+        scriptSystem,
+        *audioSystem);
     // TODO: stop hardcoding these paths and map below!
     contentLoader->loadAssets("scripts/assets.lua");
     contentLoader->loadAnimations("scripts/animations.lua");
@@ -99,6 +106,7 @@ void Application::init() {
         &particleEmitterRegistry,
         &assetManager,
         &uiSystem,
+        audioSystem.get(),
         &cameraFollowState,
         &postFadeAmount
     });
@@ -225,6 +233,9 @@ void Application::update(float dt) {
         }
     }
     camera.updateTarget();
+
+    audioEngine.setListenerPosition(camera.getPosition());
+    audioSystem->update();
 
     particleSystem.update(dt);
     // Only update selected entities/tiles when not using engine editor tools

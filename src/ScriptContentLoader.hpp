@@ -26,6 +26,11 @@ struct FontManifestEntry {
     int pixelSize = 16;
 };
 
+struct SoundManifestEntry {
+    std::string id;
+    std::string path;
+};
+
 // Built content manifest entry for each resource
 struct AnimationManifestEntry {
     std::string id;
@@ -44,6 +49,7 @@ public:
     bool loadAssetManifest(const std::string& fileName,
         std::vector<TextureManifestEntry>& outTextures,
         std::vector<FontManifestEntry>& outFonts,
+        std::vector<SoundManifestEntry>& outSounds,
         const std::function<bool(int, const std::string&)>& reportError);
 
     bool loadEntityDefinition(const std::string& fileName,

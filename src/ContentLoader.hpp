@@ -6,6 +6,7 @@ class AssetManager;
 class AnimationRegistry;
 class ParticlePresetRegistry;
 class ScriptSystem;
+class AudioSystem;
 
 // Helps bootstrap project assets(textures, fonts, sounds) and animations and load them in the engine
 class ContentLoader {
@@ -13,7 +14,8 @@ class ContentLoader {
         ContentLoader(AssetManager& assetManager, 
                       AnimationRegistry& animationRegistry, 
                       ParticlePresetRegistry& particlePresetRegistry, 
-                      ScriptSystem& scriptSystem);
+                      ScriptSystem& scriptSystem,
+                      AudioSystem& audioSystem);
         
         bool loadAssets(const std::string& manifestFile);
         bool loadAnimations(const std::string& manifestFile);
@@ -24,4 +26,5 @@ class ContentLoader {
             AnimationRegistry& animationRegistry;
             ParticlePresetRegistry& particlePresetRegistry;
             ScriptSystem& scriptSystem;
+            AudioSystem& audioSystem;
 };

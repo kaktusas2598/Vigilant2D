@@ -219,9 +219,13 @@ static bool readPropertyBagField(lua_State* L, int tableIndex, const char* field
 // ----------------------------------
 
 bool ScriptContentLoader::loadAssetManifest(const std::string& fileName,
-     std::vector<TextureManifestEntry>& outTextures, std::vector<FontManifestEntry>& outFonts, const std::function<bool(int, const std::string&)>& reportError) {
+     std::vector<TextureManifestEntry>& outTextures,
+     std::vector<FontManifestEntry>& outFonts,
+     std::vector<SoundManifestEntry>& outSounds,
+     const std::function<bool(int, const std::string&)>& reportError) {
     outTextures.clear();
     outFonts.clear();
+    outSounds.clear();
 
     if (luaState == nullptr)
         return false;
@@ -284,6 +288,33 @@ bool ScriptContentLoader::loadAssetManifest(const std::string& fileName,
             lua_pop(luaState, 1); // entry
         }
         lua_pop(luaState, 1); // fonts table
+    }
+
+    int soundsIndex = 0;
+    int soundsCount = 0;
+    if (readManifestEntriesTable(luaState, rootIndex, "sounds", soundsIndex, soundsCount)) {
+        for (int i = 1; i <= soundsCount; ++i) {
+            lua_geti(luaState, soundsIndex, i);
+            if (!lua_istable(luaState, -1)) {
+                lua_pop(luaState, 3); // bad entry + sounds + root
+                VG_ERROR("[Lua] Asset manifest '" + fileName + "' contains a non-table sound entry.");
+                return false;
+            }
+
+            const int entryIndex = lua_gettop(luaState);
+
+            SoundManifestEntry entry;
+            if (!readStringField(luaState, entryIndex, "id", entry.id) ||
+                !readStringField(luaState, entryIndex, "path", entry.path)) {
+                lua_pop(luaState, 3); // entry + sounds + root
+                VG_ERROR("[Lua] Asset manifest '" + fileName + "' has a sound entry missing 'id' or 'path'.");
+                return false;
+            }
+
+            outSounds.push_back(std::move(entry));
+            lua_pop(luaState, 1); // entry
+        }
+        lua_pop(luaState, 1); // sounds table
     }
 
     lua_pop(luaState, 1); // root table

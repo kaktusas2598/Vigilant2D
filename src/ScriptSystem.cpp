@@ -31,14 +31,16 @@ void ScriptSystem::shutdown() {
 
 //Content Bootstraping methods - functionality delegated to ScriptContentLoader
 bool ScriptSystem::loadAssetManifest(const std::string& fileName,
-     std::vector<TextureManifestEntry>& outTextures, std::vector<FontManifestEntry>& outFonts) {
+     std::vector<TextureManifestEntry>& outTextures,
+     std::vector<FontManifestEntry>& outFonts,
+     std::vector<SoundManifestEntry>& outSounds) {
     if (luaState == nullptr && !init())
         return false;
 
     auto reportLuaError = [this](int status, const std::string& context) {
         return reportError(status, context);
     };
-    return contentLoader.loadAssetManifest(fileName, outTextures, outFonts, reportLuaError);
+    return contentLoader.loadAssetManifest(fileName, outTextures, outFonts, outSounds, reportLuaError);
 }
 
 bool ScriptSystem::loadAnimationManifest(const std::string& fileName, std::vector<AnimationManifestEntry>& outAnimations) {
@@ -272,6 +274,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
     runtimeContext.assetManager = newContext.assetManager;
     runtimeContext.uiSystem = newContext.uiSystem;
+    runtimeContext.audioSystem = newContext.audioSystem;
     runtimeContext.cameraFollowState = newContext.cameraFollowState;
     runtimeContext.postFadeAmount = newContext.postFadeAmount;
 }

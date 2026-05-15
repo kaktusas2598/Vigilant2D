@@ -112,6 +112,7 @@ function M.on_update(self, dt)
         elseif self.selected_tool == "sword" then
             -- TODO: define animation based on players direction
             engine.play_entity_animation(self.id, "player_fight_right", false)
+            -- engine.play_sound("sword_hit")
             local hitX, hitY, hitW, hitH = get_sword_hit_box(self)
             if hitX ~= nil then
                 local hits = engine.get_entities_in_box(hitX, hitY, hitW, hitH)

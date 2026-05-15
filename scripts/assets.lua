@@ -14,5 +14,8 @@ return {
         { id = "ui", path = "assets/fonts/Ithaca-LVB75.ttf", pixel_size = 24 },
         { id = "fancy", path = "assets/fonts/WeddingdayPersonalUseRegular-1Gvo0.ttf", pixel_size = 24 }
     },
-    sounds = {}
+    sounds = {
+        { id = "sword_hit", path = "assets/sounds/dragon-studio-sword-slice.mp3" },
+        { id = "game_start", path = "assets/sounds/game-start.mp3" }
+    }
 }

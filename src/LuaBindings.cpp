@@ -10,6 +10,7 @@
 #include "ParticleEmitter.hpp"
 #include "ParticleEmitterRegistry.hpp"
 #include "CameraFollowState.hpp"
+#include "AudioSystem.hpp"
 #include "Input.hpp"
 #include "UISystem.hpp"
 #include "glm/glm.hpp"
@@ -149,6 +150,20 @@ static int l_set_post_fade_amount(lua_State* L) {
     *scriptSystem->getPostFadeAmount() = amount;
 
     lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- POST-FX BINDINGS
+static int l_play_sound(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeAudioSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* soundId = luaL_checkstring(L, 1);
+    const bool ok = scriptSystem->getRuntimeAudioSystem()->playSound(soundId);
+    lua_pushboolean(L, ok ? 1 : 0);
     return 1;
 }
 
@@ -1310,6 +1325,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_post_fade_amount, 1);
     lua_setfield(luaState, -2, "set_post_fade_amount");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_play_sound, 1);
+    lua_setfield(luaState, -2, "play_sound");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_entity_position, 1);
