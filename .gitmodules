@@ -13,3 +13,9 @@
 [submodule "vendor/lua"]
 	path = vendor/lua
 	url = https://github.com/lubgr/lua-cmake
+[submodule "vendor/openal"]
+	path = vendor/openal
+	url = https://github.com/kcat/openal-soft.git
+[submodule "vendor/libsndfile"]
+	path = vendor/libsndfile
+	url = https://github.com/libsndfile/libsndfile.git
