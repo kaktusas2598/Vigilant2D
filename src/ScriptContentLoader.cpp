@@ -262,6 +262,28 @@ static bool readPropertyBagField(lua_State* L, int tableIndex, const char* field
 }
 // ----------------------------------
 
+static bool readTopDownControllerField(lua_State* L, int tableIndex, const char* fieldName, TopDownControllerConfig& outConfig) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    const int controllerIndex = lua_gettop(L);
+
+    readFloatField(L, controllerIndex, "move_speed", outConfig.moveSpeed);
+    readStringField(L, controllerIndex, "idle_animation", outConfig.idleAnimation);
+    readStringField(L, controllerIndex, "walk_up_animation", outConfig.walkUpAnimation);
+    readStringField(L, controllerIndex, "walk_down_animation", outConfig.walkDownAnimation);
+    readStringField(L, controllerIndex, "walk_right_animation", outConfig.walkRightAnimation);
+    readBoolField(L, controllerIndex, "allow_flip_x", outConfig.allowFlipX);
+
+    lua_pop(L, 1); // controller table
+    return true;
+}
+
 bool ScriptContentLoader::loadAssetManifest(const std::string& fileName,
      std::vector<TextureManifestEntry>& outTextures,
      std::vector<FontManifestEntry>& outFonts,
@@ -440,6 +462,12 @@ bool ScriptContentLoader::loadEntityDefinition(const std::string& fileName, Enti
         outDefinition.physicsEnabled = lua_toboolean(luaState, -1) != 0;
     }
     lua_pop(luaState, 1);
+
+    // Optional top down controller attached to an entity
+    TopDownControllerConfig controllerConfig;
+    if (readTopDownControllerField(luaState, tableIndex, "controller", controllerConfig)) {
+        outDefinition.topDownContoller = controllerConfig;
+    }
 
     // Read optional custom data fields
     readPropertyBagField(luaState, tableIndex, "data", outDefinition.customData);

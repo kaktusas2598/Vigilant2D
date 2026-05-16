@@ -91,12 +91,6 @@ void Application::init() {
     map->loadFromFile("assets/farmMap.tmx", assetManager);
     scene.setTileMap(std::move(map));
 
-    // Iinitialise farm grid
-    if (scene.getTileMap() != nullptr) {
-        const TileMapData& mapData = scene.getTileMap()->getData();
-        farmWorldState.init(mapData.width, mapData.height);
-    }
-
     screenFlowSystem = std::make_unique<ScreenFlowSystem>(uiSystem, scriptSystem);
 
     // Call before registering entities so they have scene context in scripts
@@ -153,24 +147,23 @@ void Application::init() {
     });
     engineEditor->registerPanels(uiLayer);
 
-    // Setup controller system by providing controller config
-    // TODO: set from script, similar for particle emitters
+    // Setup optional controller system by trying to find controller config
     topDownControllerSystem = std::make_unique<TopDownControllerSystem>(scene, input, animationRegistry);
-    topDownControllerSystem->setControlledEntity({
-        .entityId = "player",
-        .moveSpeed = 120.0f,
-        .idleAnimation = "player_idle",
-        .walkUpAnimation = "player_walk_up",
-        .walkDownAnimation = "player_walk_down",
-        .walkRightAnimation = "player_walk_right",
-        .allowFlipX = true
-    });
+    if (!topDownControllerSystem->attachFirstConfiguredEntity()) {
+        VG_INFO("No entity with top-down controller config found.");
+    }
 
     //-------------- Custom Scene Setup Code
-    // TODO: move custom scene setup to scripting, things like this below
+    // TODO: move custom scene setup to scripting
     camera.setZoom(4.0f); 
     // Custom global automation/task/coroutine test
     scriptSystem.runGlobalScriptFunction("scripts/automations/intro.lua", "start");
+
+    // Initialise farm grid
+    if (scene.getTileMap() != nullptr) {
+        const TileMapData& mapData = scene.getTileMap()->getData();
+        farmWorldState.init(mapData.width, mapData.height);
+    }
 
     //-------------- Particle emitter initialisation
     particleEmitterRegistry.createEmitterFromPreset(
@@ -313,7 +306,4 @@ void Application::render(float dt) {
     // ImGui/Editor pass
     uiLayer.end();
     window.swapBuffers();
-}
-
-void Application::exit() {
 }

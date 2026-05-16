@@ -46,7 +46,7 @@ class Application {
 
         void init();
         void run();
-        void exit();
+        void exit() {}
 
         void switchDebugMode() { debugMode = !debugMode; }
         bool isDebugModeEnabled() { return debugMode; }

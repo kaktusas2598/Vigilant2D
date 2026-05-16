@@ -1,5 +1,9 @@
 #include "TopDownControllerSystem.hpp"
 
+#include "Scene.hpp"
+#include "Input.hpp"
+#include "AnimationRegistry.hpp"
+
 TopDownControllerSystem::TopDownControllerSystem(Scene& scene, Input& input, AnimationRegistry& animationRegistry)
     : scene(scene), input(input), animationRegistry(animationRegistry) {
 }
@@ -7,6 +11,18 @@ TopDownControllerSystem::TopDownControllerSystem(Scene& scene, Input& input, Ani
 void TopDownControllerSystem::setControlledEntity(const TopDownControllerConfig& config) {
     controlConfig = config;
     hasController = true;
+}
+
+bool TopDownControllerSystem::attachFirstConfiguredEntity() {
+    for (const auto& entityPtr : scene.getEntities()) {
+        if (entityPtr == nullptr || !entityPtr->hasTopDownController())
+            continue;
+        
+        setControlledEntity(*entityPtr->getTopDownControllerConfig());
+        return true;
+    }
+
+    return false;
 }
 
 void TopDownControllerSystem::update(float dt) {
@@ -39,10 +55,12 @@ void TopDownControllerSystem::update(float dt) {
             if (anim != nullptr) {
                 if (std::abs(movement.x) > std::abs(movement.y)) {
                     if (movement.x > 0.0f) {
-                        if (controlledEntity->getSprite()) controlledEntity->getSprite()->setFlipX(false);
+                        if (controlConfig.allowFlipX && controlledEntity->getSprite())
+                            controlledEntity->getSprite()->setFlipX(false);
                         anim->play(animationRegistry.getClip(controlConfig.walkRightAnimation), false);
                     } else {
-                        if (controlledEntity->getSprite()) controlledEntity->getSprite()->setFlipX(true);
+                        if (controlConfig.allowFlipX && controlledEntity->getSprite())
+                            controlledEntity->getSprite()->setFlipX(true);
                         anim->play(animationRegistry.getClip(controlConfig.walkRightAnimation), false);
                     }
                 } else {

@@ -9,6 +9,8 @@
 #include "Renderer.hpp"
 #include <box2d/box2d.h>
 #include "PropertyBag.hpp"
+#include <optional>
+#include "TopDownControllerConfig.hpp"
 
 // TODO: I don't like Entity owning Sprites, animated sprites, physics handles, script etc.
 class Entity {
@@ -59,6 +61,12 @@ class Entity {
         PropertyBag& getCustomData() {return customData; }
         const PropertyBag& getCustomData() const {return customData; }
 
+        void setTopDownControllerConfig(const TopDownControllerConfig& config) {
+            topDownControllerConfig = config;
+        }
+        bool hasTopDownController() const { return topDownControllerConfig.has_value(); }
+        const std::optional<TopDownControllerConfig>& getTopDownControllerConfig() const { return topDownControllerConfig; }
+
         void update(float dt) {
             if (animatedSprite)
                 animatedSprite->update(dt);
@@ -80,5 +88,6 @@ class Entity {
         glm::vec2 boundsSize{0.0f, 0.0f};
         bool useCustomBounds = false;
 
+        std::optional<TopDownControllerConfig> topDownControllerConfig;
         PropertyBag customData;
 };

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <optional>
 #include "glm/glm.hpp"
 #include "PropertyBag.hpp"
+#include "TopDownControllerConfig.hpp"
 
 // Used by EntityFactory to load Lua-returned table into Entity
 struct EntityDefinition {
@@ -16,5 +18,6 @@ struct EntityDefinition {
 
     std::string behaviorScript;
     bool physicsEnabled = false;
+    std::optional<TopDownControllerConfig> topDownContoller;
     PropertyBag customData;
 };

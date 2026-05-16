@@ -70,6 +70,12 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
         entity.setPhysicsBody(scene.getPhysicsWorld().createDynamicBox(bodyPos, bodySize));
     }
 
+    if (definition.topDownContoller.has_value()) {
+        TopDownControllerConfig controllerConfig = *definition.topDownContoller;
+        controllerConfig.entityId = entityId;
+        entity.setTopDownControllerConfig(controllerConfig);
+    }
+
     entity.getCustomData() = definition.customData;
 
     return &entity;

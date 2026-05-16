@@ -1,27 +1,18 @@
 #pragma once
 
 #include <string>
+#include "TopDownControllerConfig.hpp"
 
-#include "Scene.hpp"
-#include "Input.hpp"
-#include "AnimationRegistry.hpp"
-
-struct TopDownControllerConfig {
-    std::string entityId;
-
-    float moveSpeed = 120.0f;
-    std::string idleAnimation;
-    std::string walkUpAnimation;
-    std::string walkDownAnimation;
-    std::string walkRightAnimation;
-    bool allowFlipX = true;
-};
+class Scene;
+class Input;
+class AnimationRegistry;
 
 // Optional way to attach controller to selected entity id for convenience instead of scripting.
 class TopDownControllerSystem {
     public:
         TopDownControllerSystem(Scene& scene, Input& input, AnimationRegistry& animationRegistry);
         void setControlledEntity(const TopDownControllerConfig& config);
+        bool attachFirstConfiguredEntity();
         void update(float dt);
 
     private:
