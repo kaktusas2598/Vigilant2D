@@ -14,9 +14,11 @@ function M.build(self)
 end
 
 function M.on_enter(self)
+    engine.set_post_fade_amount(0.5)
 end
 
 function M.on_exit(self)
+    engine.set_post_fade_amount(0.0)
 end
 
 function M.on_update(self, dt)
