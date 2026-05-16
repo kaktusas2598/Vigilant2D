@@ -9,6 +9,39 @@
 #include "TextRenderer.hpp"
 #include "UIRenderer.hpp"
 
+static UILabel makeLabelWidget(const UILabelRecord& record, const glm::vec2& resolvedPosition) {
+    UILabel label;
+    label.setText(record.text);
+    label.setPosition(resolvedPosition);
+    label.setScale(record.scale);
+    label.setTextColor(record.textColor);
+    label.setPadding(record.padding);
+    label.setBackgroundEnabled(record.backgroundEnabled);
+    label.setBackgroundColor(record.backgroundColor);
+    label.setBorderEnabled(record.borderEnabled);
+    label.setBorderColor(record.borderColor);
+    return label;
+}
+
+static glm::vec2 resolveScreenLabelPosition(const UILabelRecord& record,
+                                            TextRenderer& textRenderer,
+                                            const Font& font,
+                                            int viewportWidth,
+                                            int viewportHeight) {
+    if (!record.screenLayout.enabled) {
+        return record.position;
+    }
+
+    const glm::vec2 textSize = textRenderer.measureText(font, record.text, record.scale);
+    const glm::vec2 boxSize = textSize + record.padding * 2.0f;
+    const glm::vec2 anchorPoint{
+        viewportWidth * record.screenLayout.anchor.x,
+        viewportHeight * record.screenLayout.anchor.y
+    };
+
+    return anchorPoint + record.position - boxSize * record.screenLayout.pivot;
+}
+
 UILabelRecord& UISystem::createLabel(const std::string& id) {
     auto& label = labels[id];
     label.id = id;
@@ -87,17 +120,7 @@ void UISystem::drawLabelWorldGeometry(const UILabelRecord& record,
     if (font == nullptr)
         return;
 
-    UILabel label;
-    label.setText(record.text);
-    label.setPosition(record.position);
-    label.setScale(record.scale);
-    label.setTextColor(record.textColor);
-    label.setPadding(record.padding);
-    label.setBackgroundEnabled(record.backgroundEnabled);
-    label.setBackgroundColor(record.backgroundColor);
-    label.setBorderEnabled(record.borderEnabled);
-    label.setBorderColor(record.borderColor);
-
+    UILabel label = makeLabelWidget(record, record.position);
     label.drawWorldGeometry(uiRenderer, textRenderer, *font);
 }
 
@@ -108,61 +131,36 @@ void UISystem::drawLabelWorldText(const UILabelRecord& record,
     if (font == nullptr)
         return;
 
-    UILabel label;
-    label.setText(record.text);
-    label.setPosition(record.position);
-    label.setScale(record.scale);
-    label.setTextColor(record.textColor);
-    label.setPadding(record.padding);
-    label.setBackgroundEnabled(record.backgroundEnabled);
-    label.setBackgroundColor(record.backgroundColor);
-    label.setBorderEnabled(record.borderEnabled);
-    label.setBorderColor(record.borderColor);
-
+    UILabel label = makeLabelWidget(record, record.position);
     label.drawWorldText(textRenderer, *font);
 }
 
 void UISystem::drawLabelScreenGeometry(const UILabelRecord& record,
                          UIRenderer& uiRenderer,
                          TextRenderer& textRenderer,
-                         AssetManager& assetManager) const {
+                         AssetManager& assetManager, 
+                         int viewportWidth, int viewportHeight) const {
     Font* font = assetManager.getFont(record.fontId);
     if (font == nullptr)
         return;
 
-    UILabel label;
-    label.setText(record.text);
-    label.setPosition(record.position);
-    label.setScale(record.scale);
-    label.setTextColor(record.textColor);
-    label.setPadding(record.padding);
-    label.setBackgroundEnabled(record.backgroundEnabled);
-    label.setBackgroundColor(record.backgroundColor);
-    label.setBorderEnabled(record.borderEnabled);
-    label.setBorderColor(record.borderColor);
+    const glm::vec2 resolvedPosition = resolveScreenLabelPosition(record, textRenderer, *font, viewportWidth, viewportHeight);
 
+    UILabel label = makeLabelWidget(record, resolvedPosition);
     label.drawScreenGeometry(uiRenderer, textRenderer, *font);
 }
 
-void UISystem::drawLabelScreenText(const UILabelRecord& record, TextRenderer& textRenderer, AssetManager& assetManager) const {
+void UISystem::drawLabelScreenText(const UILabelRecord& record,
+    TextRenderer& textRenderer, AssetManager& assetManager, int viewportWidth, int viewportHeight) const {
     Font* font = assetManager.getFont(record.fontId);
     if (font == nullptr)
         return;
 
-    UILabel label;
-    label.setText(record.text);
-    label.setPosition(record.position);
-    label.setScale(record.scale);
-    label.setTextColor(record.textColor);
-    label.setPadding(record.padding);
-    label.setBackgroundEnabled(record.backgroundEnabled);
-    label.setBackgroundColor(record.backgroundColor);
-    label.setBorderEnabled(record.borderEnabled);
-    label.setBorderColor(record.borderColor);
+    const glm::vec2 resolvedPosition = resolveScreenLabelPosition(record, textRenderer, *font, viewportWidth, viewportHeight);
 
+    UILabel label = makeLabelWidget(record, resolvedPosition);
     label.drawScreenText(textRenderer, *font);
 }
-
 
 void UISystem::drawSlotStrip(const UISlotStripRecord& record,
                              UIRenderer& uiRenderer) const {
@@ -316,7 +314,7 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
         drawSlotStrip(*record, uiRenderer);
     }
     for (const UILabelRecord* record : visibleLabels) {
-        drawLabelScreenGeometry(*record, uiRenderer, textRenderer, assetManager);
+        drawLabelScreenGeometry(*record, uiRenderer, textRenderer, assetManager, viewportWidth, viewportHeight);
     }
     for (const UIProgressBarRecord* record : visibleProgressBars) {
         drawProgressBar(*record, uiRenderer);
@@ -327,7 +325,7 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
         textRenderer.beginScreen(viewportWidth, viewportHeight);
 
         for (const UILabelRecord* record : visibleLabels) {
-            drawLabelScreenText(*record, textRenderer, assetManager);
+            drawLabelScreenText(*record, textRenderer, assetManager, viewportWidth, viewportHeight);
         }
 
         textRenderer.end();

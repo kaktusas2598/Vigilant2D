@@ -155,7 +155,8 @@ function M.on_update(self, dt)
         local viewportWidth, viewportHeight = engine.get_viewport_size()
         ui.set_label_text_color("hud.game_over_label", 1.0, 0.2, 0.2, 1.0)
         ui.set_label_scale("hud.game_over_label", 2.0)
-        ui.set_label_position("hud.game_over_label", viewportWidth / 2 - 100, viewportHeight / 2 - 25)
+        ui.set_label_screen_anchor("hud.game_over_label", 0.5, 0.5)
+        ui.set_label_screen_pivot("hud.game_over_label", 0.5, 0.5)
     end
 
 end

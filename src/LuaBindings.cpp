@@ -956,6 +956,71 @@ static int l_ui_set_label_render_space(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_label_screen_anchor(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->screenLayout.enabled = true;
+    label->screenLayout.anchor = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_label_screen_pivot(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->screenLayout.enabled = true;
+    label->screenLayout.pivot = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_clear_label_screen_layout(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    label->screenLayout.enabled = false;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // --------- UI SLOT STRIP BINDINGS
 static int l_ui_create_slot_strip(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
@@ -1550,6 +1615,18 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_render_space, 1);
     lua_setfield(luaState, -2, "set_label_render_space");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_screen_anchor, 1);
+    lua_setfield(luaState, -2, "set_label_screen_anchor");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_screen_pivot, 1);
+    lua_setfield(luaState, -2, "set_label_screen_pivot");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_clear_label_screen_layout, 1);
+    lua_setfield(luaState, -2, "clear_label_screen_layout");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_slot_strip, 1);

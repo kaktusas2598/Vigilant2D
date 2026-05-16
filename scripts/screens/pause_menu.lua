@@ -6,11 +6,15 @@ function M.build(self)
     ui.create_label("menu.pause.title", "menu.pause")
     ui.set_label_text("menu.pause.title", "Paused")
     ui.set_label_scale("menu.pause.title", 1.8)
-    ui.set_label_position("menu.pause.title", viewportWidth * 0.5 - 55, viewportHeight * 0.5 - 60)
+    ui.set_label_screen_anchor("menu.pause.title", 0.5, 0.5)
+    ui.set_label_screen_pivot("menu.pause.title", 0.5, 0.5)
+    ui.set_label_position("menu.pause.title", 0, -60)
 
     ui.create_label("menu.pause.prompt", "menu.pause")
     ui.set_label_text("menu.pause.prompt", "Press Esc to Resume")
-    ui.set_label_position("menu.pause.prompt", viewportWidth * 0.5 - 85, viewportHeight * 0.5)
+    ui.set_label_screen_anchor("menu.pause.prompt", 0.5, 0.5)
+    ui.set_label_screen_pivot("menu.pause.prompt", 0.5, 0.5)
+    ui.set_label_position("menu.pause.prompt", 0, 0)
 end
 
 function M.on_enter(self)

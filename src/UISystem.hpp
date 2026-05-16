@@ -13,6 +13,12 @@ class TextRenderer;
 class AssetManager;
 class Camera2D;
 
+struct UIScreenLayout {
+    bool enabled = false;
+    glm::vec2 anchor{0.0f, 0.0f}; // Where the widget is attached in the viewport.
+    glm::vec2 pivot{0.0f, 0.0f}; // Which point on the widget matches the anchor.
+};
+
 // Lets scripts modify UI Widgets through records
 struct UILabelRecord {
     std::string id;
@@ -22,6 +28,7 @@ struct UILabelRecord {
     std::string text;
     UIRenderSpace renderSpace = UIRenderSpace::Screen;
     glm::vec2 position{0.0f, 0.0f};
+    UIScreenLayout screenLayout{};
     float scale = 1.0f;
     glm::vec4 textColor{1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -135,10 +142,12 @@ class UISystem {
         void drawLabelScreenGeometry(const UILabelRecord& record,
                        UIRenderer& uiRenderer,
                        TextRenderer& textRenderer,
-                       AssetManager& assetManager) const;
+                       AssetManager& assetManager,
+                       int viewportWidth, int viewportHeight) const;
         void drawLabelScreenText(const UILabelRecord& record,
                        TextRenderer& textRenderer,
-                       AssetManager& assetManager) const;
+                       AssetManager& assetManager,
+                       int viewportWidth, int viewportHeight) const;
 
         void drawSlotStrip(const UISlotStripRecord& record, UIRenderer& uiRenderer) const;
         void drawProgressBar(const UIProgressBarRecord& record, UIRenderer& uiRenderer) const;

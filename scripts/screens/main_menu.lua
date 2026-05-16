@@ -6,11 +6,14 @@ function M.build(self)
     ui.create_label("menu.main.title", "menu.main")
     ui.set_label_text("menu.main.title", "Vigilant2D")
     ui.set_label_scale("menu.main.title", 2.0)
-    ui.set_label_position("menu.main.title", viewportWidth * 0.5 - 110, viewportHeight * 0.5 - 80)
+    ui.set_label_screen_anchor("menu.main.title", 0.5, 0.5)
+    ui.set_label_screen_pivot("menu.main.title", 0.5, 0.5)
+    ui.set_label_position("menu.main.title", 0, -80)
 
     ui.create_label("menu.main.prompt", "menu.main")
     ui.set_label_text("menu.main.prompt", "Press Enter to Start")
-    ui.set_label_position("menu.main.prompt", viewportWidth * 0.5 - 90, viewportHeight * 0.5)
+    ui.set_label_screen_anchor("menu.main.prompt", 0.5, 0.5)
+    ui.set_label_screen_pivot("menu.main.prompt", 0.5, 0.5)
 end
 
 function M.on_enter(self)
