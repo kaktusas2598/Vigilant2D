@@ -19,6 +19,7 @@ extern "C" {
 #include "EntityDefinition.hpp"
 #include "AnimationDefinition.hpp"
 #include "ParticlePreset.hpp"
+#include "ScreenDefinition.hpp"
 
 // For runtime script context
 class Scene;
@@ -30,6 +31,7 @@ class AnimationRegistry;
 class ParticleEmitterRegistry;
 class UISystem;
 class AudioSystem;
+class ScreenFlowSystem;
 
 struct ScriptInstance {
     std::string fileName;
@@ -57,17 +59,17 @@ class ScriptSystem {
         bool loadParticlePresetManifest(const std::string& fileName,
                                 std::vector<ParticlePresetManifestEntry>& outPresets);
         bool loadParticlePresetDefinition(const std::string& fileName, ParticlePreset& outPreset);
-
+        bool loadScreenDefinitions(const std::string& fileName, std::vector<ScreenDefinition>& outScreens);
 
         // Script behavior methods
         ScriptInstance loadBehavior(const std::string& fileName);
-        bool callOnCreate(const ScriptInstance& instance);
-        bool callOnUpdate(const ScriptInstance& instance, float dt);
         void releaseInstance(ScriptInstance& instance);
         bool attachToEntity(const Entity& entity);
         bool callEntityOnCreate(const Entity& entity);
         bool callEntityOnUpdate(const Entity& entity, float dt);
         void detachFromEntity(const Entity& entity);
+        bool callTableFunction(const ScriptInstance& instance, const char* functionName);
+        bool callTableFunction(const ScriptInstance& instance, const char* functionName, float dt);
 
         // Coroutine methods
         bool startEntityCoroutine(const std::string& ownerEntityId, int functionIndex, int selfIndex);
@@ -89,6 +91,7 @@ class ScriptSystem {
         ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
         UISystem* getUISystem() const { return runtimeContext.uiSystem; }
         AudioSystem* getRuntimeAudioSystem() const { return runtimeContext.audioSystem; }
+        ScreenFlowSystem* getRuntimeScreenFlowSystem() const { return runtimeContext.screenFlowSystem; }
         float *getPostFadeAmount() const { return runtimeContext.postFadeAmount; }
     private:
         bool reportError(int status, const std::string& context);

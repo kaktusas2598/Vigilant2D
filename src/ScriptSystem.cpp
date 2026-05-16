@@ -94,6 +94,16 @@ bool ScriptSystem::loadParticlePresetDefinition(const std::string& fileName, Par
     return contentLoader.loadParticlePresetDefinition(fileName, outPreset, reportLuaError);
 }
 
+bool ScriptSystem::loadScreenDefinitions(const std::string& fileName, std::vector<ScreenDefinition>& outScreens) {
+    if (luaState == nullptr && !init())
+        return false;
+
+    auto reportLuaError = [this](int status, const std::string& context) {
+        return reportError(status, context);
+    };
+    return contentLoader.loadScreenDefinitions(fileName, outScreens, reportLuaError);
+}
+
 // Script instance methods
 ScriptInstance ScriptSystem::loadBehavior(const std::string& fileName) {
     ScriptInstance instance;
@@ -118,45 +128,6 @@ ScriptInstance ScriptSystem::loadBehavior(const std::string& fileName) {
 
     instance.tableRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
     return instance;
-}
-
-bool ScriptSystem::callOnCreate(const ScriptInstance& instance) {
-    if(luaState == nullptr || instance.tableRef == LUA_NOREF)
-        return false;
-
-    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instance.tableRef); // push table
-    lua_getfield(luaState, -1, "on_create"); // push field - function in this case
-
-    if (!lua_isfunction(luaState, -1)) {
-        lua_pop(luaState, 2);
-        return true;
-    }
-
-    lua_pushvalue(luaState, -2); // table, function, self
-    lua_remove(luaState, -3); // function, self
-
-    const int status = lua_pcall(luaState, 1, 0, 0);
-    return reportError(status, "callOnCreate(" + instance.fileName + ")");
-}
-
-bool ScriptSystem::callOnUpdate(const ScriptInstance& instance, float dt) {
-    if(luaState == nullptr || instance.tableRef == LUA_NOREF)
-        return false;
-
-    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instance.tableRef); // push table
-    lua_getfield(luaState, -1, "on_update"); // push field - function in this case
-
-    if (!lua_isfunction(luaState, -1)) {
-        lua_pop(luaState, 2);
-        return true;
-    }
-
-    lua_pushvalue(luaState, -2); // table, function, self
-    lua_remove(luaState, -3); // function, self
-    lua_pushnumber(luaState, dt);
-
-    const int status = lua_pcall(luaState, 2, 0, 0);
-    return reportError(status, "callOnUpdate(" + instance.fileName + ")");
 }
 
 void ScriptSystem::releaseInstance(ScriptInstance& instance) {
@@ -201,14 +172,14 @@ bool ScriptSystem::callEntityOnCreate(const Entity& entity) {
     auto it = entityScripts.find(entity.getID());
     if (it == entityScripts.end())
         return false;
-    return callOnCreate(it->second);
+    return callTableFunction(it->second, "on_create");
 }
 
 bool ScriptSystem::callEntityOnUpdate(const Entity& entity, float dt) {
     auto it = entityScripts.find(entity.getID());
     if (it == entityScripts.end())
         return false;
-    return callOnUpdate(it->second, dt);
+    return callTableFunction(it->second, "on_update", dt);
 }
 
 void ScriptSystem::detachFromEntity(const Entity& entity) {
@@ -220,6 +191,45 @@ void ScriptSystem::detachFromEntity(const Entity& entity) {
 
     releaseInstance(it->second);
     entityScripts.erase(it);
+}
+
+bool ScriptSystem::callTableFunction(const ScriptInstance& instance, const char* functionName) {
+    if (luaState == nullptr || instance.tableRef == LUA_NOREF)
+        return false;
+
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instance.tableRef);
+    lua_getfield(luaState, -1, functionName);
+
+    if (!lua_isfunction(luaState, -1)) {
+        lua_pop(luaState, 2);
+        return true;
+    }
+
+    lua_pushvalue(luaState, -2); // table, function, self
+    lua_remove(luaState, -3);    // function, self
+
+    const int status = lua_pcall(luaState, 1, 0, 0);
+    return reportError(status, std::string("callTableFunction(") + instance.fileName + ":" + functionName + ")");
+}
+
+bool ScriptSystem::callTableFunction(const ScriptInstance& instance, const char* functionName, float dt) {
+    if (luaState == nullptr || instance.tableRef == LUA_NOREF)
+        return false;
+
+    lua_rawgeti(luaState, LUA_REGISTRYINDEX, instance.tableRef);
+    lua_getfield(luaState, -1, functionName);
+
+    if (!lua_isfunction(luaState, -1)) {
+        lua_pop(luaState, 2);
+        return true;
+    }
+
+    lua_pushvalue(luaState, -2); // table, function, self
+    lua_remove(luaState, -3);    // function, self
+    lua_pushnumber(luaState, dt);
+
+    const int status = lua_pcall(luaState, 2, 0, 0);
+    return reportError(status, std::string("callTableFunction(") + instance.fileName + ":" + functionName + ")");
 }
 
 //Coroutine methods - functionality delegated to ScriptTaskRunner
@@ -277,6 +287,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.audioSystem = newContext.audioSystem;
     runtimeContext.cameraFollowState = newContext.cameraFollowState;
     runtimeContext.postFadeAmount = newContext.postFadeAmount;
+    runtimeContext.screenFlowSystem = newContext.screenFlowSystem;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

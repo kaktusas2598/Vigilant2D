@@ -97,6 +97,8 @@ void Application::init() {
         farmWorldState.init(mapData.width, mapData.height);
     }
 
+    screenFlowSystem = std::make_unique<ScreenFlowSystem>(uiSystem, scriptSystem);
+
     // Call before registering entities so they have scene context in scripts
     scriptSystem.setRuntimeContext({
         &scene,
@@ -107,9 +109,20 @@ void Application::init() {
         &assetManager,
         &uiSystem,
         audioSystem.get(),
+        screenFlowSystem.get(),
         &cameraFollowState,
         &postFadeAmount
     });
+
+    // Load and Register screens
+    std::vector<ScreenDefinition> screenDefinitions;
+    if (!scriptSystem.loadScreenDefinitions("scripts/screens.lua", screenDefinitions)) {
+        VG_ERROR("Failed to load screen definitions from scripts/screens.lua");
+    }
+
+    if (!screenFlowSystem->loadScreens(screenDefinitions)) {
+        VG_ERROR("Failed to initialise screen flow system.");
+    }
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
@@ -175,7 +188,6 @@ void Application::init() {
         assetManager
     );
 
-    //-------------- UI TEST
     uiRenderer = std::make_unique<UIRenderer>(renderer);
 }
 
@@ -206,14 +218,10 @@ void Application::update(float dt) {
         camera.setZoom(camera.getZoom() * factor);
     }
 
-    if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT))) {
+    if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT)))
         debugMode = !debugMode;
-        if (debugMode) VG_INFO("Debug Mode ON");
-    }
 
-    if (input.isKeyPressed(GLFW_KEY_ESCAPE)) {
-        glfwSetWindowShouldClose(window.getHandle(), GLFW_TRUE);
-    }
+    screenFlowSystem->update(dt);
 
     topDownControllerSystem->update(dt);
     scene.update(dt);

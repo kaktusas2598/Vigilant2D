@@ -50,6 +50,50 @@ static bool readVec4Field(lua_State* L, int tableIndex, const char* fieldName, g
     return true;
 }
 
+static bool readBoolField(lua_State* L, int tableIndex, const char* fieldName, bool& outValue) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_isboolean(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    outValue = lua_toboolean(L, -1) != 0;
+    lua_pop(L, 1);
+    return true;
+}
+
+static bool readStringArrayField(lua_State* L, int tableIndex, const char* fieldName, std::vector<std::string>& outValues) {
+    tableIndex = lua_absindex(L, tableIndex);
+
+    lua_getfield(L, tableIndex, fieldName);
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    const int arrayIndex = lua_gettop(L);
+    const int length = static_cast<int>(lua_rawlen(L, arrayIndex));
+
+    outValues.clear();
+    outValues.reserve(length);
+
+    for (int i = 1; i <= length; ++i) {
+        lua_geti(L, arrayIndex, i);
+        if (!lua_isstring(L, -1)) {
+            lua_pop(L, 2); // bad value + array
+            return false;
+        }
+
+        outValues.emplace_back(lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1); // array
+    return true;
+}
+
 static bool readIntArrayField(lua_State* L, int tableIndex, const char* fieldName, std::vector<int>& outValues) {
     tableIndex = lua_absindex(L, tableIndex);
 
@@ -506,5 +550,53 @@ bool ScriptContentLoader::loadParticlePresetDefinition(const std::string& fileNa
     readVec2Field(luaState, tableIndex, "velocity_variance", outPreset.velocityVariance);
 
     lua_pop(luaState, 1); // returned table
+    return true;
+}
+
+bool ScriptContentLoader::loadScreenDefinitions(const std::string& fileName,
+    std::vector<ScreenDefinition>& outScreens,
+    const std::function<bool(int, const std::string&)>& reportError) {
+    outScreens.clear();
+
+    if (luaState == nullptr)
+        return false;
+
+    if (!loadLuaFileResultTable(luaState, fileName, reportError))
+        return false;
+
+    const int rootIndex = lua_gettop(luaState);
+
+    lua_pushnil(luaState);
+    while (lua_next(luaState, rootIndex) != 0) {
+        if (!lua_isstring(luaState, -2) || !lua_istable(luaState, -1)) {
+            lua_pop(luaState, 2); // value + key or bad pair
+            lua_pop(luaState, 1); // root
+            VG_ERROR("[Lua] Screen definition file '" + fileName + "' must contain a table of named screen definitions.");
+            return false;
+        }
+
+        const std::string screenId = lua_tostring(luaState, -2);
+        const int entryIndex = lua_gettop(luaState);
+
+        ScreenDefinition entry;
+        entry.id = screenId;
+
+        if (!readStringArrayField(luaState, entryIndex, "groups", entry.groups)) {
+            lua_pop(luaState, 2); // value + key
+            lua_pop(luaState, 1); // root
+            VG_ERROR("[Lua] Screen '" + screenId + "' in '" + fileName + "' must define a 'groups' string array.");
+            return false;
+        }
+
+        readBoolField(luaState, entryIndex, "overlay", entry.overlay);
+        readBoolField(luaState, entryIndex, "pauses_gameplay", entry.pausesGameplay);
+        readBoolField(luaState, entryIndex, "initial", entry.initial);
+        readStringField(luaState, entryIndex, "script", entry.script);
+
+        outScreens.push_back(std::move(entry));
+        lua_pop(luaState, 1); // value, keep key for lua_next
+    }
+
+    lua_pop(luaState, 1); // root table
     return true;
 }

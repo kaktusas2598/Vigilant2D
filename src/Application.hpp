@@ -37,6 +37,7 @@
 
 #include "EngineEditor.hpp"
 
+#include "ScreenFlowSystem.hpp"
 #include "game/FarmWorldState.hpp"
 
 class Application {
@@ -79,7 +80,6 @@ class Application {
 
         std::unique_ptr<FrameBuffer> sceneFrameBuffer = nullptr;
         PostProcessPass postProcessPass;
-
         float postVignetteStrength = 0.18f;
         float postContrast = 1.0f;
         float postBrightness = 0.0f;
@@ -87,7 +87,6 @@ class Application {
         glm::vec3 postTint{1.0f, 1.0f, 1.0f};
         glm::vec4 postFadeColor{0.0f, 0.0f, 0.0f, 1.0f};
         float postFadeAmount = 0.0f;
-
 
         SelectionManager selectionManager;
 
@@ -100,6 +99,7 @@ class Application {
         std::unique_ptr<TopDownControllerSystem> topDownControllerSystem = nullptr;
         std::unique_ptr<ContentLoader> contentLoader = nullptr;
         CameraFollowState cameraFollowState;
+        std::unique_ptr<ScreenFlowSystem> screenFlowSystem = nullptr;
 
         std::unique_ptr<UIRenderer> uiRenderer = nullptr;
         TextRenderer textRenderer;

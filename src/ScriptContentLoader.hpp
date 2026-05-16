@@ -13,6 +13,7 @@ extern "C" {
 #include "AnimationDefinition.hpp"
 #include "EntityDefinition.hpp"
 #include "ParticlePreset.hpp"
+#include "ScreenDefinition.hpp"
 
 // Raw assets manifest entry for each resource
 struct TextureManifestEntry {
@@ -70,6 +71,10 @@ public:
 
     bool loadParticlePresetDefinition(const std::string& fileName,
         ParticlePreset& outPreset,
+        const std::function<bool(int, const std::string&)>& reportError);
+
+    bool loadScreenDefinitions(const std::string& fileName,
+        std::vector<ScreenDefinition>& outScreens,
         const std::function<bool(int, const std::string&)>& reportError);
 
 private:

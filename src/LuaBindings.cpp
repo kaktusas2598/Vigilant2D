@@ -10,6 +10,7 @@
 #include "ParticleEmitter.hpp"
 #include "ParticleEmitterRegistry.hpp"
 #include "CameraFollowState.hpp"
+#include "ScreenFlowSystem.hpp"
 #include "AudioSystem.hpp"
 #include "Input.hpp"
 #include "UISystem.hpp"
@@ -1333,6 +1334,57 @@ static int l_ui_set_group_visible(lua_State* L) {
     lua_pushboolean(L, 1);
     return 1;
 }
+// --------- SCREEN STATE FLOW BINDINGS
+static int l_screenflow_show_base(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* screenId = luaL_checkstring(L, 1);
+    const bool ok = scriptSystem->getRuntimeScreenFlowSystem()->showBase(screenId);
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
+static int l_screenflow_show_overlay(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* screenId = luaL_checkstring(L, 1);
+    const bool ok = scriptSystem->getRuntimeScreenFlowSystem()->showOverlay(screenId);
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
+static int l_screenflow_clear_overlay(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const bool ok = scriptSystem->getRuntimeScreenFlowSystem()->clearOverlay();
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
+static int l_screenflow_toggle_overlay(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* screenId = luaL_checkstring(L, 1);
+    const bool ok = scriptSystem->getRuntimeScreenFlowSystem()->toggleOverlay(screenId);
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
 
 void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     // Setup engine global table
@@ -1564,4 +1616,25 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_group_visible");
 
     lua_setglobal(luaState, "ui");
+
+    // Setup screenflow global table
+    lua_newtable(luaState);
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_screenflow_show_base, 1);
+    lua_setfield(luaState, -2, "show_base");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_screenflow_show_overlay, 1);
+    lua_setfield(luaState, -2, "show_overlay");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_screenflow_clear_overlay, 1);
+    lua_setfield(luaState, -2, "clear_overlay");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_screenflow_toggle_overlay, 1);
+    lua_setfield(luaState, -2, "toggle_overlay");
+
+    lua_setglobal(luaState, "screenflow");
 }

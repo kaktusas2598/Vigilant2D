@@ -23,6 +23,7 @@ void ImGuiLayer::init(GLFWwindow* window) {
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
 
     ImGui::StyleColorsDark();
+    mainWindow = window;
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -71,6 +72,9 @@ void ImGuiLayer::render() {
                     for (auto& panel : panels)
                         ImGui::MenuItem(panel.name.c_str(), nullptr, &panel.enabled);
                     ImGui::EndMenu();
+                }
+                if (ImGui::MenuItem("Exit")) {
+                    glfwSetWindowShouldClose(mainWindow, GLFW_TRUE);
                 }
                 ImGui::EndMenuBar();
             }

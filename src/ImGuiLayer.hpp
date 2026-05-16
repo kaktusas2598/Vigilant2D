@@ -8,6 +8,8 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+class GLFWwindow;
+
 struct DebugPanel {
     std::string name;
     std::function<void()> draw;
@@ -35,4 +37,5 @@ class ImGuiLayer {
     private:
         std::vector<DebugPanel> panels;
         bool dockspaceEnabled = true;
+        GLFWwindow* mainWindow = nullptr;
 };
