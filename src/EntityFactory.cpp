@@ -57,6 +57,8 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
         }
     }
 
+    entity.getCustomData() = definition.customData;
+
     if (!definition.behaviorScript.empty()) {
         entity.setScript(definition.behaviorScript);
         if (scriptSystem.attachToEntity(entity)) {
@@ -75,8 +77,6 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
         controllerConfig.entityId = entityId;
         entity.setTopDownControllerConfig(controllerConfig);
     }
-
-    entity.getCustomData() = definition.customData;
 
     return &entity;
 }

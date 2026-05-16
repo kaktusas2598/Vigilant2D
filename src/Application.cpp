@@ -215,16 +215,17 @@ void Application::update(float dt) {
         debugMode = !debugMode;
 
     screenFlowSystem->update(dt);
-
-    topDownControllerSystem->update(dt);
-    scene.update(dt);
-    for (const auto& entityPtr : scene.getEntities()) {
-        if (entityPtr && entityPtr->hasScript()) {
-            scriptSystem.callEntityOnUpdate(*entityPtr, dt);
+    if (!screenFlowSystem->isGameplayPaused()) {
+        topDownControllerSystem->update(dt);
+        scene.update(dt);
+        for (const auto& entityPtr : scene.getEntities()) {
+            if (entityPtr && entityPtr->hasScript()) {
+                scriptSystem.callEntityOnUpdate(*entityPtr, dt);
+            }
         }
     }
     scriptSystem.updateTasks(dt);
-
+    
     if (cameraFollowState.followEntity) {
         Entity* target = scene.findEntityByID(cameraFollowState.targetEntityId);
         if (target != nullptr) {

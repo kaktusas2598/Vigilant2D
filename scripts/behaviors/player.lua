@@ -10,6 +10,16 @@ local function get_sword_hit_box(self)
     return playerX - 8, playerY - 4, 32, 24
 end
 
+local function update_player_world_ui(self)
+    local playerX, playerY = engine.get_entity_position(self.id)
+    if playerX ~= nil then
+        local health = engine.get_entity_data(self.id, "health")
+        ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
+        ui.set_progress_bar_value("player.health", health)
+        ui.set_label_position("player.name", playerX, playerY + 42)
+    end
+end
+
 local FOLLOW_DISTANCE = 100.0
 local STOP_DISTANCE = 5.0
 local MOVE_SPEED = 20.0
@@ -45,17 +55,11 @@ function M.on_create(self)
     ui.set_label_render_space("player.name", "world")
     ui.set_label_text("player.name", "Player")
     ui.set_label_scale("player.name", 0.35)
+    update_player_world_ui(self)
 end
 
 function M.on_update(self, dt)
-    -- Update player UI based on player's current position
-    local playerX, playerY = engine.get_entity_position(self.id)
-    if playerX ~= nil then
-        local health = engine.get_entity_data(self.id, "health")
-        ui.set_progress_bar_position("player.health", playerX + 6, playerY + 32)
-        ui.set_progress_bar_value("player.health", health)
-        ui.set_label_position("player.name", playerX, playerY + 42)
-    end
+    update_player_world_ui(self)
 
     local mouseX, mouseY = engine.get_mouse_world_position()
     if mouseX == nil then
@@ -66,7 +70,6 @@ function M.on_update(self, dt)
     if tileX == nil then
         return
     end
-
 
     -- Particle emitter test
     if engine.is_key_pressed(80) then -- 'p'
@@ -93,7 +96,6 @@ function M.on_update(self, dt)
         ui.set_label_text("hud.hotbar_label", "Bucket")
         ui.set_slot_strip_selected("hud.hotbar", 3)
     end
-
 
     if engine.is_mouse_button_pressed(0) then -- LMB
         if self.selected_tool == "shovel" then
@@ -134,10 +136,6 @@ function M.on_update(self, dt)
                 end
             end
         end
-
-        local tilled = farm.is_tilled(tileX, tileY)
-
-        -- print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
     end
 
     -- Clear tile overrides with RMB
