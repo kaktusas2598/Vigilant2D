@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure",
+            "type": "shell",
+            "command": "C:/msys64/msys2_shell.cmd",
+            "args": [
+                "-defterm",
+                "-no-start",
+                "-mingw64",
+                "-here",
+                "-c",
+                "./configure.sh"
+            ],
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "C:/msys64/msys2_shell.cmd",
+            "args": [
+                "-defterm",
+                "-no-start",
+                "-mingw64",
+                "-here",
+                "-c",
+                "./build.sh"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "Configure",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "C:/msys64/msys2_shell.cmd",
+            "args": [
+                "-defterm",
+                "-no-start",
+                "-mingw64",
+                "-here",
+                "-c",
+                "./out/Vigilant2D.exe"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

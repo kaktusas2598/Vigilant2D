@@ -23,6 +23,9 @@ include_directories(${GLEW_INCLUDE_DIRS})
 
 find_package(Freetype REQUIRED)
 
+find_package(OpenAL CONFIG REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
+
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.cpp)
 add_executable(${PROJECT_NAME} WIN32 ${sources})
 
@@ -36,8 +39,6 @@ add_subdirectory(vendor/stb_image)
 add_subdirectory(vendor/tinyxml2)
 add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/lua)
-add_subdirectory(vendor/openal)
-add_subdirectory(vendor/libsndfile)
 
 # Set 3rd party include locations
 target_include_directories(${PROJECT_NAME} PUBLIC vendor ${FREETYPE_INCLUDE_DIRS})
@@ -45,7 +46,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC vendor ${FREETYPE_INCLUDE_DIRS
 message(STATUS "GLEW LIBRARY:${GLEW_LIBRARIES}")
 message(STATUS "OpenGL LIBRARY:${OpenGL_LIBRARIES}")
 message(STATUS "Freetype LIBRARY:${FREETYPE_LIBRARIES}")
+message(STATUS "OpenAL LIBRARY:${OpenAL_LIBRARIES}")
+message(STATUS "SndFile LIBRARY:${SndFile_LIBRARIES}")
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} ${OpenGL_LIBRARIES} ${GLEW_LIBRARIES} ${CMAKE_DL_LIBS}
-    glfw glm imgui stb_image tinyxml2 box2d lua::lib Freetype::Freetype openal libsndfile)
+    glfw glm imgui stb_image tinyxml2 box2d lua::lib Freetype::Freetype OpenAL::OpenAL SndFile::sndfile)
