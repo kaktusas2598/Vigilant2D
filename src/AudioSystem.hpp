@@ -18,8 +18,11 @@ public:
 
     bool loadSound(const std::string& id, const std::string& filePath);
     bool hasSound(const std::string& id) const;
-    bool playSound(const std::string& id);
-    bool playSoundAt(const std::string& id, const glm::vec2& position);
+    bool playSound(const std::string& id, float volume = 1.0f);
+    bool playSoundAt(const std::string& id, const glm::vec2& position, float volume = 1.0f);
+
+    void setMasterVolume(float volume);
+    float getMasterVolume() const;
 
     void update();
     void clear();

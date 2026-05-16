@@ -1,4 +1,6 @@
 #include "AudioEngine.hpp"
+
+#include <algorithm>
 #include "Logger.hpp"
 
 bool AudioEngine::init() {
@@ -29,6 +31,7 @@ bool AudioEngine::init() {
     }
 
     alDistanceModel(AL_INVERSE_DISTANCE);
+    alListenerf(AL_GAIN, masterVolume);
     return true;
 }
 
@@ -52,4 +55,9 @@ AudioEngine::~AudioEngine() {
 void AudioEngine::setListenerPosition(const glm::vec2& position) {
     alListener3f(AL_POSITION, position.x, position.y, 0.0f);
     alListener3f(AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+}
+
+void AudioEngine::setMasterVolume(float volume) {
+    masterVolume = std::max(0.0f, volume);
+    alListenerf(AL_GAIN, masterVolume);
 }

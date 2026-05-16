@@ -153,7 +153,7 @@ static int l_set_post_fade_amount(lua_State* L) {
     return 1;
 }
 
-// --------- POST-FX BINDINGS
+// --------- AUDIO BINDINGS
 static int l_play_sound(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeAudioSystem() == nullptr) {
@@ -162,8 +162,27 @@ static int l_play_sound(lua_State* L) {
     }
 
     const char* soundId = luaL_checkstring(L, 1);
-    const bool ok = scriptSystem->getRuntimeAudioSystem()->playSound(soundId);
+    // Optional volume param
+    const float volume = lua_gettop(L) >= 2
+        ? static_cast<float>(luaL_checknumber(L, 2))
+        : 1.0f;
+
+    const bool ok = scriptSystem->getRuntimeAudioSystem()->playSound(soundId, volume);
     lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
+static int l_set_master_volume(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeAudioSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float volume = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getRuntimeAudioSystem()->setMasterVolume(volume);
+
+    lua_pushboolean(L, 1);
     return 1;
 }
 
@@ -1329,6 +1348,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_play_sound, 1);
     lua_setfield(luaState, -2, "play_sound");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_master_volume, 1);
+    lua_setfield(luaState, -2, "set_master_volume");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_entity_position, 1);

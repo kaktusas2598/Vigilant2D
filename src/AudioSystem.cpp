@@ -1,6 +1,8 @@
 #include "AudioSystem.hpp"
 
+#include <algorithm>
 #include "AudioBuffer.hpp"
+#include "AudioEngine.hpp"
 #include "Logger.hpp"
 
 AudioSystem::AudioSystem(AudioEngine& audioEngine)
@@ -42,7 +44,7 @@ ALuint AudioSystem::acquireSource() {
     return source;
 }
 
-bool AudioSystem::playSound(const std::string& id) {
+bool AudioSystem::playSound(const std::string& id, float volume) {
     auto it = buffers.find(id);
     if (it == buffers.end())
         return false;
@@ -50,12 +52,13 @@ bool AudioSystem::playSound(const std::string& id) {
     ALuint source = acquireSource();
     alSourcei(source, AL_BUFFER, static_cast<ALint>(it->second->getID()));
     alSourcei(source, AL_LOOPING, AL_FALSE);
+    alSourcef(source, AL_GAIN, std::max(0.0f, volume));
     alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
     alSourcePlay(source);
     return true;
 }
 
-bool AudioSystem::playSoundAt(const std::string& id, const glm::vec2& position) {
+bool AudioSystem::playSoundAt(const std::string& id, const glm::vec2& position, float volume) {
     auto it = buffers.find(id);
     if (it == buffers.end())
         return false;
@@ -63,9 +66,18 @@ bool AudioSystem::playSoundAt(const std::string& id, const glm::vec2& position) 
     ALuint source = acquireSource();
     alSourcei(source, AL_BUFFER, static_cast<ALint>(it->second->getID()));
     alSourcei(source, AL_LOOPING, AL_FALSE);
+    alSourcef(source, AL_GAIN, volume);
     alSource3f(source, AL_POSITION, position.x, position.y, 0.0f);
     alSourcePlay(source);
     return true;
+}
+
+void AudioSystem::setMasterVolume(float volume) {
+    audioEngine.setMasterVolume(volume);
+}
+
+float AudioSystem::getMasterVolume() const {
+    return audioEngine.getMasterVolume();
 }
 
 void AudioSystem::update() {
