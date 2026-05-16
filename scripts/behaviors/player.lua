@@ -140,6 +140,7 @@ function M.on_update(self, dt)
         -- print("Tile "..tileX..","..tileY.." tilled = "..tostring(tilled))
     end
 
+    -- Clear tile overrides with RMB
     if engine.is_mouse_button_pressed(1) then -- RMB
         engine.clear_tile_override("Ground", tileX, tileY)
         engine.clear_tile_override("Farmland", tileX, tileY)
@@ -148,13 +149,15 @@ function M.on_update(self, dt)
     end
 
     local playerHealth = engine.get_entity_data(self.id, "health")
-    if playerHealth ~= nil and playerHealth < 0 then
+    -- Display game over label
+    if playerHealth ~= nil and playerHealth < 0 and not self.game_over then
+        self.game_over = true
         ui.create_label("hud.game_over_label", "hud")
         ui.set_label_text("hud.game_over_label", "GameOver")
-        -- TODO: need a way to center on the screen
-        ui.set_label_text_color("hud.game_over_label", 1.2, 0.2, 0.2, 1.0)
-        ui.set_label_position("hud.game_over_label", 500, 500)
+        local viewportWidth, viewportHeight = engine.get_viewport_size()
+        ui.set_label_text_color("hud.game_over_label", 1.0, 0.2, 0.2, 1.0)
         ui.set_label_scale("hud.game_over_label", 2.0)
+        ui.set_label_position("hud.game_over_label", viewportWidth / 2 - 100, viewportHeight / 2 - 25)
     end
 
 end

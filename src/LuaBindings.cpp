@@ -138,6 +138,19 @@ static int l_clear_camera_target(lua_State* L) {
     return 1;
 }
 
+static int l_get_viewport_size(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeCamera() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Camera2D* camera = scriptSystem->getRuntimeCamera();
+    lua_pushnumber(L, camera->getViewportWidth());
+    lua_pushnumber(L, camera->getViewportHeight());
+    return 2;
+}
+
 // --------- POST-FX BINDINGS
 static int l_set_post_fade_amount(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -1340,6 +1353,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_clear_camera_target, 1);
     lua_setfield(luaState, -2, "clear_camera_target");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_viewport_size, 1);
+    lua_setfield(luaState, -2, "get_viewport_size");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_post_fade_amount, 1);
