@@ -2,12 +2,77 @@
 
 #include <algorithm>
 
+#include <GLFW/glfw3.h>
+#include "Input.hpp"
+
 #include "AssetManager.hpp"
+#include "UIButton.hpp"
 #include "UILabel.hpp"
 #include "UIProgressBar.hpp"
 #include "UISlotStrip.hpp"
 #include "TextRenderer.hpp"
 #include "UIRenderer.hpp"
+
+static glm::vec2 measureTextPanelSize(TextRenderer& textRenderer,
+                                      const Font& font,
+                                      const std::string& text,
+                                      float scale,
+                                      const glm::vec2& padding) {
+    return textRenderer.measureText(font, text, scale) + padding * 2.0f;
+}
+
+static glm::vec2 resolveScreenWidgetPosition(const glm::vec2& basePosition,
+                                             const UIScreenLayout& layout,
+                                             const glm::vec2& widgetSize,
+                                             int viewportWidth,
+                                             int viewportHeight) {
+    if (!layout.enabled)
+        return basePosition;
+
+    const glm::vec2 anchorPoint{
+        viewportWidth * layout.anchor.x,
+        viewportHeight * layout.anchor.y
+    };
+
+    return anchorPoint + basePosition - widgetSize * layout.pivot;
+}
+
+static bool pointInsideRect(const glm::vec2& point, const glm::vec2& pos, const glm::vec2& size) {
+    return point.x >= pos.x &&
+           point.y >= pos.y &&
+           point.x <= pos.x + size.x &&
+           point.y <= pos.y + size.y;
+}
+
+static UIButton makeButtonWidget(const UIButtonRecord& record,
+                                 const glm::vec2& resolvedPosition,
+                                 const UIButtonVisualState& visualState) {
+    UIButton button;
+    button.setText(record.text);
+    button.setPosition(resolvedPosition);
+    button.setSize(record.size);
+    button.setTextScale(record.textScale);
+    button.setBorderEnabled(record.borderEnabled);
+
+    button.setTextColor(visualState.textColor);
+    button.setBackgroundColor(visualState.backgroundColor);
+    button.setBorderColor(visualState.borderColor);
+
+    button.setIconEnabled(record.iconEnabled);
+    button.setIcon(record.icon);
+    button.setIconSize(record.iconSize);
+    button.setIconTint(visualState.iconTint);
+
+    return button;
+}
+
+static const UIButtonVisualState& getButtonVisualState(const UIButtonRecord& record) {
+    if (record.pressedNow)
+        return record.pressed;
+    if (record.hoveredNow)
+        return record.hovered;
+    return record.normal;
+}
 
 static UILabel makeLabelWidget(const UILabelRecord& record, const glm::vec2& resolvedPosition) {
     UILabel label;
@@ -46,6 +111,18 @@ UILabelRecord& UISystem::createLabel(const std::string& id) {
     auto& label = labels[id];
     label.id = id;
     return label;
+}
+
+UIButtonRecord& UISystem::createButton(const std::string& id) {
+    auto& button = buttons[id];
+    button.id = id;
+
+    button.hovered.backgroundColor = {0.18f, 0.18f, 0.20f, 0.98f};
+    button.hovered.borderColor = {0.95f, 0.88f, 0.60f, 1.0f};
+    button.pressed.backgroundColor = {0.24f, 0.22f, 0.16f, 1.0f};
+    button.pressed.borderColor = {1.0f, 0.90f, 0.55f, 1.0f};
+
+    return button;
 }
 
 UISlotStripRecord& UISystem::createSlotStrip(const std::string& id) {
@@ -90,6 +167,16 @@ const UIProgressBarRecord* UISystem::getProgressBar(const std::string& id) const
     return it != progressBars.end() ? &it->second : nullptr;
 }
 
+UIButtonRecord* UISystem::getButton(const std::string& id) {
+    auto it = buttons.find(id);
+    return it != buttons.end() ? &it->second : nullptr;
+}
+
+const UIButtonRecord* UISystem::getButton(const std::string& id) const {
+    auto it = buttons.find(id);
+    return it != buttons.end() ? &it->second : nullptr;
+}
+
 void UISystem::setGroupVisible(const std::string& group, bool visible) {
     groupVisibility[group] = visible;
 }
@@ -105,11 +192,65 @@ bool UISystem::isWidgetVisible(const std::string& group, bool visible) const {
     return visible && isGroupVisible(group);
 }
 
+void UISystem::updateScreenInteraction(const Input& input,
+                                      TextRenderer& textRenderer,
+                                      AssetManager& assetManager,
+                                      int viewportWidth,
+                                      int viewportHeight) {
+    for (auto& pair : buttons) {
+        pair.second.hoveredNow = false;
+        pair.second.pressedNow = false;
+        pair.second.clicked = false;
+    }
+
+    UIButtonRecord* hoveredButton = nullptr;
+    int hoveredOrder = 0;
+    const glm::vec2 mousePos{
+        static_cast<float>(input.getMouseX()),
+        static_cast<float>(input.getMouseY())
+    };
+
+    for (auto& pair : buttons) {
+        UIButtonRecord& record = pair.second;
+        if (!isWidgetVisible(record.group, record.visible))
+            continue;
+
+        const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+        if (pointInsideRect(mousePos, resolvedPosition, record.size)) {
+            if (hoveredButton == nullptr || record.order >= hoveredOrder) {
+                hoveredButton = &record;
+                hoveredOrder = record.order;
+            }
+        }
+    }
+
+    if (hoveredButton != nullptr)
+        hoveredButton->hoveredNow = true;
+    
+    if (hoveredButton != nullptr && input.isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
+        activeScreenButtonId = hoveredButton->id;
+    }
+
+    UIButtonRecord* activeButton = getButton(activeScreenButtonId);
+    if (activeButton != nullptr && isWidgetVisible(activeButton->group, activeButton->visible)) {
+        activeButton->pressedNow = input.isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT);
+    }
+
+    if (input.isMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (activeButton != nullptr && hoveredButton != nullptr && activeButton->id == hoveredButton->id) {
+            activeButton->clicked = true;
+        }
+        activeScreenButtonId.clear();
+    }
+}
+
 void UISystem::clear() {
     labels.clear();
     slotStrips.clear();
     progressBars.clear();
     groupVisibility.clear();
+    buttons.clear();
+    activeScreenButtonId.clear();
 }
 
 void UISystem::drawLabelWorldGeometry(const UILabelRecord& record,
@@ -160,6 +301,34 @@ void UISystem::drawLabelScreenText(const UILabelRecord& record,
 
     UILabel label = makeLabelWidget(record, resolvedPosition);
     label.drawScreenText(textRenderer, *font);
+}
+
+void UISystem::drawButtonScreenGeometry(const UIButtonRecord& record,
+                                      UIRenderer& uiRenderer,
+                                      int viewportWidth, int viewportHeight) const {
+    const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+    const UIButtonVisualState& visualState = getButtonVisualState(record);
+    UIButton button = makeButtonWidget(record, resolvedPosition, visualState);
+    button.drawScreenGeometry(uiRenderer);
+}
+
+void UISystem::drawButtonScreenText(const UIButtonRecord& record,
+                                  TextRenderer& textRenderer,
+                                  AssetManager& assetManager,
+                                  int viewportWidth, int viewportHeight) const {
+    const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+    const UIButtonVisualState& visualState = getButtonVisualState(record);
+    UIButton button = makeButtonWidget(record, resolvedPosition, visualState);
+    button.drawScreenText(textRenderer, *assetManager.getFont(record.fontId));
+}
+
+void UISystem::drawButtonScreenIcon(const UIButtonRecord& record,
+                                  UIRenderer& uiRenderer,
+                                  int viewportWidth, int viewportHeight) const {
+    const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+    const UIButtonVisualState& visualState = getButtonVisualState(record);
+    UIButton button = makeButtonWidget(record, resolvedPosition, visualState);
+    button.drawScreenIcon(uiRenderer);
 }
 
 void UISystem::drawSlotStrip(const UISlotStripRecord& record,
@@ -272,6 +441,7 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
     std::vector<const UISlotStripRecord*> visibleSlotStrips;
     std::vector<const UILabelRecord*> visibleLabels;
     std::vector<const UIProgressBarRecord*> visibleProgressBars;
+    std::vector<const UIButtonRecord*> visibleButtons;
 
     for (const auto& pair : slotStrips) {
         const UISlotStripRecord& record = pair.second;
@@ -294,6 +464,13 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
         }
     }
 
+    for (const auto& pair : buttons) {
+        const UIButtonRecord& record = pair.second;
+        if (isWidgetVisible(record.group, record.visible)) {
+            visibleButtons.push_back(&record);
+        }
+    }
+
     std::sort(visibleSlotStrips.begin(), visibleSlotStrips.end(),
         [](const UISlotStripRecord* a, const UISlotStripRecord* b) {
             return a->order < b->order;
@@ -309,12 +486,20 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
             return a->order < b->order;
         });
 
+    std::sort(visibleButtons.begin(), visibleButtons.end(),
+        [](const UIButtonRecord* a, const UIButtonRecord* b) {
+            return a->order < b->order;
+        });
+
     // Draw Phase 1: render all geometry first
     for (const UISlotStripRecord* record : visibleSlotStrips) {
         drawSlotStrip(*record, uiRenderer);
     }
     for (const UILabelRecord* record : visibleLabels) {
         drawLabelScreenGeometry(*record, uiRenderer, textRenderer, assetManager, viewportWidth, viewportHeight);
+    }
+    for (const UIButtonRecord* record : visibleButtons) {
+        drawButtonScreenGeometry(*record, uiRenderer, viewportWidth, viewportHeight);
     }
     for (const UIProgressBarRecord* record : visibleProgressBars) {
         drawProgressBar(*record, uiRenderer);
@@ -326,6 +511,10 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
 
         for (const UILabelRecord* record : visibleLabels) {
             drawLabelScreenText(*record, textRenderer, assetManager, viewportWidth, viewportHeight);
+        }
+
+        for (const UIButtonRecord* record : visibleButtons) {
+            drawButtonScreenText(*record, textRenderer, assetManager, viewportWidth, viewportHeight);
         }
 
         textRenderer.end();

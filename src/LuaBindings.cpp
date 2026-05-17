@@ -1021,6 +1021,286 @@ static int l_ui_clear_label_screen_layout(lua_State* L) {
     return 1;
 }
 
+// --------- UI BUTTON BINDINGS
+static int l_ui_create_button(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UIButtonRecord& button = uiSystem->createButton(id);
+
+    if (lua_gettop(L) >= 2 && lua_isstring(L, 2)) {
+        button.group = lua_tostring(L, 2);
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_text(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* text = luaL_checkstring(L, 2);
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->text = text;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_position(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_size(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float width = static_cast<float>(luaL_checknumber(L, 2));
+    const float height = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->size = {width, height};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_scale(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float scale = static_cast<float>(luaL_checknumber(L, 2));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->textScale = scale;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_visible(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const bool visible = lua_toboolean(L, 2) != 0;
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->visible = visible;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_screen_anchor(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->screenLayout.enabled = true;
+    button->screenLayout.anchor = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_screen_pivot(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->screenLayout.enabled = true;
+    button->screenLayout.pivot = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_background_color(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float r = static_cast<float>(luaL_checknumber(L, 2));
+    const float g = static_cast<float>(luaL_checknumber(L, 3));
+    const float b = static_cast<float>(luaL_checknumber(L, 4));
+    const float a = static_cast<float>(luaL_optnumber(L, 5, 1.0));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->normal.backgroundColor = {r, g, b, a};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_hover_background_color(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float r = static_cast<float>(luaL_checknumber(L, 2));
+    const float g = static_cast<float>(luaL_checknumber(L, 3));
+    const float b = static_cast<float>(luaL_checknumber(L, 4));
+    const float a = static_cast<float>(luaL_optnumber(L, 5, 1.0));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->hovered.backgroundColor = {r, g, b, a};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_pressed_background_color(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float r = static_cast<float>(luaL_checknumber(L, 2));
+    const float g = static_cast<float>(luaL_checknumber(L, 3));
+    const float b = static_cast<float>(luaL_checknumber(L, 4));
+    const float a = static_cast<float>(luaL_optnumber(L, 5, 1.0));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->pressed.backgroundColor = {r, g, b, a};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_was_button_clicked(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    lua_pushboolean(L, button->clicked ? 1 : 0);
+    return 1;
+}
+
+static int l_ui_is_button_hovered(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    lua_pushboolean(L, button->hoveredNow ? 1 : 0);
+    return 1;
+}
+
 // --------- UI SLOT STRIP BINDINGS
 static int l_ui_create_slot_strip(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
@@ -1627,6 +1907,58 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_clear_label_screen_layout, 1);
     lua_setfield(luaState, -2, "clear_label_screen_layout");
+
+        lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_create_button, 1);
+    lua_setfield(luaState, -2, "create_button");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_text, 1);
+    lua_setfield(luaState, -2, "set_button_text");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_position, 1);
+    lua_setfield(luaState, -2, "set_button_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_size, 1);
+    lua_setfield(luaState, -2, "set_button_size");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_scale, 1);
+    lua_setfield(luaState, -2, "set_button_scale");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_visible, 1);
+    lua_setfield(luaState, -2, "set_button_visible");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_screen_anchor, 1);
+    lua_setfield(luaState, -2, "set_button_screen_anchor");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_screen_pivot, 1);
+    lua_setfield(luaState, -2, "set_button_screen_pivot");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_background_color, 1);
+    lua_setfield(luaState, -2, "set_button_background_color");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_hover_background_color, 1);
+    lua_setfield(luaState, -2, "set_button_hover_background_color");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_pressed_background_color, 1);
+    lua_setfield(luaState, -2, "set_button_pressed_background_color");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_was_button_clicked, 1);
+    lua_setfield(luaState, -2, "was_button_clicked");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_is_button_hovered, 1);
+    lua_setfield(luaState, -2, "is_button_hovered");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_slot_strip, 1);

@@ -214,6 +214,7 @@ void Application::update(float dt) {
     if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT)))
         debugMode = !debugMode;
 
+    uiSystem.updateScreenInteraction(input, textRenderer, assetManager, display_w, display_h);
     screenFlowSystem->update(dt);
     if (!screenFlowSystem->isGameplayPaused()) {
         topDownControllerSystem->update(dt);

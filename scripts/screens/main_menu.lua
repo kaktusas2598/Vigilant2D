@@ -8,12 +8,14 @@ function M.build(self)
     ui.set_label_scale("menu.main.title", 2.0)
     ui.set_label_screen_anchor("menu.main.title", 0.5, 0.5)
     ui.set_label_screen_pivot("menu.main.title", 0.5, 0.5)
-    ui.set_label_position("menu.main.title", 0, -80)
+    ui.set_label_position("menu.main.title", 0, 80)
 
-    ui.create_label("menu.main.prompt", "menu.main")
-    ui.set_label_text("menu.main.prompt", "Press Enter to Start")
-    ui.set_label_screen_anchor("menu.main.prompt", 0.5, 0.5)
-    ui.set_label_screen_pivot("menu.main.prompt", 0.5, 0.5)
+    ui.create_button("menu.main.start_button", "menu.main")
+    ui.set_button_text("menu.main.start_button", "Start Game")
+    ui.set_button_screen_anchor("menu.main.start_button", 0.5, 0.5)
+    ui.set_button_screen_pivot("menu.main.start_button", 0.5, 0.5)
+    ui.set_button_position("menu.main.start_button", 0, 12)
+    ui.set_button_size("menu.main.start_button", 180, 44)
 end
 
 function M.on_enter(self)
@@ -23,7 +25,7 @@ function M.on_exit(self)
 end
 
 function M.on_update(self, dt)
-    if engine.is_key_pressed(257) then -- Enter
+    if ui.was_button_clicked("menu.main.start_button") or engine.is_key_pressed(257) then -- Enter
         screenflow.show_base("gameplay")
     end
 end
