@@ -10,6 +10,22 @@ local function get_sword_hit_box(self)
     return playerX - 8, playerY - 4, 32, 24
 end
 
+local function play_attack_animation(self)
+    if self.facing == "up" then
+        engine.set_entity_flip_x(self.id, false)
+        engine.play_entity_animation(self.id, "player_fight_up", true)
+    elseif self.facing == "down" then
+        engine.set_entity_flip_x(self.id, false)
+        engine.play_entity_animation(self.id, "player_fight_down", true)
+    elseif self.facing == "left" then
+        engine.set_entity_flip_x(self.id, true)
+        engine.play_entity_animation(self.id, "player_fight_right", true)
+    else
+        engine.set_entity_flip_x(self.id, false)
+        engine.play_entity_animation(self.id, "player_fight_right", true)
+    end
+end
+
 local function update_player_world_ui(self)
     local playerX, playerY = engine.get_entity_position(self.id)
     if playerX ~= nil then
@@ -29,6 +45,7 @@ function M.on_create(self)
     self.selected_tool = "shovel"
     self.health = 72;
     self.max_health = 100;
+    self.facing = "down"
 
     -- Create Quickbar UI
     ui.create_slot_strip("hud.hotbar", "hud")
@@ -60,6 +77,35 @@ end
 
 function M.on_update(self, dt)
     update_player_world_ui(self)
+
+    if self.attacking and engine.is_entity_animation_finished(self.id) then
+        engine.set_entity_animation_locked(self.id, false)
+        self.attacking = false
+    end
+
+    local moveX = 0
+    local moveY = 0
+
+    if engine.is_key_down(87) then moveY = moveY + 1 end -- W
+    if engine.is_key_down(83) then moveY = moveY - 1 end -- S
+    if engine.is_key_down(65) then moveX = moveX - 1 end -- A
+    if engine.is_key_down(68) then moveX = moveX + 1 end -- D
+
+    if moveX ~= 0 or moveY ~= 0 then
+        if math.abs(moveX) > math.abs(moveY) then
+            if moveX > 0 then
+                self.facing = "right"
+            else
+                self.facing = "left"
+            end
+        else
+            if moveY > 0 then
+                self.facing = "up"
+            else
+                self.facing = "down"
+            end
+        end
+    end
 
     local mouseX, mouseY = engine.get_mouse_world_position()
     if mouseX == nil then
@@ -111,10 +157,14 @@ function M.on_update(self, dt)
             if farm.is_tilled(tileX, tileY) then
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
             end
-        elseif self.selected_tool == "sword" then
+        elseif self.selected_tool == "sword" and not self.attacking then
             -- TODO: define animation based on players direction
-            engine.play_entity_animation(self.id, "player_fight_right", false)
+            self.attacking = true
+            engine.set_entity_animation_locked(self.id, true)
+            -- engine.play_entity_animation(self.id, "player_fight_right", true)
+            play_attack_animation(self)
             engine.play_sound("sword_hit", 0.7)
+
             local hitX, hitY, hitW, hitH = get_sword_hit_box(self)
             if hitX ~= nil then
                 local hits = engine.get_entities_in_box(hitX, hitY, hitW, hitH)

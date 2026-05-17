@@ -357,6 +357,39 @@ static int l_set_entity_flip_x(lua_State* L) {
     return 1;
 }
 
+static int l_set_entity_animation_locked(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    Entity* entity = getEntityFromArg(L, scriptSystem, 1);
+    if (entity == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const bool locked = lua_toboolean(L, 2) != 0;
+    entity->setAnimationLocked(locked);
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_is_entity_animation_finished(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    Entity* entity = getEntityFromArg(L, scriptSystem, 1);
+    if (entity == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    AnimatedSprite* animatedSprite = entity->getAnimatedSprite();
+    if (animatedSprite == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    lua_pushboolean(L, animatedSprite->isFinished() ? 1 : 0);
+    return 1;
+}
+
 static int l_get_entities_in_box(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
@@ -493,6 +526,18 @@ static int l_is_key_pressed(lua_State* L) {
 
     const int key = static_cast<int>(luaL_checkinteger(L, 1));
     lua_pushboolean(L, scriptSystem->getRuntimeInput()->isKeyPressed(key));
+    return 1;
+}
+
+static int l_is_key_down(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const int key = static_cast<int>(luaL_checkinteger(L, 1));
+    lua_pushboolean(L, scriptSystem->getRuntimeInput()->isKeyDown(key));
     return 1;
 }
 
@@ -1891,6 +1936,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_entity_flip_x");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_entity_animation_locked, 1);
+    lua_setfield(luaState, -2, "set_entity_animation_locked");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_is_entity_animation_finished, 1);
+    lua_setfield(luaState, -2, "is_entity_animation_finished");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_entities_in_box, 1);
     lua_setfield(luaState, -2, "get_entities_in_box");
 
@@ -1909,6 +1962,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_is_key_pressed, 1);
     lua_setfield(luaState, -2, "is_key_pressed");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_is_key_down, 1);
+    lua_setfield(luaState, -2, "is_key_down");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_mouse_world_position, 1);

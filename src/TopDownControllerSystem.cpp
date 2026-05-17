@@ -40,6 +40,7 @@ void TopDownControllerSystem::update(float dt) {
         if (input.isKeyDown(GLFW_KEY_D)) movement.x += 1.0f;
 
         AnimatedSprite* anim = controlledEntity->getAnimatedSprite();
+        const bool animationLocked = controlledEntity->isAnimationLocked();
         if (movement.x != 0.0f || movement.y != 0.0f) {
             movement = glm::normalize(movement);
 
@@ -52,7 +53,7 @@ void TopDownControllerSystem::update(float dt) {
                 controlledEntity->transform.position += movement * controlledEntitySpeed * dt;
             }
 
-            if (anim != nullptr) {
+            if (!animationLocked && anim != nullptr) {
                 if (std::abs(movement.x) > std::abs(movement.y)) {
                     if (movement.x > 0.0f) {
                         if (controlConfig.allowFlipX && controlledEntity->getSprite())
@@ -80,9 +81,7 @@ void TopDownControllerSystem::update(float dt) {
                 );
             }
 
-            // FIXME: Add animation locking mechanism to allow animations to be played and not
-            // imediately overriden the next frame by controlled system if its used alongside Lua
-            if (anim != nullptr) {
+            if (!animationLocked && anim != nullptr) {
                 anim->play(animationRegistry.getClip(controlConfig.idleAnimation), false);
             }
         }

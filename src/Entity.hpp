@@ -40,6 +40,9 @@ class Entity {
         AnimatedSprite *getAnimatedSprite() { return animatedSprite.get(); }
         const AnimatedSprite *getAnimatedSprite() const { return animatedSprite.get(); }
 
+        void setAnimationLocked(bool locked) { animationLocked = locked; }
+        bool isAnimationLocked() const { return animationLocked; }
+
         void setPhysicsBody(b2BodyId newBody) { physicsBody = newBody; }
         b2BodyId getPhysicsBody() const { return physicsBody; }
         bool hasPhysicsBody() const { return B2_IS_NON_NULL(physicsBody); }
@@ -80,6 +83,7 @@ class Entity {
     private:
         std::string id;
         std::unique_ptr<AnimatedSprite> animatedSprite = nullptr;
+        bool animationLocked = false;
         std::unique_ptr<Sprite> sprite = nullptr;
         b2BodyId physicsBody = b2_nullBodyId;
         std::string scriptName;

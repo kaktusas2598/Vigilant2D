@@ -9,9 +9,26 @@ function M.on_create(self)
     self.target_id = "player"
     self.attack_cooldown = 0.0
     self.death_started = false
+    self.health = 20
+    self.max_health = 20
+
+    -- TODO: Fix - only one slime gets the name label and health bar
+    ui.create_progress_bar("slime.health", "world")
+    ui.set_progress_bar_render_space("slime.health", "world")
+    ui.set_progress_bar_size("slime.health", 32, 5)
+    ui.set_progress_bar_range("slime.health", 0, self.max_health)
+    ui.set_progress_bar_value("slime.health", self.health)
 end
 
 function M.on_update(self, dt)
+    local slimeX, slimeY = engine.get_entity_position(self.id)
+    if slimeX ~= nil then
+        local health = engine.get_entity_data(self.id, "health")
+        ui.set_progress_bar_position("slime.health", slimeX + 6, slimeY + 32)
+        ui.set_progress_bar_value("slime.health", health)
+        ui.set_label_position("slime.name", slimeX, slimeY + 42)
+    end
+
     local dx, dy, distance = engine.get_direction_to_entity(self.id, self.target_id);
     if dx == nil then
         return
