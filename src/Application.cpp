@@ -126,7 +126,6 @@ void Application::init() {
     } else if (!scriptSystem.runScriptInstanceFunction(bootstrap, "start")) {
         VG_ERROR("Failed to run bootstrap.start()");
     }
-    scriptSystem.releaseInstance(bootstrap);
 
     if (scene.getTileMap() != nullptr)
         entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
@@ -161,12 +160,14 @@ void Application::init() {
         VG_INFO("No entity with top-down controller config found.");
     }
 
-    //-------------- Custom Scene Setup Code
-    // TODO: still want to move this to scripting!
-    // Custom global automation/task/coroutine test
-    scriptSystem.runGlobalScriptFunction("scripts/automations/intro.lua", "start");
+    //-------------- Custom Scene Setup Dependent on loaded map and entities
+    if (!scriptSystem.runScriptInstanceFunction(bootstrap, "post_start")) {
+        VG_ERROR("Failed to run bootstrap.post_start()");
+    }
+    scriptSystem.releaseInstance(bootstrap);
 
     // Initialise farm grid
+    // TODO: create custom tile map data system to replace game specific code
     if (scene.getTileMap() != nullptr) {
         const TileMapData& mapData = scene.getTileMap()->getData();
         farmWorldState.init(mapData.width, mapData.height);

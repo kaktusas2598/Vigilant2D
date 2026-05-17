@@ -6,8 +6,10 @@ function M.start(self)
 
     engine.create_emitter_from_preset("blood_0", "blood")
     engine.create_emitter_from_preset("crates_0", "crate_burst")
+end
 
-    -- engine.run_script("scripts/automations/intro.lua", "start")
+function M.post_start(self)
+    engine.run_script("scripts/automations/intro.lua", "start")
 end
 
 return M
