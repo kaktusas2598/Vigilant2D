@@ -31,6 +31,7 @@ class AnimationRegistry;
 class ParticleEmitterRegistry;
 class UISystem;
 class AudioSystem;
+class Window;
 class ScreenFlowSystem;
 
 struct ScriptInstance {
@@ -92,6 +93,7 @@ class ScriptSystem {
         UISystem* getUISystem() const { return runtimeContext.uiSystem; }
         AudioSystem* getRuntimeAudioSystem() const { return runtimeContext.audioSystem; }
         ScreenFlowSystem* getRuntimeScreenFlowSystem() const { return runtimeContext.screenFlowSystem; }
+        Window* getRuntimeWindow() const { return runtimeContext.window; }
         float *getPostFadeAmount() const { return runtimeContext.postFadeAmount; }
     private:
         bool reportError(int status, const std::string& context);

@@ -7,6 +7,7 @@ class Camera2D;
 class ParticleEmitterRegistry;
 class AssetManager;
 class UISystem;
+class Window;
 class AudioSystem;
 class ScreenFlowSystem;
 class CameraFollowState;
@@ -19,6 +20,7 @@ struct ScriptRuntimeContext {
     ParticleEmitterRegistry* particleEmitterRegistry = nullptr;
     AssetManager* assetManager = nullptr;
     UISystem* uiSystem = nullptr;
+    Window* window = nullptr;
     AudioSystem* audioSystem = nullptr;
     ScreenFlowSystem* screenFlowSystem = nullptr;
     CameraFollowState* cameraFollowState = nullptr;

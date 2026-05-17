@@ -102,6 +102,7 @@ void Application::init() {
         &particleEmitterRegistry,
         &assetManager,
         &uiSystem,
+        &window,
         audioSystem.get(),
         screenFlowSystem.get(),
         &cameraFollowState,

@@ -16,6 +16,14 @@ function M.build(self)
     ui.set_button_screen_pivot("menu.main.start_button", 0.5, 0.5)
     ui.set_button_position("menu.main.start_button", 0, 12)
     ui.set_button_size("menu.main.start_button", 180, 44)
+
+    ui.create_button("menu.main.quit_button", "menu.main")
+    ui.set_button_text("menu.main.quit_button", "Quit Game")
+    ui.set_button_screen_anchor("menu.main.quit_button", 0.5, 0.5)
+    ui.set_button_screen_pivot("menu.main.quit_button", 0.5, 0.5)
+    ui.set_button_position("menu.main.quit_button", 0, -44)
+    ui.set_button_size("menu.main.quit_button", 180, 44)
+
 end
 
 function M.on_enter(self)
@@ -27,6 +35,10 @@ end
 function M.on_update(self, dt)
     if ui.was_button_clicked("menu.main.start_button") or engine.is_key_pressed(257) then -- Enter
         screenflow.show_base("gameplay")
+    end
+
+    if ui.was_button_clicked("menu.main.quit_button") then
+        engine.close_game()
     end
 end
 

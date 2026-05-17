@@ -288,6 +288,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.cameraFollowState = newContext.cameraFollowState;
     runtimeContext.postFadeAmount = newContext.postFadeAmount;
     runtimeContext.screenFlowSystem = newContext.screenFlowSystem;
+    runtimeContext.window = newContext.window;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

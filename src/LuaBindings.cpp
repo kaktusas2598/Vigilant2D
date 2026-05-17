@@ -14,6 +14,7 @@
 #include "AudioSystem.hpp"
 #include "Input.hpp"
 #include "UISystem.hpp"
+#include "Window.hpp"
 #include "glm/glm.hpp"
 
 // --------- STATIC HELPERS
@@ -519,6 +520,19 @@ static int l_emit_particles(lua_State* L) {
     }
 
     emitter->emit({x, y}, count);
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- GENERAL ENGINE BINDINGS
+static int l_close_game(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeWindow() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    scriptSystem->getRuntimeWindow()->close();
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -1848,6 +1862,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_tile_tileset_override");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_close_game, 1);
+    lua_setfield(luaState, -2, "close_game");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_start_entity_coroutine, 1);
     lua_setfield(luaState, -2, "start_entity_coroutine");
 
@@ -1908,7 +1926,7 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushcclosure(luaState, l_ui_clear_label_screen_layout, 1);
     lua_setfield(luaState, -2, "clear_label_screen_layout");
 
-        lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_button, 1);
     lua_setfield(luaState, -2, "create_button");
 

@@ -207,7 +207,7 @@ void UISystem::updateScreenInteraction(const Input& input,
     int hoveredOrder = 0;
     const glm::vec2 mousePos{
         static_cast<float>(input.getMouseX()),
-        static_cast<float>(input.getMouseY())
+        viewportHeight - static_cast<float>(input.getMouseY())
     };
 
     for (auto& pair : buttons) {
