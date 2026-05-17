@@ -4,6 +4,7 @@
 
 #include "ScriptSystem.hpp"
 #include "Scene.hpp"
+#include "EntityFactory.hpp"
 #include "AnimatedSprite.hpp"
 #include "AssetManager.hpp"
 #include "AnimationRegistry.hpp"
@@ -501,6 +502,34 @@ static int l_set_entity_data(lua_State* L) {
     }
 
     lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_spawn_entity(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr ||
+        scriptSystem->getRuntimeEntityFactory() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const char* definitionId = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    std::string runtimeId;
+    Entity* entity = scriptSystem->getRuntimeEntityFactory()->spawnRuntime(
+        definitionId,
+        {x, y},
+        &runtimeId
+    );
+
+    if (entity == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua_pushstring(L, runtimeId.c_str());
     return 1;
 }
 
@@ -1954,6 +1983,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_entity_data, 1);
     lua_setfield(luaState, -2, "set_entity_data");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_spawn_entity, 1);
+    lua_setfield(luaState, -2, "spawn_entity");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_is_mouse_button_pressed, 1);

@@ -23,6 +23,7 @@ extern "C" {
 
 // For runtime script context
 class Scene;
+class EntityFactory;
 class Input;
 class Camera2D;
 class CameraFollowState;
@@ -91,6 +92,7 @@ class ScriptSystem {
         Scene* getRuntimeScene() const { return runtimeContext.scene; }
         Input* getRuntimeInput() const { return runtimeContext.input; }
         Camera2D* getRuntimeCamera() const { return runtimeContext.camera; }
+        EntityFactory* getRuntimeEntityFactory() const { return runtimeContext.entityFactory; }
         CameraFollowState* getRuntimeCameraFollowState() const { return runtimeContext.cameraFollowState; }
         AssetManager* getAssetManager() const { return runtimeContext.assetManager; }
         AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }

@@ -1,6 +1,7 @@
 #pragma once
 
 class Scene;
+class EntityFactory;
 class AnimationRegistry;
 class Input;
 class Camera2D;
@@ -16,6 +17,7 @@ class CameraFollowState;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
+    EntityFactory* entityFactory = nullptr;
     AnimationRegistry* animationRegistry = nullptr;
     Input* input = nullptr;
     Camera2D* camera = nullptr;

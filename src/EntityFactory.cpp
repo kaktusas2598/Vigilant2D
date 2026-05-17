@@ -81,6 +81,20 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
     return &entity;
 }
 
+Entity* EntityFactory::spawnRuntime(const std::string& definitionId,
+                        const glm::vec2& position,
+                        std::string* outRuntimeId) {
+    const std::string& definitionFile = "scripts/entities/" + definitionId + ".lua";
+    std::string runtimeId = definitionId + "_" + std::to_string(runtimeIdCounter++);
+
+    Entity* entity = spawnFromDefinition(runtimeId, definitionFile, position);
+    if (entity != nullptr && outRuntimeId != nullptr) {
+        *outRuntimeId = runtimeId;
+    }
+
+    return entity;
+}
+
 void EntityFactory::spawnFromMapObjects(const TileMapData& mapData, const std::string& layerName) {
     for (const auto& objectLayer : mapData.objectLayers) {
         if (objectLayer.name != layerName || !objectLayer.visible)

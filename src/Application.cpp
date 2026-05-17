@@ -91,6 +91,7 @@ void Application::init() {
     // Call before registering entities so they have scene context in scripts
     scriptSystem.setRuntimeContext({
         &scene,
+        entityFactory.get(),
         &animationRegistry,
         &input,
         &camera,
@@ -118,6 +119,26 @@ void Application::init() {
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
+
+    // FIXME: had to call again because of entity factory, this is not great
+    scriptSystem.setRuntimeContext({
+        &scene,
+        entityFactory.get(),
+        &animationRegistry,
+        &input,
+        &camera,
+        &particleSystem,
+        &particlePresetRegistry,
+        &particleEmitterRegistry,
+        &assetManager,
+        &uiSystem,
+        &window,
+        audioSystem.get(),
+        screenFlowSystem.get(),
+        &cameraFollowState,
+        &postFadeAmount
+    });
+
 
     // -------- SCENE SETUP --------
     ScriptInstance bootstrap = scriptSystem.loadScriptTable("scripts/bootstrap.lua");

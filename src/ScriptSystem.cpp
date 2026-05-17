@@ -319,6 +319,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.animationRegistry = newContext.animationRegistry;
     runtimeContext.camera = newContext.camera;
     runtimeContext.input = newContext.input;
+    runtimeContext.entityFactory = newContext.entityFactory;
     runtimeContext.particleSystem = newContext.particleSystem;
     runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
     runtimeContext.particlePresetRegistry = newContext.particlePresetRegistry;
