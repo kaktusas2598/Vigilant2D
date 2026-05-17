@@ -24,7 +24,18 @@ include_directories(${GLEW_INCLUDE_DIRS})
 find_package(Freetype REQUIRED)
 
 find_package(OpenAL CONFIG REQUIRED)
-find_package(SndFile CONFIG REQUIRED)
+
+find_package(SndFile CONFIG QUIET)
+
+# Had issues with this target on Ubuntu, so this lets build on both Ubuntu and MSYS2
+# Probably a good idea to just support pkg-config
+if(TARGET SndFile::sndfile)
+    set(SNDFILE_TARGET SndFile::sndfile)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
+    set(SNDFILE_TARGET PkgConfig::SNDFILE)
+endif()
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.cpp)
 add_executable(${PROJECT_NAME} WIN32 ${sources})
@@ -51,4 +62,4 @@ message(STATUS "SndFile LIBRARY:${SndFile_LIBRARIES}")
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} ${OpenGL_LIBRARIES} ${GLEW_LIBRARIES} ${CMAKE_DL_LIBS}
-    glfw glm imgui stb_image tinyxml2 box2d lua::lib Freetype::Freetype OpenAL::OpenAL SndFile::sndfile)
+    glfw glm imgui stb_image tinyxml2 box2d lua::lib Freetype::Freetype OpenAL::OpenAL ${SNDFILE_TARGET})
