@@ -1,13 +1,25 @@
 local M = {}
 
+-- Calculate sword hitbox based on player facing direction
 local function get_sword_hit_box(self)
-    local playerX, playerY = engine.get_entity_position(self.id)
-    if playerX == nil then
+    local centreX, centreY = engine.get_entity_centre(self.id)
+    if centreX == nil then
         return nil
     end
 
-    -- Simple first version: centered around player a bit wider than the body
-    return playerX - 8, playerY - 4, 32, 24
+    local width = 24
+    local height = 24
+    local reach = 18
+
+    if self.facing == "up" then
+        return centreX - width * 0.5, centreY + reach - height * 0.5, width, height
+    elseif self.facing == "down" then
+        return centreX - width * 0.5, centreY - reach - height * 0.5, width, height
+    elseif self.facing == "left" then
+        return centreX - reach - width * 0.5, centreY - height * 0.5, width, height
+    else
+        return centreX + reach - width * 0.5, centreY - height * 0.5, width, height
+    end
 end
 
 local function play_attack_animation(self)

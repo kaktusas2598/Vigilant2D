@@ -9,7 +9,7 @@ return {
     data = {
         health = 20,
         type = "enemy",
-        damage = 1,
+        damage = 5,
         aggro_range = 100.0
     }
 }

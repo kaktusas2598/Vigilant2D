@@ -15,7 +15,7 @@ end
 function M.on_create(self)
     print("[LUA] Slime created")
     self.target_id = "player"
-    self.attack_cooldown = 0.0
+    self.attack_cooldown = 0.5
     self.death_started = false
     self.health = 20
     self.max_health = 20
@@ -31,6 +31,10 @@ end
 
 function M.on_update(self, dt)
     update_slime_world_ui(self)
+
+    if self.attack_cooldown > 0.0 then
+        self.attack_cooldown = math.max(0.0, self.attack_cooldown - dt)
+    end
 
     local dx, dy, distance = engine.get_direction_to_entity(self.id, self.target_id);
     if dx == nil then
@@ -64,11 +68,12 @@ function M.on_update(self, dt)
     end
 
     -- Attack!!
-    if distance < 10.0 then
+    if distance < 10.0  and self.attack_cooldown <= 0.0 then
         local health = engine.get_entity_data(self.target_id, "health")
         local damage = engine.get_entity_data(self.id, "damage")
         engine.set_entity_data(self.target_id, "health", health - damage)
-        print("Slime hit Player! Player HP: "..health - damage)
+        engine.play_sound("slime_squish", 0.7)
+        self.attack_cooldown = 0.2
     end
 
     -- Death automation
@@ -82,7 +87,7 @@ function M.on_update(self, dt)
                 engine.emit_particles("blood_0", x + 8, y + 8, 32)
             end
 
-            engine.wait(1.0)
+            engine.wait(0.4)
             engine.play_entity_animation(self.id, "slime_death", true)
             engine.wait(0.4)
             engine.destroy_entity(self.id)
