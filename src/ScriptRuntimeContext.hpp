@@ -4,6 +4,8 @@ class Scene;
 class AnimationRegistry;
 class Input;
 class Camera2D;
+class ParticleSystem;
+class ParticlePresetRegistry;
 class ParticleEmitterRegistry;
 class AssetManager;
 class UISystem;
@@ -17,6 +19,8 @@ struct ScriptRuntimeContext {
     AnimationRegistry* animationRegistry = nullptr;
     Input* input = nullptr;
     Camera2D* camera = nullptr;
+    ParticleSystem* particleSystem = nullptr;
+    ParticlePresetRegistry* particlePresetRegistry = nullptr;
     ParticleEmitterRegistry* particleEmitterRegistry = nullptr;
     AssetManager* assetManager = nullptr;
     UISystem* uiSystem = nullptr;

@@ -81,15 +81,10 @@ void Application::init() {
         particlePresetRegistry,
         scriptSystem,
         *audioSystem);
-    // TODO: stop hardcoding these paths and map below!
+    // TODO: stop hardcoding these paths
     contentLoader->loadAssets("scripts/assets.lua");
     contentLoader->loadAnimations("scripts/animations.lua");
     contentLoader->loadParticlePresets("scripts/emitters.lua");
-
-    // -------- SCENE SETUP --------
-    auto map = std::make_unique<TileMap>();
-    map->loadFromFile("assets/farmMap.tmx", assetManager);
-    scene.setTileMap(std::move(map));
 
     screenFlowSystem = std::make_unique<ScreenFlowSystem>(uiSystem, scriptSystem);
 
@@ -99,6 +94,8 @@ void Application::init() {
         &animationRegistry,
         &input,
         &camera,
+        &particleSystem,
+        &particlePresetRegistry,
         &particleEmitterRegistry,
         &assetManager,
         &uiSystem,
@@ -121,6 +118,16 @@ void Application::init() {
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
+
+    // -------- SCENE SETUP --------
+    ScriptInstance bootstrap = scriptSystem.loadScriptTable("scripts/bootstrap.lua");
+    if (bootstrap.tableRef == LUA_NOREF) {
+        VG_ERROR("Failed to load scripts/bootstrap.lua");
+    } else if (!scriptSystem.runScriptInstanceFunction(bootstrap, "start")) {
+        VG_ERROR("Failed to run bootstrap.start()");
+    }
+    scriptSystem.releaseInstance(bootstrap);
+
     if (scene.getTileMap() != nullptr)
         entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
 
@@ -155,8 +162,7 @@ void Application::init() {
     }
 
     //-------------- Custom Scene Setup Code
-    // TODO: move custom scene setup to scripting
-    camera.setZoom(4.0f); 
+    // TODO: still want to move this to scripting!
     // Custom global automation/task/coroutine test
     scriptSystem.runGlobalScriptFunction("scripts/automations/intro.lua", "start");
 
@@ -165,22 +171,6 @@ void Application::init() {
         const TileMapData& mapData = scene.getTileMap()->getData();
         farmWorldState.init(mapData.width, mapData.height);
     }
-
-    //-------------- Particle emitter initialisation
-    particleEmitterRegistry.createEmitterFromPreset(
-        "blood_0",
-        "blood",
-        particleSystem,
-        particlePresetRegistry,
-        assetManager
-    );
-    particleEmitterRegistry.createEmitterFromPreset(
-        "crates_0",
-        "crate_burst",
-        particleSystem,
-        particlePresetRegistry,
-        assetManager
-    );
 
     uiRenderer = std::make_unique<UIRenderer>(renderer);
 }

@@ -140,6 +140,20 @@ static int l_clear_camera_target(lua_State* L) {
     return 1;
 }
 
+static int l_set_camera_zoom(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeCamera() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float zoom = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getRuntimeCamera()->setZoom(zoom);
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_get_viewport_size(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeCamera() == nullptr) {
@@ -524,6 +538,32 @@ static int l_emit_particles(lua_State* L) {
     return 1;
 }
 
+static int l_create_emitter_from_preset(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr ||
+        scriptSystem->getParticleEmitterRegistry() == nullptr ||
+        scriptSystem->getParticlePresetRegistry() == nullptr ||
+        scriptSystem->getAssetManager() == nullptr ||
+        scriptSystem->getParticleSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* emitterId = luaL_checkstring(L, 1);
+    const char* presetId = luaL_checkstring(L, 2);
+
+    const bool ok = scriptSystem->getParticleEmitterRegistry()->createEmitterFromPreset(
+        emitterId,
+        presetId,
+        *scriptSystem->getParticleSystem(),
+        *scriptSystem->getParticlePresetRegistry(),
+        *scriptSystem->getAssetManager()
+    );
+
+    lua_pushboolean(L, ok ? 1 : 0);
+    return 1;
+}
+
 // --------- GENERAL ENGINE BINDINGS
 static int l_close_game(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -534,6 +574,43 @@ static int l_close_game(lua_State* L) {
 
     scriptSystem->getRuntimeWindow()->close();
     lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_load_map(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr ||
+        scriptSystem->getRuntimeScene() == nullptr ||
+        scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* path = luaL_checkstring(L, 1);
+
+    auto map = std::make_unique<TileMap>();
+    if (!map->loadFromFile(path, *scriptSystem->getAssetManager())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    scriptSystem->getRuntimeScene()->setTileMap(std::move(map));
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_run_script(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* fileName = luaL_checkstring(L, 1);
+    const char* functionName = luaL_checkstring(L, 2);
+
+    const bool ok = scriptSystem->runScriptFileFunction(fileName, functionName);
+    lua_pushboolean(L, ok ? 1 : 0);
     return 1;
 }
 
@@ -1766,6 +1843,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "clear_camera_target");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_camera_zoom, 1);
+    lua_setfield(luaState, -2, "set_camera_zoom");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_viewport_size, 1);
     lua_setfield(luaState, -2, "get_viewport_size");
 
@@ -1864,6 +1945,18 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_close_game, 1);
     lua_setfield(luaState, -2, "close_game");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_load_map, 1);
+    lua_setfield(luaState, -2, "load_map");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_create_emitter_from_preset, 1);
+    lua_setfield(luaState, -2, "create_emitter_from_preset");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_run_script, 1);
+    lua_setfield(luaState, -2, "run_script");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_start_entity_coroutine, 1);

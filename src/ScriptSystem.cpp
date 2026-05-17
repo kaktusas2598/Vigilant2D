@@ -232,6 +232,44 @@ bool ScriptSystem::callTableFunction(const ScriptInstance& instance, const char*
     return reportError(status, std::string("callTableFunction(") + instance.fileName + ":" + functionName + ")");
 }
 
+ScriptInstance ScriptSystem::loadScriptTable(const std::string& fileName) {
+    ScriptInstance instance;
+    instance.fileName = fileName;
+
+    if (luaState == nullptr && !init())
+        return instance;
+
+    const int loadStatus = luaL_loadfile(luaState, fileName.c_str());
+    if (!reportError(loadStatus, "luaL_loadfile(" + fileName + ")"))
+        return instance;
+
+    const int callStatus = lua_pcall(luaState, 0, 1, 0);
+    if (!reportError(callStatus, "execute(" + fileName + ")"))
+        return instance;
+
+    if (!lua_istable(luaState, -1)) {
+        VG_ERROR("[Lua] Script '" + fileName + "' must return a table.");
+        lua_pop(luaState, 1);
+        return instance;
+    }
+
+    instance.tableRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
+    return instance;
+}
+
+bool ScriptSystem::runScriptInstanceFunction(const ScriptInstance& instance, const char* functionName) {
+    return callTableFunction(instance, functionName);
+}
+
+bool ScriptSystem::runScriptFileFunction(const std::string& fileName, const char* functionName) {
+    const ScriptInstance instance = loadScriptTable(fileName);
+    if (instance.tableRef == LUA_NOREF) {
+        return false;
+    }
+
+    return callTableFunction(instance, functionName);
+}
+
 //Coroutine methods - functionality delegated to ScriptTaskRunner
 bool ScriptSystem::startEntityCoroutine(const std::string& ownerEntityId, int functionIndex, int selfIndex) {
     return taskRunner.startEntityCoroutine(ownerEntityId, functionIndex, selfIndex);
@@ -281,7 +319,9 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.animationRegistry = newContext.animationRegistry;
     runtimeContext.camera = newContext.camera;
     runtimeContext.input = newContext.input;
+    runtimeContext.particleSystem = newContext.particleSystem;
     runtimeContext.particleEmitterRegistry = newContext.particleEmitterRegistry;
+    runtimeContext.particlePresetRegistry = newContext.particlePresetRegistry;
     runtimeContext.assetManager = newContext.assetManager;
     runtimeContext.uiSystem = newContext.uiSystem;
     runtimeContext.audioSystem = newContext.audioSystem;

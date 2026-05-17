@@ -28,7 +28,9 @@ class Camera2D;
 class CameraFollowState;
 class AssetManager;
 class AnimationRegistry;
+class ParticleSystem;
 class ParticleEmitterRegistry;
+class ParticlePresetRegistry;
 class UISystem;
 class AudioSystem;
 class Window;
@@ -71,6 +73,9 @@ class ScriptSystem {
         void detachFromEntity(const Entity& entity);
         bool callTableFunction(const ScriptInstance& instance, const char* functionName);
         bool callTableFunction(const ScriptInstance& instance, const char* functionName, float dt);
+        ScriptInstance loadScriptTable(const std::string& fileName);
+        bool runScriptInstanceFunction(const ScriptInstance& instance, const char* functionName);
+        bool runScriptFileFunction(const std::string& fileName, const char* functionName);
 
         // Coroutine methods
         bool startEntityCoroutine(const std::string& ownerEntityId, int functionIndex, int selfIndex);
@@ -90,6 +95,8 @@ class ScriptSystem {
         AssetManager* getAssetManager() const { return runtimeContext.assetManager; }
         AnimationRegistry* getAnimationRegistry() const { return runtimeContext.animationRegistry; }
         ParticleEmitterRegistry* getParticleEmitterRegistry() const { return runtimeContext.particleEmitterRegistry; }
+        ParticlePresetRegistry* getParticlePresetRegistry() const { return runtimeContext.particlePresetRegistry; }
+        ParticleSystem* getParticleSystem() const { return runtimeContext.particleSystem; }
         UISystem* getUISystem() const { return runtimeContext.uiSystem; }
         AudioSystem* getRuntimeAudioSystem() const { return runtimeContext.audioSystem; }
         ScreenFlowSystem* getRuntimeScreenFlowSystem() const { return runtimeContext.screenFlowSystem; }
