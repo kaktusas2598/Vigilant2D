@@ -12,6 +12,18 @@ local function update_slime_world_ui(self)
     end
 end
 
+local function get_centre_distance(a, b)
+    local ax, ay = engine.get_entity_centre(a)
+    local bx, by = engine.get_entity_centre(b)
+    if ax == nil or bx == nil then
+        return nil
+    end
+
+    local dx = bx - ax
+    local dy = by - ay
+    return math.sqrt(dx * dx + dy * dy)
+end
+
 function M.on_create(self)
     print("[LUA] Slime created")
     self.target_id = "player"
@@ -44,14 +56,10 @@ function M.on_update(self, dt)
     local follow_distance = engine.get_entity_data(self.id, "aggro_range")
     if distance <= follow_distance and distance > STOP_DISTANCE then
         local x, y = engine.get_entity_position(self.id)
-        if x == nil then
-            return
-        end
-
-        engine.set_entity_position(
+        engine.set_entity_linear_velocity(
             self.id,
-            x + dx * MOVE_SPEED * dt,
-            y + dy * MOVE_SPEED * dt
+            dx * MOVE_SPEED,
+            dy * MOVE_SPEED
         )
 
         if math.abs(dx) > math.abs(dy) then
@@ -67,8 +75,14 @@ function M.on_update(self, dt)
         end
     end
 
+    local distanceToPlayer = get_centre_distance(self.id, self.target_id)
+    if distanceToPlayer == nil then
+        return
+    end
+
+
     -- Attack!!
-    if distance < 10.0  and self.attack_cooldown <= 0.0 then
+    if distanceToPlayer < 16.0  and self.attack_cooldown <= 0.0 then
         local health = engine.get_entity_data(self.target_id, "health")
         local damage = engine.get_entity_data(self.id, "damage")
         engine.set_entity_data(self.target_id, "health", health - damage)
@@ -81,6 +95,8 @@ function M.on_update(self, dt)
     if health ~= nil and health <= 0 and not self.death_started then
         self.death_started = true
         ui.set_progress_bar_visible(self.health_bar_id, false)
+        engine.set_entity_linear_velocity(self.id, 0.0, 0.0)
+
         engine.start_entity_coroutine(self, function(self)
             local x, y = engine.get_entity_position(self.id)
             if x ~= nil then

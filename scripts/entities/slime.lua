@@ -5,11 +5,11 @@ return {
     bounds_offset = {20, 5},
     bounds_size = {14, 22},
     script = "scripts/behaviors/slime.lua",
-    physics_enabled = false,
+    physics_enabled = true,
     data = {
         health = 20,
         type = "enemy",
         damage = 5,
-        aggro_range = 100.0
+        aggro_range = 160.0
     }
 }

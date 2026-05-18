@@ -255,6 +255,26 @@ static int l_set_entity_position(lua_State* L) {
     return 1;
 }
 
+static int l_set_entity_linear_velocity(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    Entity* entity = getEntityFromArg(L, scriptSystem, 1);
+    if (entity == nullptr || scriptSystem->getRuntimeScene() == nullptr || !entity->hasPhysicsBody()) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float vx = static_cast<float>(luaL_checknumber(L, 2));
+    const float vy = static_cast<float>(luaL_checknumber(L, 3));
+
+    scriptSystem->getRuntimeScene()->getPhysicsWorld().setBodyLinearVelocityPixels(
+        entity->getPhysicsBody(),
+        {vx, vy}
+    );
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_get_entity_centre(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     Entity* entity = getEntityFromArg(L, scriptSystem, 1);
@@ -1943,6 +1963,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_entity_position, 1);
     lua_setfield(luaState, -2, "set_entity_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_entity_linear_velocity, 1);
+    lua_setfield(luaState, -2, "set_entity_linear_velocity");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_get_direction_to_entity, 1);
