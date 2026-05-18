@@ -299,7 +299,6 @@ void Application::render(float dt) {
     renderer.begin(uiRenderer->getScreenCamera());
     uiSystem.drawScreen(*uiRenderer, textRenderer, assetManager, display_w, display_h);
     uiRenderer->end();
-
     renderer.end();
 
     // POST PROCESS Pass
@@ -316,6 +315,13 @@ void Application::render(float dt) {
         postFadeColor,
         postFadeAmount
     );
+
+    // UI RENDER 2nd Pass(Screen Space UI) - AFTER post fx so it stays clean
+    uiRenderer->beginScreen(display_w, display_h);
+    renderer.begin(uiRenderer->getScreenCamera());
+    uiSystem.drawScreen(*uiRenderer, textRenderer, assetManager, display_w, display_h);
+    uiRenderer->end();
+    renderer.end();
 
     // ImGui/Editor pass
     uiLayer.end();
