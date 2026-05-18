@@ -24,10 +24,12 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
    - Project content bootstrapping
    - Entity definitions and behavior scripts
    - Entity-owned and global tasks for automation/cutscenes
+   - Screen flow scripting: base and overlay screens can be set
+   - Bootstrap script to specify map, parameters, etc.
  - Tiled2D Map support
    - External tileset loading
    - Entity spawning from object layers using points
-   - Collision definitions using collidable tile layer or rects in object layer
+   - Collision definitions using coljidable tile layer or rects in object layer
  - Simple Scene-Entity Model
  - Selectable tiles/entities
  - World and Screen space UI system
@@ -43,23 +45,27 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 
 Install dependencies
 ```
-sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libglew-dev libglfw3 libglfw3-dev libfreetype6-dev libopenal1 libsndfile1
+sudo apt-get install cmake make libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libglew-dev libglfw3 libglfw3-dev libfreetype6-dev libopenal1 libsndfile1 pkg-config
 ```
-Build 
+Build
 ```
 git submodule init && git submodule update
 ./configure.sh && ./build.sh
 ```
 
 # TODO
-  * States
-  * Saving
+  * Saving/serialisation
   * Light source support
   * Pathfinding
-  * More UI Features, Widgets, menu flow
-  *
-  * Real implemented game mechanics with scripting help like managing inventory, crop farming, fighting
-  * ------
+  * More POST FX/ Blur, etc.
+  * Real implemented game mechanics with scripting help like managing inventory, crop farming, fighting, more practical particle emitters
+  * More lively map, multiple layers, entities rendering in between them?
+  * Some kind of backgrounds, fog of war
+  * Warping to other maps, rooms, caves, etc.
+  * More UI BLing, some kind of weapon/tool overlays, etc
+  * Scriptable dialogue?
+  * Custom game world data for any game
   * More Box2D integration
   * Hot Reload scripts, shaders, maps
+  * Layered sprites, animated tiles
   * grep -Rni "TODO" src/
