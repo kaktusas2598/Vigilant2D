@@ -12,6 +12,7 @@ class Scene;
 class SelectionManager;
 class AssetManager;
 class ParticleSystem;
+class ParticlePresetRegistry;
 class ParticleEmitterRegistry;
 
 class EntityFactory;
@@ -24,6 +25,7 @@ struct EngineEditorContext {
     SelectionManager& selectionManager;
     AssetManager& assetManager;
     ParticleSystem& particleSystem;
+    ParticlePresetRegistry& particlePresetRegistry;
     ParticleEmitterRegistry& particleEmitterRegistry;
 
     ImVec4& clearColour;

@@ -158,6 +158,7 @@ void Application::init() {
         .selectionManager = selectionManager,
         .assetManager = assetManager,
         .particleSystem = particleSystem,
+        .particlePresetRegistry = particlePresetRegistry,
         .particleEmitterRegistry = particleEmitterRegistry,
         .clearColour = clearColour,
         .showPhysicsDebug = showPhysicsDebug,

@@ -1,5 +1,6 @@
 #include "ParticlePresetRegistry.hpp"
 
+#include <algorithm>
 #include "AssetManager.hpp"
 #include "ParticleEmitter.hpp"
 #include "Texture.hpp"
@@ -18,6 +19,18 @@ const ParticlePreset* ParticlePresetRegistry::getPreset(const std::string& id) c
 
 bool ParticlePresetRegistry::hasPreset(const std::string& id) const {
     return presets.find(id) != presets.end();
+}
+
+std::vector<std::string> ParticlePresetRegistry::getPresetIDs() const {
+    std::vector<std::string> ids;
+    ids.reserve(presets.size());
+
+    for (const auto& pair : presets) {
+        ids.push_back(pair.first);
+    }
+
+    std::sort(ids.begin(), ids.end());
+    return ids;
 }
 
 bool ParticlePresetRegistry::applyPreset(const std::string& id,

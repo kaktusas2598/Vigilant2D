@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 class ParticleEmitter;
@@ -20,8 +21,8 @@ class ParticleEmitterRegistry {
 
         ParticleEmitter* getEmitter(const std::string& id);
         const ParticleEmitter* getEmitter(const std::string& id) const;
-
         bool hasEmitter(const std::string& id) const;
+        std::vector<std::string> getEmitterIDs() const;
 
     private:
         std::unordered_map<std::string, ParticleEmitter*> emitters;

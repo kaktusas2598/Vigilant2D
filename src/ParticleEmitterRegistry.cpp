@@ -1,5 +1,6 @@
 #include "ParticleEmitterRegistry.hpp"
 
+#include <algorithm>
 #include "ParticleEmitter.hpp"
 #include "ParticleSystem.hpp"
 #include "ParticlePresetRegistry.hpp"
@@ -43,4 +44,16 @@ const ParticleEmitter* ParticleEmitterRegistry::getEmitter(const std::string& id
 
 bool ParticleEmitterRegistry::hasEmitter(const std::string& id) const {
     return emitters.find(id) != emitters.end();
+}
+
+std::vector<std::string> ParticleEmitterRegistry::getEmitterIDs() const {
+    std::vector<std::string> ids;
+    ids.reserve(emitters.size());
+
+    for (const auto& pair : emitters) {
+        ids.push_back(pair.first);
+    }
+
+    std::sort(ids.begin(), ids.end());
+    return ids;
 }

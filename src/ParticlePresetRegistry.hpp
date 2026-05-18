@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 #include "ParticlePreset.hpp"
@@ -13,6 +14,7 @@ class ParticlePresetRegistry {
         bool registerPreset(const std::string& id, const ParticlePreset& preset);
         const ParticlePreset* getPreset(const std::string& id) const;
         bool hasPreset(const std::string& id) const;
+        std::vector<std::string> getPresetIDs() const;
 
         bool applyPreset(const std::string& id,
             ParticleEmitter& emitter, AssetManager& assetManager) const;

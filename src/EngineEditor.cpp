@@ -9,6 +9,7 @@
 #include "SelectionManager.hpp"
 #include "AssetManager.hpp"
 #include "ParticleSystem.hpp"
+#include "ParticlePresetRegistry.hpp"
 #include "ParticleEmitterRegistry.hpp"
 #include "Entity.hpp"
 #include "TileMap.hpp"
@@ -164,31 +165,102 @@ void EngineEditor::registerPanels(ImGuiLayer& uiLayer) {
     uiLayer.addPanel("Particles", [this]() {
         ImGui::Text("Emitters: %d", static_cast<int>(context.particleSystem.getEmitterCount()));
 
-        ParticleEmitter* bloodEmitter = context.particleEmitterRegistry.getEmitter("blood_0");
-        if (bloodEmitter) {
-            bool enabled = bloodEmitter->isEnabled();
-            if (ImGui::Checkbox("Blood particle enabled", &enabled)) {
-                bloodEmitter->setEnabled(enabled);
+        static int selectedEmitterIndex = 0;
+        static int selectedPresetIndex = 0;
+        static int previewBurstCount = 32;
+
+        const std::vector<std::string> emitterIds = context.particleEmitterRegistry.getEmitterIDs();
+        const std::vector<std::string> presetIds = context.particlePresetRegistry.getPresetIDs();
+
+        if (emitterIds.empty()) {
+            ImGui::TextDisabled("No runtime emitters created.");
+            return;
+        }
+
+        if (selectedEmitterIndex >= static_cast<int>(emitterIds.size())) {
+            selectedEmitterIndex = 0;
+        }
+
+        if (!presetIds.empty() && selectedPresetIndex >= static_cast<int>(presetIds.size())) {
+            selectedPresetIndex = 0;
+        }
+
+        if (ImGui::BeginCombo("Emitter", emitterIds[selectedEmitterIndex].c_str())) {
+            for (int i = 0; i < static_cast<int>(emitterIds.size()); ++i) {
+                const bool selected = (selectedEmitterIndex == i);
+                if (ImGui::Selectable(emitterIds[i].c_str(), selected)) {
+                    selectedEmitterIndex = i;
+                }
+                if (selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+
+        ParticleEmitter* emitter = context.particleEmitterRegistry.getEmitter(emitterIds[selectedEmitterIndex]);
+        if (emitter == nullptr) {
+            ImGui::TextDisabled("Selected emitter is unavailable.");
+            return;
+        }
+
+        bool enabled = emitter->isEnabled();
+        if (ImGui::Checkbox("Enabled", &enabled)) {
+            emitter->setEnabled(enabled);
+        }
+
+        glm::vec4 color = emitter->getBaseColor();
+        if (ImGui::ColorEdit4("Base Color", &color.x)) {
+            emitter->setBaseColor(color);
+        }
+
+        glm::vec2 velocity = emitter->getBaseVelocity();
+        if (ImGui::DragFloat2("Base Velocity", &velocity.x, 1.0f)) {
+            emitter->setBaseVelocity(velocity);
+        }
+
+        glm::vec2 velocityVariance = emitter->getVelocityVariance();
+        if (ImGui::DragFloat2("Velocity Variance", &velocityVariance.x, 1.0f)) {
+            emitter->setVelocityVariance(velocityVariance);
+        }
+
+        float size = emitter->getBaseSize();
+        if (ImGui::SliderFloat("Size", &size, 1.0f, 24.0f)) {
+            emitter->setBaseSize(size);
+        }
+
+        float lifetime = emitter->getBaseLifetime();
+        if (ImGui::SliderFloat("Lifetime", &lifetime, 0.05f, 4.0f)) {
+            emitter->setBaseLifetime(lifetime);
+        }
+
+        ImGui::Separator();
+        ImGui::DragInt("Preview Count", &previewBurstCount, 1.0f, 1, 512);
+
+        if (ImGui::Button("Emit At Camera")) {
+            emitter->emit(context.camera.getPosition(), previewBurstCount);
+        }
+
+        if (!presetIds.empty()) {
+            if (ImGui::BeginCombo("Preset", presetIds[selectedPresetIndex].c_str())) {
+                for (int i = 0; i < static_cast<int>(presetIds.size()); ++i) {
+                    const bool selected = (selectedPresetIndex == i);
+                    if (ImGui::Selectable(presetIds[i].c_str(), selected)) {
+                        selectedPresetIndex = i;
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
             }
 
-            glm::vec4 color = bloodEmitter->getBaseColor();
-            if (ImGui::ColorEdit4("Particle color", &color.x)) {
-                bloodEmitter->setBaseColor(color);
-            }
-
-            glm::vec2 velocity = bloodEmitter->getBaseVelocity();
-            if (ImGui::DragFloat2("Base velocity", &velocity.x, 1.0f)) {
-                bloodEmitter->setBaseVelocity(velocity);
-            }
-
-            float size = bloodEmitter->getBaseSize();
-            if (ImGui::SliderFloat("Size", &size, 1.0f, 8.0f)) {
-                bloodEmitter->setBaseSize(size);
-            }
-
-            float lifetime = bloodEmitter->getBaseLifetime();
-            if (ImGui::SliderFloat("Lifetime", &lifetime, 1.0f, 8.0f)) {
-                bloodEmitter->setBaseLifetime(lifetime);
+            if (ImGui::Button("Apply Preset")) {
+                context.particlePresetRegistry.applyPreset(
+                    presetIds[selectedPresetIndex],
+                    *emitter,
+                    context.assetManager
+                );
             }
         }
     });

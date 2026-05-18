@@ -31,6 +31,7 @@ class ParticleEmitter {
         void setEnabled(bool value) { enabled = value; }
 
         const glm::vec2& getBaseVelocity() const { return baseVelocity; }
+        const glm::vec2& getVelocityVariance() const { return velocityVariance; }
         const glm::vec4& getBaseColor() const { return baseColor; }
         float getBaseSize() const { return baseSize; }
         float getBaseLifetime() const { return baseLifetime; }
