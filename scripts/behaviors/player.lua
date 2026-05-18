@@ -98,6 +98,7 @@ function M.on_update(self, dt)
     local moveX = 0
     local moveY = 0
 
+    -- TODO: Entity facing direction could probably be provided by engine here!
     if engine.is_key_down(87) then moveY = moveY + 1 end -- W
     if engine.is_key_down(83) then moveY = moveY - 1 end -- S
     if engine.is_key_down(65) then moveX = moveX - 1 end -- A
@@ -171,10 +172,8 @@ function M.on_update(self, dt)
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
             end
         elseif self.selected_tool == "sword" and not self.attacking then
-            -- TODO: define animation based on players direction
             self.attacking = true
             engine.set_entity_animation_locked(self.id, true)
-            -- engine.play_entity_animation(self.id, "player_fight_right", true)
             play_attack_animation(self)
             engine.play_sound("sword_hit", 0.7)
 
