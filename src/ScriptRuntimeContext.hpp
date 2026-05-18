@@ -14,6 +14,7 @@ class Window;
 class AudioSystem;
 class ScreenFlowSystem;
 class CameraFollowState;
+class PostProcessSettings;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
@@ -30,6 +31,5 @@ struct ScriptRuntimeContext {
     AudioSystem* audioSystem = nullptr;
     ScreenFlowSystem* screenFlowSystem = nullptr;
     CameraFollowState* cameraFollowState = nullptr;
-    // FIXME: Does not make much sense to store random post fx setting by itself here
-    float* postFadeAmount = nullptr;
+    PostProcessSettings* postProcessSettings = nullptr;
 };

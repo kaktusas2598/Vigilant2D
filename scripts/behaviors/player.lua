@@ -209,16 +209,9 @@ function M.on_update(self, dt)
     end
 
     local playerHealth = engine.get_entity_data(self.id, "health")
-    -- Display game over label
     if playerHealth ~= nil and playerHealth < 0 and not self.game_over then
         self.game_over = true
-        ui.create_label("hud.game_over_label", "hud")
-        ui.set_label_text("hud.game_over_label", "GameOver")
-        local viewportWidth, viewportHeight = engine.get_viewport_size()
-        ui.set_label_text_color("hud.game_over_label", 1.0, 0.2, 0.2, 1.0)
-        ui.set_label_scale("hud.game_over_label", 2.0)
-        ui.set_label_screen_anchor("hud.game_over_label", 0.5, 0.5)
-        ui.set_label_screen_pivot("hud.game_over_label", 0.5, 0.5)
+        screenflow.show_base("game_over")
     end
 
 end

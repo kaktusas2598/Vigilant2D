@@ -26,5 +26,11 @@ return {
         overlay = true,
         pauses_gameplay = false,
         script = "scripts/screens/inventory.lua"
+    },
+     game_over = {
+        groups = { "menu.game_over" },
+        overlay = false,
+        pauses_gameplay = true,
+        script = "scripts/screens/game_over.lua"
     }
 }

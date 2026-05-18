@@ -327,7 +327,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.uiSystem = newContext.uiSystem;
     runtimeContext.audioSystem = newContext.audioSystem;
     runtimeContext.cameraFollowState = newContext.cameraFollowState;
-    runtimeContext.postFadeAmount = newContext.postFadeAmount;
+    runtimeContext.postProcessSettings = newContext.postProcessSettings;
     runtimeContext.screenFlowSystem = newContext.screenFlowSystem;
     runtimeContext.window = newContext.window;
 }

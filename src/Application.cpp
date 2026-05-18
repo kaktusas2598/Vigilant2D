@@ -103,7 +103,7 @@ void Application::init() {
         audioSystem.get(),
         screenFlowSystem.get(),
         &cameraFollowState,
-        &postFadeAmount
+        &postProcessSettings
     });
 
     // Load and Register screens
@@ -135,7 +135,7 @@ void Application::init() {
         audioSystem.get(),
         screenFlowSystem.get(),
         &cameraFollowState,
-        &postFadeAmount
+        &postProcessSettings
     });
 
 
@@ -163,13 +163,13 @@ void Application::init() {
         .showPhysicsDebug = showPhysicsDebug,
         .selectionManagerEnabled = selectionManagerEnabled,
         .cameraFollowState = cameraFollowState,
-        .postVignetteStrength = postVignetteStrength,
-        .postContrast = postContrast,
-        .postBrightness = postBrightness,
-        .postSaturation = postSaturation,
-        .postTint = postTint,
-        .postFadeColor = postFadeColor,
-        .postFadeAmount = postFadeAmount,
+        .postVignetteStrength = postProcessSettings.vignetteStrength,
+        .postContrast = postProcessSettings.contrast,
+        .postBrightness = postProcessSettings.brightness,
+        .postSaturation = postProcessSettings.saturation,
+        .postTint = postProcessSettings.tint,
+        .postFadeColor = postProcessSettings.fadeColor,
+        .postFadeAmount = postProcessSettings.fadeAmount,
         .entityFactory = *entityFactory
     });
     engineEditor->registerPanels(uiLayer);
@@ -307,13 +307,13 @@ void Application::render(float dt) {
     glClear(GL_COLOR_BUFFER_BIT);
     postProcessPass.draw(
         sceneFrameBuffer->getColorTexture(),
-        postVignetteStrength,
-        postContrast,
-        postBrightness,
-        postSaturation,
-        postTint,
-        postFadeColor,
-        postFadeAmount
+        postProcessSettings.vignetteStrength,
+        postProcessSettings.contrast,
+        postProcessSettings.brightness,
+        postProcessSettings.saturation,
+        postProcessSettings.tint,
+        postProcessSettings.fadeColor,
+        postProcessSettings.fadeAmount
     );
 
     // UI RENDER 2nd Pass(Screen Space UI) - AFTER post fx so it stays clean

@@ -16,6 +16,7 @@
 #include "core/Input.hpp"
 #include "UISystem.hpp"
 #include "core/Window.hpp"
+#include "PostProcessSettings.hpp"
 #include "glm/glm.hpp"
 
 // --------- STATIC HELPERS
@@ -171,14 +172,82 @@ static int l_get_viewport_size(lua_State* L) {
 // --------- POST-FX BINDINGS
 static int l_set_post_fade_amount(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
-    if (scriptSystem == nullptr || scriptSystem->getPostFadeAmount() == nullptr) {
+    if (scriptSystem == nullptr || scriptSystem->getPostProcessSettings() == nullptr) {
         lua_pushboolean(L, 0);
         return 1;
     }
 
     const float amount = static_cast<float>(luaL_checknumber(L, 1));
-    *scriptSystem->getPostFadeAmount() = amount;
+    scriptSystem->getPostProcessSettings()->fadeAmount = amount;
 
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_post_tint(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getPostProcessSettings() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float r = static_cast<float>(luaL_checknumber(L, 1));
+    const float g = static_cast<float>(luaL_checknumber(L, 2));
+    const float b = static_cast<float>(luaL_checknumber(L, 3));
+
+    scriptSystem->getPostProcessSettings()->tint = {r, g, b};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_post_saturation(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getPostProcessSettings() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float value = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getPostProcessSettings()->saturation = value;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_post_brightness(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getPostProcessSettings() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float value = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getPostProcessSettings()->brightness = value;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_post_contrast(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getPostProcessSettings() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float value = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getPostProcessSettings()->contrast = value;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_post_vignette(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getPostProcessSettings() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float value = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getPostProcessSettings()->vignetteStrength = value;
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -1947,6 +2016,26 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_post_fade_amount, 1);
     lua_setfield(luaState, -2, "set_post_fade_amount");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_post_tint, 1);
+    lua_setfield(luaState, -2, "set_post_tint");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_post_saturation, 1);
+    lua_setfield(luaState, -2, "set_post_saturation");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_post_brightness, 1);
+    lua_setfield(luaState, -2, "set_post_brightness");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_post_contrast, 1);
+    lua_setfield(luaState, -2, "set_post_contrast");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_post_vignette, 1);
+    lua_setfield(luaState, -2, "set_post_vignette");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_play_sound, 1);

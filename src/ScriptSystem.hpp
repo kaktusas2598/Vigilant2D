@@ -36,6 +36,7 @@ class UISystem;
 class AudioSystem;
 class Window;
 class ScreenFlowSystem;
+class PostProcessSettings;
 
 struct ScriptInstance {
     std::string fileName;
@@ -103,7 +104,7 @@ class ScriptSystem {
         AudioSystem* getRuntimeAudioSystem() const { return runtimeContext.audioSystem; }
         ScreenFlowSystem* getRuntimeScreenFlowSystem() const { return runtimeContext.screenFlowSystem; }
         Window* getRuntimeWindow() const { return runtimeContext.window; }
-        float *getPostFadeAmount() const { return runtimeContext.postFadeAmount; }
+        PostProcessSettings* getPostProcessSettings() const { return runtimeContext.postProcessSettings; }
     private:
         bool reportError(int status, const std::string& context);
 
