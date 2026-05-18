@@ -157,12 +157,13 @@ function M.on_update(self, dt)
 
     if engine.is_mouse_button_pressed(0) then -- LMB
         if self.selected_tool == "shovel" then
-            -- engine.set_tile_region_from_grid("Ground", tileX, tileY, "cozyFarm", 80, 144, 54, 54)
             -- Replace grass tile on grounds layer with ground tile
             engine.set_tile_tileset_override("Ground", tileX, tileY, "cozyFarm", 491)
-                -- place tilled ground tile in farmland layer above
+            -- Place tilled ground tile in farmland layer above
             engine.set_tile_tileset_override("Farmland", tileX, tileY, "cozyFarm", 494)
 
+            engine.play_sound("shovel", 0.7)
+            engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
             farm.set_tilled(tileX, tileY, true) -- custom game bindings
         elseif self.selected_tool == "seeds" then
             -- add crop on top of ground an farmland layer
@@ -191,7 +192,7 @@ function M.on_update(self, dt)
                             print("Player hit "..entityId.." HP: "..health - damage)
                             local ex, ey = engine.get_entity_position(entityId)
                             if ex~= nil then
-                                -- engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
+                                engine.emit_particles("blood_0", ex + 8, ey + 8, 32)
                             end
                         end
                     end
@@ -202,6 +203,7 @@ function M.on_update(self, dt)
 
     -- Clear tile overrides with RMB
     if engine.is_mouse_button_pressed(1) then -- RMB
+        engine.play_sound("clear_dirt", 0.7)
         engine.clear_tile_override("Ground", tileX, tileY)
         engine.clear_tile_override("Farmland", tileX, tileY)
         engine.clear_tile_override("Crops", tileX, tileY)

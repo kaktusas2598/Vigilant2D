@@ -101,6 +101,7 @@ function M.on_update(self, dt)
             local x, y = engine.get_entity_position(self.id)
             if x ~= nil then
                 engine.emit_particles("blood_0", x + 8, y + 8, 32)
+                engine.emit_particles("slime_pop_0", x + 8, y + 8, 26)
             end
 
             engine.wait(0.4)

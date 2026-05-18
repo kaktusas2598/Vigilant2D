@@ -36,8 +36,11 @@ function M.on_update(self, dt)
     if distance <= 16.0 then
         local itemType = engine.get_entity_data(self.id, "item_type")
         local count = engine.get_entity_data(self.id, "count") or 1
+
         print("Item picked up: " .. itemType .. " (x" .. count .. ")")
         engine.play_sound("pickup_item", 0.8)
+        engine.emit_particles("coin_pickup_0", dropX, dropY, 18)
+        engine.emit_particles("heal_sparkle_0", playerX, playerY, 10)
 
         -- Temp for testing
         local playerHealth = engine.get_entity_data("player", "health") or 0

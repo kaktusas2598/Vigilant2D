@@ -18,6 +18,8 @@ return {
         { id = "sword_hit", path = "assets/sounds/dragon-studio-sword-slice.mp3" },
         { id = "game_start", path = "assets/sounds/game-start.mp3" },
         { id = "slime_squish", path = "assets/sounds/floraphonic-goopy-slime.mp3" },
-        { id = "pickup_item", path = "assets/sounds/yodguard-drop-or-pickup-item.mp3" }
+        { id = "pickup_item", path = "assets/sounds/yodguard-drop-or-pickup-item.mp3" },
+        { id = "shovel", path = "assets/sounds/shovel.mp3" },
+        { id = "clear_dirt", path = "assets/sounds/clear-dirt.mp3" },
     }
 }
