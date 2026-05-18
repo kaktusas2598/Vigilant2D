@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 
-#include "ErrorHandler.hpp"
+#include "core/ErrorHandler.hpp"
 #include "stb_image/stb_image.h"
 #include <iostream>
 

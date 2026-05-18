@@ -5,7 +5,7 @@
 #include "ParticlePresetRegistry.hpp"
 #include "ScriptSystem.hpp"
 #include "AudioSystem.hpp"
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 
 ContentLoader::ContentLoader(AssetManager& assetManager,  AnimationRegistry& animationRegistry,
                       ParticlePresetRegistry& particlePresetRegistry, ScriptSystem& scriptSystem, AudioSystem& audioSystem)

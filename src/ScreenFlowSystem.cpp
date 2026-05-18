@@ -1,6 +1,6 @@
 #include "ScreenFlowSystem.hpp"
 
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 #include "UISystem.hpp"
 
 ScreenFlowSystem::ScreenFlowSystem(UISystem& uiSystem, ScriptSystem& scriptSystem)

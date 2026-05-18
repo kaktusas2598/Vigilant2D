@@ -52,7 +52,11 @@ add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/lua)
 
 # Set 3rd party include locations
-target_include_directories(${PROJECT_NAME} PUBLIC vendor ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
+    vendor
+    ${FREETYPE_INCLUDE_DIRS}
+)
 
 message(STATUS "GLEW LIBRARY:${GLEW_LIBRARIES}")
 message(STATUS "OpenGL LIBRARY:${OpenGL_LIBRARIES}")

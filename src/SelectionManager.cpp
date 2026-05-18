@@ -1,7 +1,7 @@
 #include "SelectionManager.hpp"
 
 #include "Renderer.hpp"
-#include "Input.hpp"
+#include "core/Input.hpp"
 #include "Camera2D.hpp"
 #include "Scene.hpp"
 #include "Entity.hpp"

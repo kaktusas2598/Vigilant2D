@@ -1,6 +1,6 @@
 #include "ScriptSystem.hpp"
 
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 #include "LuaBindings.hpp"
 
 bool ScriptSystem::init() {

@@ -1,8 +1,7 @@
 #include "Application.hpp"
 
-#include "ErrorHandler.hpp"
-#include "Logger.hpp"
-#include "Input.hpp"
+#include "core/ErrorHandler.hpp"
+#include "core/Logger.hpp"
 
 #include "TileMap.hpp"
 #include "EntityFactory.hpp"

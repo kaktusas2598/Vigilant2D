@@ -1,7 +1,7 @@
 #include "Shader.hpp"
 
-#include "FileUtils.hpp"
-#include "ErrorHandler.hpp"
+#include "core/FileUtils.hpp"
+#include "core/ErrorHandler.hpp"
 #include <iostream>
 #include <sstream>
 

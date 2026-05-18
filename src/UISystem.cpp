@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include <GLFW/glfw3.h>
-#include "Input.hpp"
+#include "core/Input.hpp"
 
 #include "AssetManager.hpp"
 #include "UIButton.hpp"

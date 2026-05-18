@@ -1,6 +1,6 @@
 #include "Renderer.hpp"
 
-#include "ErrorHandler.hpp"
+#include "core/ErrorHandler.hpp"
 #include "Vertex.hpp"
 
 #include <cstddef>

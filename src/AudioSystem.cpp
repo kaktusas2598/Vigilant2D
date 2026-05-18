@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "AudioBuffer.hpp"
 #include "AudioEngine.hpp"
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 
 AudioSystem::AudioSystem(AudioEngine& audioEngine)
     : audioEngine(audioEngine) {

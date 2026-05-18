@@ -1,7 +1,7 @@
 #include "EntityFactory.hpp"
 
 #include "Scene.hpp"
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 #include "Entity.hpp"
 #include "AssetManager.hpp"
 #include "ScriptSystem.hpp"

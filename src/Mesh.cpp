@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <stdexcept>
 
-#include "ErrorHandler.hpp"
+#include "core/ErrorHandler.hpp"
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) {
     init(vertices, indices);

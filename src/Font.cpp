@@ -1,6 +1,6 @@
 #include "Font.hpp"
 
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 
 bool Font::loadFromFile(const std::string& filePath, int newPixelSize) {
     glyphs.clear();

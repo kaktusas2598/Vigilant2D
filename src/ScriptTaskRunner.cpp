@@ -1,7 +1,7 @@
 #include "ScriptTaskRunner.hpp"
 
 #include <algorithm>
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 #include "Scene.hpp"
 
 void ScriptTaskRunner::init(lua_State* newLuaState) {

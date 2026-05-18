@@ -1,6 +1,6 @@
 #include "ScriptContentLoader.hpp"
 
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 
 // --------- STATIC HELPERS ---------
 static bool readVec2Field(lua_State* L, int tableIndex, const char* fieldName, glm::vec2& outVec) {

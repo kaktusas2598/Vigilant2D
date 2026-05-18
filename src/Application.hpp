@@ -4,12 +4,11 @@
 #include <memory>
 
 #include "ImGuiLayer.hpp"
-#include "Window.hpp"
+#include "core/Window.hpp"
 #include "Renderer.hpp"
-#include "Input.hpp"
-#include "Logger.hpp"
+#include "core/Input.hpp"
 #include "Camera2D.hpp"
-#include "Time.hpp"
+#include "core/Time.hpp"
 
 #include "Scene.hpp"
 #include "SelectionManager.hpp"

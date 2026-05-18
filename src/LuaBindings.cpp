@@ -13,9 +13,9 @@
 #include "CameraFollowState.hpp"
 #include "ScreenFlowSystem.hpp"
 #include "AudioSystem.hpp"
-#include "Input.hpp"
+#include "core/Input.hpp"
 #include "UISystem.hpp"
-#include "Window.hpp"
+#include "core/Window.hpp"
 #include "glm/glm.hpp"
 
 // --------- STATIC HELPERS

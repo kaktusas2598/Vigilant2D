@@ -1,7 +1,7 @@
 #include "TopDownControllerSystem.hpp"
 
 #include "Scene.hpp"
-#include "Input.hpp"
+#include "core/Input.hpp"
 #include "AnimationRegistry.hpp"
 
 TopDownControllerSystem::TopDownControllerSystem(Scene& scene, Input& input, AnimationRegistry& animationRegistry)

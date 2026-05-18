@@ -5,7 +5,7 @@
 #include <climits>
 #include <sndfile.h>
 
-#include "Logger.hpp"
+#include "core/Logger.hpp"
 
 AudioBuffer::~AudioBuffer() {
     if (bufferId != 0) {

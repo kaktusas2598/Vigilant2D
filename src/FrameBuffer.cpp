@@ -1,6 +1,6 @@
 #include "FrameBuffer.hpp"
 
-#include "ErrorHandler.hpp"
+#include "core/ErrorHandler.hpp"
 
 FrameBuffer::~FrameBuffer() {
     destroy();

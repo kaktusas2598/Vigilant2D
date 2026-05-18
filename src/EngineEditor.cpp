@@ -2,8 +2,8 @@
 
 #include "ImGuiLayer.hpp"
 
-#include "Window.hpp"
-#include "Time.hpp"
+#include "core/Window.hpp"
+#include "core/Time.hpp"
 #include "Camera2D.hpp"
 #include "Scene.hpp"
 #include "SelectionManager.hpp"
