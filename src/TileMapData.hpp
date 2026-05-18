@@ -26,6 +26,7 @@ struct TileLayerData {
     int height = 0;
     bool visible = true;
     bool collidable = false;
+    bool drawAboveEntities = false;
 
     std::vector<int> tileIds;
 

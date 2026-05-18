@@ -120,6 +120,7 @@ void TiledMapLoader::parseTileLayer(tinyxml2::XMLElement *layerElement, TileMapD
     layer.visible = (visible != 0);
 
     layer.collidable = parseLayerPropertyBool(layerElement, "collidable", false);
+    layer.drawAboveEntities = parseLayerPropertyBool(layerElement, "draw_above_entities", false);
 
     tinyxml2::XMLElement* dataElement = layerElement->FirstChildElement("data");
     if (dataElement == nullptr) {

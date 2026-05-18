@@ -21,14 +21,16 @@ struct TileRenderBatch {
 
 class TileLayer {
     public:
-        TileLayer(int width, int height, glm::vec2 tileSize, bool visible = true)
-            : width(width), height(height), tileSize(tileSize), tiles(width * height), visible(visible) {
+        TileLayer(int width, int height, glm::vec2 tileSize, bool visible = true, bool drawAboveEntities = false)
+            : width(width), height(height), tileSize(tileSize),
+            tiles(width * height), visible(visible), drawAboveEntities(drawAboveEntities) {
                 // Reduce realocations and allow early 8 textures per layer
                 batches.reserve(8);
             }
 
         void setTile(int x, int y, const TextureRegion& region);
         bool isVisible() const { return visible; }
+        bool shouldDrawAboveEntities() const { return drawAboveEntities; }
 
         void rebuildVisibleMesh(const Camera2D& camera,
                                 int viewportWidth, int viewportHeight,
@@ -48,4 +50,5 @@ class TileLayer {
         std::vector<TileRenderBatch> batches;
 
         bool visible = true;
+        bool drawAboveEntities = false;
 };

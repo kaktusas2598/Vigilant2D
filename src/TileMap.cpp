@@ -36,12 +36,25 @@ void TileMap::rebuildVisibleLayers(const Camera2D &camera, int viewportWidth, in
     }
 }
 
-void TileMap::draw(Renderer &renderer) const {
+void TileMap::drawForegroundLayers(Renderer &renderer) const {
     if (!loaded)
         return;
  
     for (const auto& layer : layers) {
+        if (layer->shouldDrawAboveEntities()) {
         layer->draw(renderer);
+        }
+    }
+}
+
+void TileMap::drawBackgroundLayers(Renderer &renderer) const {
+    if (!loaded)
+        return;
+
+    for (const auto& layer : layers) {
+        if (!layer->shouldDrawAboveEntities()) {
+            layer->draw(renderer);
+        }
     }
 }
 
@@ -71,7 +84,8 @@ std::unique_ptr<TileLayer> TileMap::buildTileLayer(const TileLayerData &layerDat
         layerData.width,
         layerData.height,
         glm::vec2(static_cast<float>(mapData.tileWidth), static_cast<float>(mapData.tileHeight)),
-        layerData.visible
+        layerData.visible,
+        layerData.drawAboveEntities
     );
 
     for (int y = 0; y < layerData.height; ++y) {

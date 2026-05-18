@@ -18,7 +18,8 @@ class TileMap {
         bool loadFromFile(const std::string& fileName, AssetManager& assets);
 
         void rebuildVisibleLayers(const Camera2D& camera, int viewportWidth, int viewportHeight);
-        void draw(Renderer& renderer) const;
+        void drawBackgroundLayers(Renderer& renderer) const;
+        void drawForegroundLayers(Renderer& renderer) const;
         bool isLoaded() const { return loaded; }
 
         glm::ivec2 worldToTile(const glm::vec2& worldPosition) const;

@@ -20,11 +20,15 @@ void Scene::update(float dt) {
 void Scene::render(Renderer &renderer, const Camera2D &camera, int viewportWidth, int viewportHeight) {
     if (tileMap) {
         tileMap->rebuildVisibleLayers(camera, viewportWidth, viewportHeight);
-        tileMap->draw(renderer);
+        tileMap->drawBackgroundLayers(renderer);
     }
 
     for (auto& entity: entities) {
         entity->render(renderer);
+    }
+
+    if (tileMap) {
+        tileMap->drawForegroundLayers(renderer);
     }
 }
 
