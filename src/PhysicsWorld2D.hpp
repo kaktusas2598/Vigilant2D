@@ -21,6 +21,7 @@ class PhysicsWorld2D {
     public:
         PhysicsWorld2D();
         void step(float dt);
+        void clear();
 
         b2BodyId createStaticBox(float centerX, float centerY, float halfWidth, float halfHeight);
         void buildStaticCollisionFromMap(const TileMapData& map);
@@ -36,6 +37,7 @@ class PhysicsWorld2D {
         const std::vector<b2BodyId>& getStaticBodies() const { return staticBodies; }
 
     private:
+        void createWorld();
         static constexpr float pixelsPerMeter = 32.0f;
         float toMeters(float pixels) const { return pixels / pixelsPerMeter; }
         float toPixels(float meters) const { return meters * pixelsPerMeter; }

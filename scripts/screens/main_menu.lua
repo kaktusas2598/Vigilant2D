@@ -34,7 +34,8 @@ end
 
 function M.on_update(self, dt)
     if ui.was_button_clicked("menu.main.start_button") or engine.is_key_pressed(257) then -- Enter
-        screenflow.show_base("gameplay")
+        -- Instead of just switching to a gameplay screen, request a session reset to ensure a clean slate
+        screenflow.request_session_reset("gameplay")
     end
 
     if ui.was_button_clicked("menu.main.quit_button") then

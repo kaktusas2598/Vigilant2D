@@ -11,6 +11,7 @@ class ParticleSystem {
         ParticleEmitter& createEmitter();
         void update(float dt);
         void draw(Renderer& renderer) const;
+        void clear();
 
         size_t getEmitterCount() const { return emitters.size(); }
     

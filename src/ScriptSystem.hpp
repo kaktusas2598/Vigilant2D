@@ -85,6 +85,7 @@ class ScriptSystem {
         bool startGlobalCoroutine(int functionIndex);
         void updateTasks(float dt);
         void cancelTasksForEntity(const std::string& entityId);
+        void cancelAllTasks();
 
         lua_State* getState() const { return luaState; }
         bool callNamedFunction(const ScriptInstance& instance, const char* functionName);
@@ -107,6 +108,7 @@ class ScriptSystem {
         Window* getRuntimeWindow() const { return runtimeContext.window; }
         PostProcessSettings* getPostProcessSettings() const { return runtimeContext.postProcessSettings; }
         DataGridRegistry* getDataGridRegistry() const { return runtimeContext.dataGridRegistry; }
+        void setRuntimeEntityFactory(EntityFactory* factory) { runtimeContext.entityFactory = factory; }    
     private:
         bool reportError(int status, const std::string& context);
 

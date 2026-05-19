@@ -37,6 +37,7 @@ class ScriptTaskRunner {
         bool startGlobalCoroutine(int functionIndex);
         void update(float dt, Scene* runtimeScene);
         void cancelTasksForEntity(const std::string& entityId);
+        void cancelAllTasks();
 
     private:
         lua_State* getTaskThread(const ScriptTask& task) const;

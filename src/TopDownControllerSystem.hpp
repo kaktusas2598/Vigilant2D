@@ -14,6 +14,7 @@ class TopDownControllerSystem {
         void setControlledEntity(const TopDownControllerConfig& config);
         bool attachFirstConfiguredEntity();
         void update(float dt);
+        void clearControlledEntity();
 
     private:
         Scene& scene;

@@ -35,6 +35,12 @@ void Scene::render(Renderer &renderer, const Camera2D &camera, int viewportWidth
     }
 }
 
+void Scene::clear() {
+    tileMap.reset();
+    entities.clear();
+    physicsWorld.clear();
+}
+
 void Scene::drawPhysicsDebug(Renderer& renderer) const {
     physicsWorld.drawDebug(renderer);
 }

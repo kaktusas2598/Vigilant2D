@@ -40,7 +40,7 @@ end
 
 function M.on_update(self, dt)
     if ui.was_button_clicked("menu.game_over.main_menu") then
-        screenflow.show_base("main_menu")
+        screenflow.request_session_reset("main_menu")
     elseif ui.was_button_clicked("menu.game_over.quit") then
         engine.close_game()
     end

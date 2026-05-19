@@ -108,6 +108,11 @@ void ScriptTaskRunner::cancelTasksForEntity(const std::string& entityId) {
     }
 }
 
+void ScriptTaskRunner::cancelAllTasks() {
+    for (ScriptTask& task : activeTasks)
+        task.finished = true;
+}
+
 lua_State* ScriptTaskRunner::getTaskThread(const ScriptTask& task) const {
     if (luaState == nullptr || task.threadRef == LUA_NOREF)
         return nullptr;

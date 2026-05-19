@@ -13,6 +13,7 @@ class Scene {
     public:
         void update(float dt);
         void render(Renderer& renderer, const Camera2D& camera, int viewportWidth, int viewportHeight);
+        void clear();
 
         Entity& createEntity(const std::string& id);
         bool destroyEntity(const std::string& id);

@@ -24,6 +24,9 @@ public:
 
     bool isGameplayPaused() const { return gameplayPaused; }
 
+    void requestSessionReset(const std::string& baseScreenId);
+    bool consumeSessionResetRequest(std::string& outBaseScreenId);
+
     const std::string& getCurrentBase() const { return currentBaseScreenId; }
     const std::string& getCurrentOverlay() const { return currentOverlayScreenId; }
 
@@ -49,4 +52,7 @@ private:
     std::string currentBaseScreenId;
     std::string currentOverlayScreenId;
     bool gameplayPaused = false;
+
+    bool sessionResetRequested = false;
+    std::string requestedResetBaseScreenId;
 };

@@ -87,3 +87,8 @@ void TopDownControllerSystem::update(float dt) {
         }
     }
 }
+
+void TopDownControllerSystem::clearControlledEntity() {
+    controlConfig = TopDownControllerConfig{};
+    hasController = false;
+}

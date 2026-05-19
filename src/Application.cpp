@@ -39,6 +39,78 @@ Input* Application::getInput() {
     return &input;
 }
 
+bool Application::bootstrapGameplaySession() {
+    ScriptInstance bootstrap = scriptSystem.loadScriptTable("scripts/bootstrap.lua");
+    if (bootstrap.tableRef == LUA_NOREF) {
+        VG_ERROR("Failed to load scripts/bootstrap.lua");
+        return false;
+    }
+
+    bool ok = true;
+
+    if (!scriptSystem.runScriptInstanceFunction(bootstrap, "start")) {
+        VG_ERROR("Failed to run bootstrap.start()");
+        ok = false;
+    }
+
+    if (ok && scene.getTileMap() != nullptr) {
+        entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
+    }
+
+    if (ok && !scriptSystem.runScriptInstanceFunction(bootstrap, "post_start")) {
+        VG_ERROR("Failed to run bootstrap.post_start()");
+        ok = false;
+    }
+
+    scriptSystem.releaseInstance(bootstrap);
+
+    topDownControllerSystem->clearControlledEntity();
+    if (!topDownControllerSystem->attachFirstConfiguredEntity()) {
+        VG_INFO("No entity with top-down controller config found.");
+    }
+
+    return ok;
+}
+
+void Application::clearGameplaySession() {
+    scriptSystem.cancelAllTasks();
+
+    for (const auto& entityPtr : scene.getEntities()) {
+        if (entityPtr != nullptr && entityPtr->hasScript()) {
+            scriptSystem.detachFromEntity(*entityPtr);
+        }
+    }
+
+    scene.clear();
+    particleEmitterRegistry.clear();
+    particleSystem.clear();
+    dataGridRegistry.clear();
+    selectionManager.clear();
+    topDownControllerSystem->clearControlledEntity();
+
+    cameraFollowState = CameraFollowState{};
+    camera.clearTargetPosition();
+    camera.setPosition({0.0f, 0.0f});
+    postProcessSettings = PostProcessSettings{};
+}
+
+void Application::performPendingSessionReset() {
+    std::string targetBaseScreenId;
+    if (!screenFlowSystem->consumeSessionResetRequest(targetBaseScreenId))
+        return;
+
+    clearGameplaySession();
+
+    if (!bootstrapGameplaySession()) {
+        VG_ERROR("Failed to rebuild gameplay session during reset.");
+        return;
+    }
+
+    if (!screenFlowSystem->showBase(targetBaseScreenId)) {
+        VG_ERROR("Failed to show base screen '" + targetBaseScreenId + "' after reset.");
+    }
+}
+
 void Application::init() {
     window.init(initialWindowWidth, initialWindowHeight);
     glEnable(GL_BLEND);
@@ -114,37 +186,14 @@ void Application::init() {
 
     // Register entities
     entityFactory = std::make_unique<EntityFactory>(scene, assetManager, scriptSystem, animationRegistry);
+    // NOTE: Important to set runtime entity factory before loading entities
+    scriptSystem.setRuntimeEntityFactory(entityFactory.get());
 
-    // FIXME: had to call again because of entity factory, this is not great
-    scriptSystem.setRuntimeContext({
-        &scene,
-        entityFactory.get(),
-        &animationRegistry,
-        &input,
-        &camera,
-        &particleSystem,
-        &particlePresetRegistry,
-        &particleEmitterRegistry,
-        &assetManager,
-        &uiSystem,
-        &window,
-        audioSystem.get(),
-        screenFlowSystem.get(),
-        &cameraFollowState,
-        &postProcessSettings,
-        &dataGridRegistry
-    });
-
-    // -------- SCENE SETUP --------
-    ScriptInstance bootstrap = scriptSystem.loadScriptTable("scripts/bootstrap.lua");
-    if (bootstrap.tableRef == LUA_NOREF) {
-        VG_ERROR("Failed to load scripts/bootstrap.lua");
-    } else if (!scriptSystem.runScriptInstanceFunction(bootstrap, "start")) {
-        VG_ERROR("Failed to run bootstrap.start()");
+    // -------- SCENE SETUP/BOOTSTRAPPING --------
+    topDownControllerSystem = std::make_unique<TopDownControllerSystem>(scene, input, animationRegistry);
+    if (!bootstrapGameplaySession()) {
+        VG_ERROR("Failed to bootstrap initial gameplay session.");
     }
-
-    if (scene.getTileMap() != nullptr)
-        entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
 
     engineEditor = std::make_unique<EngineEditor>(EngineEditorContext{
         .window = window,
@@ -170,18 +219,6 @@ void Application::init() {
         .entityFactory = *entityFactory
     });
     engineEditor->registerPanels(uiLayer);
-
-    // Setup optional controller system by trying to find controller config
-    topDownControllerSystem = std::make_unique<TopDownControllerSystem>(scene, input, animationRegistry);
-    if (!topDownControllerSystem->attachFirstConfiguredEntity()) {
-        VG_INFO("No entity with top-down controller config found.");
-    }
-
-    //-------------- Custom Scene Setup Dependent on loaded map and entities
-    if (!scriptSystem.runScriptInstanceFunction(bootstrap, "post_start")) {
-        VG_ERROR("Failed to run bootstrap.post_start()");
-    }
-    scriptSystem.releaseInstance(bootstrap);
 
     uiRenderer = std::make_unique<UIRenderer>(renderer);
 }
@@ -247,6 +284,8 @@ void Application::update(float dt) {
     if (!uiLayer.wantsMouseCapture() && selectionManagerEnabled) {
         selectionManager.update(input, camera, scene);
     }
+
+    performPendingSessionReset();
 }
 
 void Application::render(float dt) {

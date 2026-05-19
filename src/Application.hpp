@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <memory>
 
@@ -56,6 +57,10 @@ class Application {
     private:
         void update(float dt);
         void render(float dt);
+
+        bool bootstrapGameplaySession();
+        void clearGameplaySession();
+        void performPendingSessionReset();
 
         Window window;
         ImGuiLayer uiLayer;

@@ -43,6 +43,7 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
  - True type fonts
  - Post FX
  - Sounds
+ - Custom 2D Data Grid containers to define any game specific data
 
 # Ubuntu instructions
 
@@ -57,8 +58,6 @@ git submodule init && git submodule update
 ```
 
 # TODO
-  * Add a way to reset state of simulation/game
-  * Saving/serialisation
   * Light source support
   * Pathfinding
   * More POST FX/ Blur, etc.
@@ -68,7 +67,7 @@ git submodule init && git submodule update
   * Warping to other maps, rooms, caves, etc.
   * More UI Bling
   * Scriptable dialogue?
-  * Custom game world data for any game
+  * Saving/serialisation
   * More Box2D integration
   * Hot Reload scripts, shaders, maps
   * Layered sprites

@@ -11,6 +11,8 @@ bool ScreenFlowSystem::loadScreens(const std::vector<ScreenDefinition>& definiti
     currentBaseScreenId.clear();
     currentOverlayScreenId.clear();
     gameplayPaused = false;
+    sessionResetRequested = false;
+    requestedResetBaseScreenId = "main_menu";
 
     std::string initialScreenId;
     for (const ScreenDefinition& definition: definitions) {
@@ -160,6 +162,21 @@ void ScreenFlowSystem::update(float dt) {
     if (overlay != nullptr && overlay->scriptInstance.tableRef != LUA_NOREF) {
         scriptSystem.callTableFunction(overlay->scriptInstance, "on_update", dt);
     }
+}
+
+void ScreenFlowSystem::requestSessionReset(const std::string& baseScreenId) {
+    sessionResetRequested = true;
+    requestedResetBaseScreenId = baseScreenId.empty() ? "main_menu" : baseScreenId;
+}
+
+bool ScreenFlowSystem::consumeSessionResetRequest(std::string& outBaseScreenId) {
+    if (!sessionResetRequested)
+        return false;
+
+    sessionResetRequested = false;
+    outBaseScreenId = requestedResetBaseScreenId;
+    requestedResetBaseScreenId = "main_menu";
+    return true;
 }
 
 ScreenFlowSystem::ScreenEntry* ScreenFlowSystem::findScreen(const std::string& id) {

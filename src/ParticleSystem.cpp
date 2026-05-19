@@ -16,3 +16,7 @@ void ParticleSystem::draw(Renderer &renderer) const {
         emitter->draw(renderer);
     }
 }
+
+void ParticleSystem::clear() {
+    emitters.clear();
+}

@@ -3,15 +3,25 @@
 #include "TileMapData.hpp"
 
 PhysicsWorld2D::PhysicsWorld2D() {
-    b2WorldDef worldDef = b2DefaultWorldDef();
-    worldDef.gravity = {0.0f, 0.0f};
-    worldId = b2CreateWorld(&worldDef);
+    createWorld();
 }
 
 void PhysicsWorld2D::step(float dt) {
     const int subSteps = 4;
     b2World_Step(worldId, dt, subSteps);
 }
+
+void PhysicsWorld2D::clear() {
+    if (B2_IS_NON_NULL(worldId)) {
+        b2DestroyWorld(worldId);
+        worldId = b2_nullWorldId;
+    }
+
+    staticBodies.clear();
+    debugBodies.clear();
+    createWorld();
+}
+
 
 b2BodyId PhysicsWorld2D::createStaticBox(float centerX, float centerY, float halfWidth, float halfHeight) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
@@ -136,4 +146,10 @@ void PhysicsWorld2D::drawDebug(Renderer& renderer) const {
             debugBody.color
         });
     }
+}
+
+void PhysicsWorld2D::createWorld() {
+    b2WorldDef worldDef = b2DefaultWorldDef();
+    worldDef.gravity = {0.0f, 0.0f};
+    worldId = b2CreateWorld(&worldDef);
 }

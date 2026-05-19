@@ -23,6 +23,7 @@ class ParticleEmitterRegistry {
         const ParticleEmitter* getEmitter(const std::string& id) const;
         bool hasEmitter(const std::string& id) const;
         std::vector<std::string> getEmitterIDs() const;
+        void clear();
 
     private:
         std::unordered_map<std::string, ParticleEmitter*> emitters;

@@ -2136,6 +2136,20 @@ static int l_screenflow_toggle_overlay(lua_State* L) {
     return 1;
 }
 
+static int l_screenflow_request_session_reset(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* screenId = lua_gettop(L) >= 1 ? luaL_checkstring(L, 1) : "main_menu";
+    scriptSystem->getRuntimeScreenFlowSystem()->requestSessionReset(screenId);
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     // Setup engine global table
     lua_newtable(luaState);
@@ -2534,6 +2548,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_screenflow_toggle_overlay, 1);
     lua_setfield(luaState, -2, "toggle_overlay");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_screenflow_request_session_reset, 1);
+    lua_setfield(luaState, -2, "request_session_reset");
 
     lua_setglobal(luaState, "screenflow");
 }

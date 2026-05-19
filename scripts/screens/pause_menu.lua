@@ -51,7 +51,7 @@ function M.on_update(self, dt)
     end
 
     if ui.was_button_clicked("menu.pause.main_menu_button") then
-        screenflow.show_base("main_menu")
+        screenflow.request_session_reset("main_menu")
     end
 
     if ui.was_button_clicked("menu.pause.quit_button") then

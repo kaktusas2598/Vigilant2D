@@ -287,6 +287,10 @@ void ScriptSystem::cancelTasksForEntity(const std::string& entityId) {
     taskRunner.cancelTasksForEntity(entityId);
 }
 
+void ScriptSystem::cancelAllTasks() {
+    taskRunner.cancelAllTasks();
+}
+
 bool ScriptSystem::callNamedFunction(const ScriptInstance& instance, const char* functionName) {
     if (luaState == nullptr || instance.tableRef == LUA_NOREF)
         return false;

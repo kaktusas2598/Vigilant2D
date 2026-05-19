@@ -57,3 +57,7 @@ std::vector<std::string> ParticleEmitterRegistry::getEmitterIDs() const {
     std::sort(ids.begin(), ids.end());
     return ids;
 }
+
+void ParticleEmitterRegistry::clear() {
+    emitters.clear();
+}

@@ -17,6 +17,13 @@ class SelectionManager {
         void update(const Input& input, const Camera2D& camera, Scene& scene);
         void draw(Renderer& renderer, Scene& scene) const;
 
+        void clear() {
+            hoveredTile = {-1, -1};
+            selectedTile = {-1, -1};
+            hoveredEntityId.clear();
+            selectedEntityId.clear();
+        }
+
         glm::ivec2 getHoveredTile() const { return hoveredTile; }
         glm::ivec2 getSelectedTile() const { return selectedTile; }
 
