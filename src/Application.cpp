@@ -6,8 +6,6 @@
 #include "TileMap.hpp"
 #include "EntityFactory.hpp"
 
-#include "game/FarmBindings.hpp"
-
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -71,9 +69,6 @@ void Application::init() {
     audioSystem = std::make_unique<AudioSystem>(audioEngine);
     scriptSystem.init();
 
-    //Custom game bindings registration
-    registerFarmBindings(scriptSystem.getState(), farmWorldState);
-
     // ------------ PROJECT CONTENT BOOTSTRAPING
     contentLoader = std::make_unique<ContentLoader>(assetManager,
         animationRegistry,
@@ -103,7 +98,8 @@ void Application::init() {
         audioSystem.get(),
         screenFlowSystem.get(),
         &cameraFollowState,
-        &postProcessSettings
+        &postProcessSettings,
+        &dataGridRegistry
     });
 
     // Load and Register screens
@@ -135,9 +131,9 @@ void Application::init() {
         audioSystem.get(),
         screenFlowSystem.get(),
         &cameraFollowState,
-        &postProcessSettings
+        &postProcessSettings,
+        &dataGridRegistry
     });
-
 
     // -------- SCENE SETUP --------
     ScriptInstance bootstrap = scriptSystem.loadScriptTable("scripts/bootstrap.lua");
@@ -186,13 +182,6 @@ void Application::init() {
         VG_ERROR("Failed to run bootstrap.post_start()");
     }
     scriptSystem.releaseInstance(bootstrap);
-
-    // Initialise farm grid
-    // TODO: create custom tile map data system to replace game specific code
-    if (scene.getTileMap() != nullptr) {
-        const TileMapData& mapData = scene.getTileMap()->getData();
-        farmWorldState.init(mapData.width, mapData.height);
-    }
 
     uiRenderer = std::make_unique<UIRenderer>(renderer);
 }

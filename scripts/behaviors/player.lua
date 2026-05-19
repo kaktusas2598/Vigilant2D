@@ -165,10 +165,11 @@ function M.on_update(self, dt)
 
             engine.play_sound("shovel", 0.7)
             engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
-            farm.set_tilled(tileX, tileY, true) -- custom game bindings
+            grid.set_data("farm", tileX, tileY, "tilled", true)
         elseif self.selected_tool == "seeds" then
             -- add crop on top of ground an farmland layer
-            if farm.is_tilled(tileX, tileY) then
+            local tilled = grid.get_data("farm", tileX, tileY, "tilled")
+            if tilled == true then
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
             end
         elseif self.selected_tool == "sword" and not self.attacking then
@@ -206,7 +207,7 @@ function M.on_update(self, dt)
         engine.clear_tile_override("Ground", tileX, tileY)
         engine.clear_tile_override("Farmland", tileX, tileY)
         engine.clear_tile_override("Crops", tileX, tileY)
-        farm.set_tilled(tileX, tileY, false) -- custom game bindings
+        grid.set_data("farm", tileX, tileY, "tilled", false)
     end
 
     local playerHealth = engine.get_entity_data(self.id, "health")

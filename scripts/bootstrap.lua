@@ -14,6 +14,7 @@ end
 
 function M.post_start(self)
     engine.run_script("scripts/automations/intro.lua", "start")
+    grid.create("farm", 120, 120)
 end
 
 return M

@@ -37,6 +37,7 @@ class AudioSystem;
 class Window;
 class ScreenFlowSystem;
 class PostProcessSettings;
+class DataGridRegistry;
 
 struct ScriptInstance {
     std::string fileName;
@@ -105,6 +106,7 @@ class ScriptSystem {
         ScreenFlowSystem* getRuntimeScreenFlowSystem() const { return runtimeContext.screenFlowSystem; }
         Window* getRuntimeWindow() const { return runtimeContext.window; }
         PostProcessSettings* getPostProcessSettings() const { return runtimeContext.postProcessSettings; }
+        DataGridRegistry* getDataGridRegistry() const { return runtimeContext.dataGridRegistry; }
     private:
         bool reportError(int status, const std::string& context);
 

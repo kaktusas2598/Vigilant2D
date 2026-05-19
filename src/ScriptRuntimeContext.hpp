@@ -15,6 +15,7 @@ class AudioSystem;
 class ScreenFlowSystem;
 class CameraFollowState;
 class PostProcessSettings;
+class DataGridRegistry;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
@@ -32,4 +33,5 @@ struct ScriptRuntimeContext {
     ScreenFlowSystem* screenFlowSystem = nullptr;
     CameraFollowState* cameraFollowState = nullptr;
     PostProcessSettings* postProcessSettings = nullptr;
+    DataGridRegistry* dataGridRegistry = nullptr;
 };

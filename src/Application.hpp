@@ -38,7 +38,7 @@
 #include "EngineEditor.hpp"
 
 #include "ScreenFlowSystem.hpp"
-#include "game/FarmWorldState.hpp"
+#include "DataGridRegistry.hpp"
 
 class Application {
     public:
@@ -99,6 +99,5 @@ class Application {
         TextRenderer textRenderer;
         UISystem uiSystem;
 
-        // Game specific members
-        FarmWorldState farmWorldState;
+        DataGridRegistry dataGridRegistry;
 };

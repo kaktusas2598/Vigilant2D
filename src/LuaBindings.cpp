@@ -18,6 +18,7 @@
 #include "core/Window.hpp"
 #include "PostProcessSettings.hpp"
 #include "glm/glm.hpp"
+#include "DataGridRegistry.hpp"
 
 // --------- STATIC HELPERS
 static ScriptSystem* getScriptSystem(lua_State* L) {
@@ -619,6 +620,156 @@ static int l_spawn_entity(lua_State* L) {
     }
 
     lua_pushstring(L, runtimeId.c_str());
+    return 1;
+}
+
+// --------- CUSTOM DATA GRID BINDINGS
+static int l_grid_create(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getDataGridRegistry() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* gridId = luaL_checkstring(L, 1);
+    const int width = static_cast<int>(luaL_checkinteger(L, 2));
+    const int height = static_cast<int>(luaL_checkinteger(L, 3));
+
+    if (width <= 0 || height <= 0) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    scriptSystem->getDataGridRegistry()->createGrid(gridId, width, height);
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_grid_has(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getDataGridRegistry() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* gridId = luaL_checkstring(L, 1);
+    lua_pushboolean(L, scriptSystem->getDataGridRegistry()->hasGrid(gridId) ? 1 : 0);
+    return 1;
+}
+
+static int l_grid_get_data(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getDataGridRegistry() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const char* gridId = luaL_checkstring(L, 1);
+    const int x = static_cast<int>(luaL_checkinteger(L, 2));
+    const int y = static_cast<int>(luaL_checkinteger(L, 3));
+    const char* key = luaL_checkstring(L, 4);
+
+    const DataGrid* grid = scriptSystem->getDataGridRegistry()->getGrid(gridId);
+    if (grid == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const PropertyBag* cell = grid->tryGet(x, y);
+    if (cell == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    const CustomValue* value = cell->get(key);
+    if (value == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    if (std::holds_alternative<bool>(*value)) {
+        lua_pushboolean(L, std::get<bool>(*value) ? 1 : 0);
+        return 1;
+    }
+
+    if (std::holds_alternative<int>(*value)) {
+        lua_pushinteger(L, std::get<int>(*value));
+        return 1;
+    }
+
+    if (std::holds_alternative<float>(*value)) {
+        lua_pushnumber(L, std::get<float>(*value));
+        return 1;
+    }
+
+    if (std::holds_alternative<std::string>(*value)) {
+        lua_pushstring(L, std::get<std::string>(*value).c_str());
+        return 1;
+    }
+
+    lua_pushnil(L);
+    return 1;
+}
+
+static int l_grid_set_data(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getDataGridRegistry() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* gridId = luaL_checkstring(L, 1);
+    const int x = static_cast<int>(luaL_checkinteger(L, 2));
+    const int y = static_cast<int>(luaL_checkinteger(L, 3));
+    const char* key = luaL_checkstring(L, 4);
+
+    DataGrid* grid = scriptSystem->getDataGridRegistry()->getGrid(gridId);
+    if (grid == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    PropertyBag* cell = grid->tryGet(x, y);
+    if (cell == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    if (lua_isboolean(L, 5)) {
+        cell->set(key, lua_toboolean(L, 5) != 0);
+    } else if (lua_isinteger(L, 5)) {
+        cell->set(key, static_cast<int>(lua_tointeger(L, 5)));
+    } else if (lua_isnumber(L, 5)) {
+        cell->set(key, static_cast<float>(lua_tonumber(L, 5)));
+    } else if (lua_isstring(L, 5)) {
+        cell->set(key, std::string(lua_tostring(L, 5)));
+    } else {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_grid_is_in_bounds(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getDataGridRegistry() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* gridId = luaL_checkstring(L, 1);
+    const int x = static_cast<int>(luaL_checkinteger(L, 2));
+    const int y = static_cast<int>(luaL_checkinteger(L, 3));
+
+    const DataGrid* grid = scriptSystem->getDataGridRegistry()->getGrid(gridId);
+    if (grid == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    lua_pushboolean(L, grid->isInBounds(x, y) ? 1 : 0);
     return 1;
 }
 
@@ -2178,6 +2329,31 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "wait_frame");
 
     lua_setglobal(luaState, "engine");
+
+    // Setup Data Grid global table
+    lua_newtable(luaState);
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_grid_create, 1);
+    lua_setfield(luaState, -2, "create");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_grid_has, 1);
+    lua_setfield(luaState, -2, "has");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_grid_get_data, 1);
+    lua_setfield(luaState, -2, "get_data");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_grid_set_data, 1);
+    lua_setfield(luaState, -2, "set_data");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_grid_is_in_bounds, 1);
+    lua_setfield(luaState, -2, "is_in_bounds");
+
+    lua_setglobal(luaState, "grid");
 
     // Setup UI global table
     lua_newtable(luaState);
