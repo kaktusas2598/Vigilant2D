@@ -20,6 +20,7 @@ class TileMap {
         void rebuildVisibleLayers(const Camera2D& camera, int viewportWidth, int viewportHeight);
         void drawBackgroundLayers(Renderer& renderer) const;
         void drawForegroundLayers(Renderer& renderer) const;
+        void update(float dt);
         bool isLoaded() const { return loaded; }
 
         glm::ivec2 worldToTile(const glm::vec2& worldPosition) const;
@@ -47,4 +48,18 @@ class TileMap {
         TileRuntime runtime;
         std::vector<Texture*> tilesetTextures;
         std::vector<std::unique_ptr<TileLayer>> layers;
+
+        struct AnimatedTileInstance {
+            std::string layerName;
+            int tileX = 0;
+            int tileY = 0;
+            const TilesetData* tileset = nullptr;
+            std::vector<AnimatedTileFrameData> frames;
+            int currentFrame = 0;
+            float elapsedMs = 0.0f;
+        };
+
+        void rebuildAnimatedTileInstances();
+        void applyAnimatedTileFrame(const AnimatedTileInstance& instance);
+        std::vector<AnimatedTileInstance> animatedTiles;
 };

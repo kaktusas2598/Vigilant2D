@@ -68,7 +68,7 @@ void TiledMapLoader::parseExternalTileset(const std::string &tsxPath,
 
     tinyxml2::XMLElement* tilesetElement = document.FirstChildElement("tileset");
     if (tilesetElement == nullptr) {
-        throw std::runtime_error("TSX missing <tileset> attrivute: " + tsxPath);
+        throw std::runtime_error("TSX missing <tileset> attribute: " + tsxPath);
     }
 
     TilesetData tileset;
@@ -94,11 +94,37 @@ void TiledMapLoader::parseExternalTileset(const std::string &tsxPath,
     imageElement->QueryIntAttribute("width", &tileset.imageWidth);
     imageElement->QueryIntAttribute("height", &tileset.imageHeight);
 
-    // What is this???
     if (tileset.columns == 0 && tileset.tileWidth > 0) {
         const int stride = tileset.tileWidth + tileset.spacing;
         if (stride > 0) {
             tileset.columns = (tileset.imageWidth - tileset.margin * 2 + tileset.spacing) / stride;
+        }
+    }
+
+    for(tinyxml2::XMLElement* tileElement = tilesetElement->FirstChildElement("tile");
+        tileElement != nullptr; tileElement = tileElement->NextSiblingElement("tile")) {
+        int localTileId = 0;
+        if (tileElement->QueryIntAttribute("id", &localTileId) != tinyxml2::XML_SUCCESS)
+            continue;
+
+
+        tinyxml2::XMLElement* animationElement = tileElement->FirstChildElement("animation");
+        if (animationElement == nullptr)
+            continue;
+        
+        AnimatedTileDefinition animatedTile;
+
+        for (tinyxml2::XMLElement* frameElement = animationElement->FirstChildElement("frame");
+            frameElement != nullptr; frameElement = frameElement->NextSiblingElement("frame")) {
+            AnimatedTileFrameData frameData;
+            if (frameElement->QueryIntAttribute("tileid", &frameData.tileId) != tinyxml2::XML_SUCCESS)
+                continue;
+            frameElement->QueryIntAttribute("duration", &frameData.durationMs);
+            animatedTile.frames.push_back(frameData);
+        }
+
+        if (!animatedTile.frames.empty()) {
+            tileset.animatedTiles[localTileId] = std::move(animatedTile);
         }
     }
 

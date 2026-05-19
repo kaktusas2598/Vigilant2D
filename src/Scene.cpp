@@ -1,6 +1,9 @@
 #include "Scene.hpp"
 
 void Scene::update(float dt) {
+    if (tileMap)
+        tileMap->update(dt);
+
     physicsWorld.step(dt);
 
     for (auto& entity: entities) {

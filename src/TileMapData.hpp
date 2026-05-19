@@ -6,6 +6,15 @@
 
 #include "TextureRegion.hpp"
 
+struct AnimatedTileFrameData {
+    int tileId = 0; // Local tileset tile id
+    int durationMs = 0;
+};
+
+struct AnimatedTileDefinition {
+    std::vector<AnimatedTileFrameData> frames;
+};
+
 struct TilesetData {
     int firstGid = 0;
     int tileWidth = 0;
@@ -18,6 +27,7 @@ struct TilesetData {
 
     std::string name;
     std::string imagePath;
+    std::unordered_map<int, AnimatedTileDefinition> animatedTiles;
 };
 
 struct TileLayerData {

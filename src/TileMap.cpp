@@ -19,6 +19,7 @@ bool TileMap::loadFromFile(const std::string &fileName, AssetManager& assets) {
     }
 
     runtime.initFromMapData(mapData);
+    rebuildAnimatedTileInstances();
     loaded = true;
     return true;
 }
@@ -56,6 +57,76 @@ void TileMap::drawBackgroundLayers(Renderer &renderer) const {
             layer->draw(renderer);
         }
     }
+}
+
+void TileMap::update(float dt) {
+    if (!loaded)
+        return;
+
+    for (auto& instance : animatedTiles) {
+        if (instance.tileset == nullptr || instance.frames.empty())
+            continue;
+        
+        instance.elapsedMs += dt * 1000.0f;
+        const int frameDurationMs = instance.frames[instance.currentFrame].durationMs;
+        if (frameDurationMs > 0 && instance.elapsedMs >= static_cast<float>(frameDurationMs)) {
+            instance.elapsedMs -= static_cast<float>(frameDurationMs);
+            instance.currentFrame = (instance.currentFrame + 1) % static_cast<int>(instance.frames.size());
+        }   
+
+        applyAnimatedTileFrame(instance);
+    }
+} 
+
+void TileMap::rebuildAnimatedTileInstances() {
+    animatedTiles.clear();
+
+    for (const auto& layerData : mapData.layers) {
+        for (int y = 0; y < layerData.height; ++y) {
+            for (int x = 0; x < layerData.width; ++x) {
+                const int gid = layerData.getTileId(x, y);
+                if (gid == 0)
+                    continue;
+
+                const TilesetData* tileset = findTilesetForGid(mapData, gid);
+                if (tileset == nullptr)
+                    continue;
+
+                const int localTileId = gid - tileset->firstGid;
+                auto animIt = tileset->animatedTiles.find(localTileId);
+                if (animIt == tileset->animatedTiles.end())
+                    continue;
+
+                AnimatedTileInstance instance;
+                instance.layerName = layerData.name;
+                instance.tileX = x;
+                instance.tileY = layerData.height - 1 - y; // Flip Y to match rendering
+                instance.tileset = tileset;
+                instance.frames = animIt->second.frames;
+                instance.currentFrame = 0;
+                instance.elapsedMs = 0.0f;
+
+                applyAnimatedTileFrame(instance);
+                animatedTiles.push_back(std::move(instance));
+            }
+        }
+    }
+}
+
+void TileMap::applyAnimatedTileFrame(const AnimatedTileInstance& instance) {
+    if (instance.tileset == nullptr || instance.frames.empty())
+        return;
+    
+    const int frameTileId = instance.frames[instance.currentFrame].tileId;
+    const int frameGid = instance.tileset->firstGid + frameTileId;
+
+    TextureRegion region;
+    if (!tryMakeRegionForGid(frameGid, region))
+        return;
+    
+    TileVisualOverrideLayer* overrides = runtime.getOverrideLayer(instance.layerName);
+    if (overrides != nullptr)
+        overrides->set(instance.tileX, instance.tileY, TileVisual::fromRegion(region));
 }
 
 glm::ivec2 TileMap::worldToTile(const glm::vec2 &worldPosition) const {

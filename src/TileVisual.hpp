@@ -4,12 +4,11 @@
 
 enum class TileVisualKind {
     None,
-    StaticRegion,
-    AnimatedSequence // TODO: implement usage
+    StaticRegion
 };
 
-// Defines how Tile is looking during runtime, currently only static runtime overrides allowed
-// TODO: add support for animating tile, maybe tint and more params in the future
+// Defines how Tile is looking during runtime
+// Higher-level systems like animated tiles can keep updating that region over time.
 struct TileVisual {
     TileVisualKind kind = TileVisualKind::None;
     TextureRegion region = TextureRegion::full(nullptr);

@@ -29,7 +29,9 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
  - Tiled2D Map support
    - External tileset loading
    - Entity spawning from object layers using points
-   - Collision definitions using coljidable tile layer or rects in object layer
+   - Collision definitions using collidable tile layer or rects in object layer
+   - Animated tiles
+   - Background/foreground layers relative to entities
  - Simple Scene-Entity Model
  - Selectable tiles/entities
  - World and Screen space UI system
@@ -54,18 +56,19 @@ git submodule init && git submodule update
 ```
 
 # TODO
+  * Add a way to reset state of simulation/game
   * Saving/serialisation
   * Light source support
   * Pathfinding
   * More POST FX/ Blur, etc.
-  * Real implemented game mechanics with scripting help like managing inventory, crop farming, fighting, more practical particle emitters
-  * More lively map, multiple layers, entities rendering in between them?
+  * Real implemented game mechanics with scripting help like managing inventory, crop farming, random encounters, etc, do research here
+  * Game Events
   * Some kind of backgrounds, fog of war
   * Warping to other maps, rooms, caves, etc.
-  * More UI BLing, some kind of weapon/tool overlays, etc
+  * More UI Bling, some kind of weapon/tool overlays, etc
   * Scriptable dialogue?
   * Custom game world data for any game
   * More Box2D integration
   * Hot Reload scripts, shaders, maps
-  * Layered sprites, animated tiles
+  * Layered sprites
   * grep -Rni "TODO" src/
