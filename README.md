@@ -22,7 +22,8 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
 
  - Extended Scripting Support with Lua
    - Project content bootstrapping
-   - Entity definitions and behavior scripts
+   - Entity definitions with generic data definitions accessed by engine and scripts
+   - Entity-driven behavior scripts
    - Entity-owned and global tasks for automation/cutscenes
    - Screen flow scripting: base and overlay screens can be set
    - Bootstrap script to specify map, parameters, etc.
@@ -65,7 +66,7 @@ git submodule init && git submodule update
   * Game Events
   * Some kind of backgrounds, fog of war
   * Warping to other maps, rooms, caves, etc.
-  * More UI Bling, some kind of weapon/tool overlays, etc
+  * More UI Bling
   * Scriptable dialogue?
   * Custom game world data for any game
   * More Box2D integration
