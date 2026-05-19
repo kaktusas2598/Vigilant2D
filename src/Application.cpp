@@ -284,13 +284,6 @@ void Application::render(float dt) {
     uiSystem.drawWorld(*uiRenderer, textRenderer, assetManager, camera);
     uiRenderer->end();
 
-    // UI RENDER 2nd Pass(Screen Space UI)
-    uiRenderer->beginScreen(display_w, display_h);
-    renderer.begin(uiRenderer->getScreenCamera());
-    uiSystem.drawScreen(*uiRenderer, textRenderer, assetManager, display_w, display_h);
-    uiRenderer->end();
-    renderer.end();
-
     // POST PROCESS Pass
     sceneFrameBuffer->unbind();
     glViewport(0, 0, display_w, display_h);
