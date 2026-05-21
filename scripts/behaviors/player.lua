@@ -1,3 +1,4 @@
+local inventory = require("scripts.lib.inventory")
 local M = {}
 
 -- Calculate sword hitbox based on player facing direction
@@ -46,6 +47,9 @@ local function update_player_world_ui(self)
         ui.set_progress_bar_value("player.health", health)
         ui.set_label_position("player.name", playerX, playerY + 42)
     end
+
+    local coinCount = inventory.count_item("inventory", "coin")
+    ui.set_label_text("hud.coins", "Coins: " .. tostring(coinCount))
 end
 
 local FOLLOW_DISTANCE = 100.0
@@ -85,6 +89,13 @@ function M.on_create(self)
     ui.set_label_text("player.name", "Player")
     ui.set_label_scale("player.name", 0.35)
     update_player_world_ui(self)
+
+    -- Temporary UI label counter for inventory test
+    ui.create_label("hud.coins", "hud")
+    ui.set_label_text("hud.coins", "Coins: 0")
+    ui.set_label_screen_anchor("hud.coins", 1.0, 0.0)
+    ui.set_label_screen_pivot("hud.coins", 1.0, 0.0)
+    ui.set_label_position("hud.coins", -20, 20)
 end
 
 function M.on_update(self, dt)
