@@ -14,7 +14,10 @@ end
 
 function M.post_start(self)
     engine.run_script("scripts/automations/intro.lua", "start")
+
     grid.create("farm", 120, 120)
+    list.create("inventory", 16)
+    list.create("hotbar", 8)
 end
 
 return M

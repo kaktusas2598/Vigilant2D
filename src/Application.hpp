@@ -40,6 +40,7 @@
 
 #include "ScreenFlowSystem.hpp"
 #include "DataGridRegistry.hpp"
+#include "DataListRegistry.hpp"
 
 class Application {
     public:
@@ -105,4 +106,5 @@ class Application {
         UISystem uiSystem;
 
         DataGridRegistry dataGridRegistry;
+        DataListRegistry dataListRegistry;
 };

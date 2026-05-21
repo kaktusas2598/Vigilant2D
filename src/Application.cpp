@@ -171,7 +171,8 @@ void Application::init() {
         screenFlowSystem.get(),
         &cameraFollowState,
         &postProcessSettings,
-        &dataGridRegistry
+        &dataGridRegistry,
+        &dataListRegistry
     });
 
     // Load and Register screens

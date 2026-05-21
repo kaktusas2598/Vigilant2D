@@ -335,6 +335,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.screenFlowSystem = newContext.screenFlowSystem;
     runtimeContext.window = newContext.window;
     runtimeContext.dataGridRegistry = newContext.dataGridRegistry;
+    runtimeContext.dataListRegistry = newContext.dataListRegistry;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

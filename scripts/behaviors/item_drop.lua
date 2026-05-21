@@ -36,7 +36,9 @@ function M.on_update(self, dt)
     if distance <= 16.0 then
         local itemType = engine.get_entity_data(self.id, "item_type")
         local count = engine.get_entity_data(self.id, "count") or 1
-
+        local inventory = require("scripts.lib.inventory")
+        local added = inventory.add_item("inventory", itemType, count)
+        
         print("Item picked up: " .. itemType .. " (x" .. count .. ")")
         engine.play_sound("pickup_item", 0.8)
         engine.emit_particles("coin_pickup_0", dropX, dropY, 18)
@@ -46,7 +48,9 @@ function M.on_update(self, dt)
         local playerHealth = engine.get_entity_data("player", "health") or 0
         engine.set_entity_data("player", "health", playerHealth + 10)
 
-        engine.destroy_entity(self.id)
+        if added > 0 then
+            engine.destroy_entity(self.id)
+        end
     end
 end
 

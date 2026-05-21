@@ -38,6 +38,7 @@ class Window;
 class ScreenFlowSystem;
 class PostProcessSettings;
 class DataGridRegistry;
+class DataListRegistry;
 
 struct ScriptInstance {
     std::string fileName;
@@ -108,6 +109,7 @@ class ScriptSystem {
         Window* getRuntimeWindow() const { return runtimeContext.window; }
         PostProcessSettings* getPostProcessSettings() const { return runtimeContext.postProcessSettings; }
         DataGridRegistry* getDataGridRegistry() const { return runtimeContext.dataGridRegistry; }
+        DataListRegistry* getDataListRegistry() const { return runtimeContext.dataListRegistry; }
         void setRuntimeEntityFactory(EntityFactory* factory) { runtimeContext.entityFactory = factory; }    
     private:
         bool reportError(int status, const std::string& context);
