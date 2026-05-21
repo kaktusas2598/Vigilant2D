@@ -9,6 +9,8 @@ return {
         { id = "player_walk_right", path = "scripts/animations/player_walk_right.lua" },
         { id = "player_fight_up", path = "scripts/animations/player_fight_up.lua" },
         { id = "player_fight_down", path = "scripts/animations/player_fight_down.lua" },
-        { id = "player_fight_right", path = "scripts/animations/player_fight_right.lua" }
+        { id = "player_fight_right", path = "scripts/animations/player_fight_right.lua" },
+        { id = "player_fall", path = "scripts/animations/player_fall.lua" },
+        { id = "player_hoe_right", path = "scripts/animations/player_hoe_right.lua" }
     }
 }

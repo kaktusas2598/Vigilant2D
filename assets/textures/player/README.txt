@@ -1,0 +1,1 @@
+From Cute Fantasy Free asset pack, only for non-commercial projects!

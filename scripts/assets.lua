@@ -1,6 +1,7 @@
 return {
     textures = {
-        { id = "player", path = "assets/textures/player.png" },
+        { id = "player", path = "assets/textures/player/Player.png" },
+        { id = "player_actions", path = "assets/textures/player/Player_Actions.png" },
         { id = "slime", path = "assets/textures/slime.png" },
         { id = "crate", path = "assets/textures/crate.png" },
         { id = "shovel", path = "assets/rpg_icons_free/shovel.png" },

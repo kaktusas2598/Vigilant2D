@@ -3,7 +3,6 @@ local M = {}
 function M.start()
     engine.start_global_coroutine(function()
         engine.clear_camera_target()
-        engine.play_sound("game_start")
 
         local startX, startY = engine.get_camera_position()
         -- local targetX, targetY = startX + 20, startY + 12

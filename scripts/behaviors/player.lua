@@ -90,9 +90,9 @@ end
 function M.on_update(self, dt)
     update_player_world_ui(self)
 
-    if self.attacking and engine.is_entity_animation_finished(self.id) then
+    if self.action_locked and engine.is_entity_animation_finished(self.id) then
         engine.set_entity_animation_locked(self.id, false)
-        self.attacking = false
+        self.action_locked = false
     end
 
     local moveX = 0
@@ -166,14 +166,20 @@ function M.on_update(self, dt)
             engine.play_sound("shovel", 0.7)
             engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
             grid.set_data("farm", tileX, tileY, "tilled", true)
+
+        -- different animation texture test
+        self.action_locked = true
+        engine.set_entity_animation_locked(self.id, true)
+        engine.play_entity_animation(self.id, "player_hoe_right", true)
+
         elseif self.selected_tool == "seeds" then
             -- add crop on top of ground an farmland layer
             local tilled = grid.get_data("farm", tileX, tileY, "tilled")
             if tilled == true then
                 engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
             end
-        elseif self.selected_tool == "sword" and not self.attacking then
-            self.attacking = true
+        elseif self.selected_tool == "sword" and not self.action_locked then
+            self.action_locked = true
             engine.set_entity_animation_locked(self.id, true)
             play_attack_animation(self)
             engine.play_sound("sword_hit", 0.7)
@@ -213,6 +219,12 @@ function M.on_update(self, dt)
     local playerHealth = engine.get_entity_data(self.id, "health")
     if playerHealth ~= nil and playerHealth < 0 and not self.game_over then
         self.game_over = true
+        engine.start_entity_coroutine(self, function(self)
+            engine.wait(1.0)
+            engine.set_entity_animation_locked(self.id, true)
+            engine.play_entity_animation(self.id, "player_fall", true)
+            engine.wait(0.4)
+        end)
         screenflow.show_base("game_over")
     end
 
