@@ -107,6 +107,12 @@ static glm::vec2 resolveScreenLabelPosition(const UILabelRecord& record,
     return anchorPoint + record.position - boxSize * record.screenLayout.pivot;
 }
 
+UIContainerRecord& UISystem::createContainer(const std::string& id) {
+    auto& container = containers[id];
+    container.id = id;
+    return container;
+}
+
 UILabelRecord& UISystem::createLabel(const std::string& id) {
     auto& label = labels[id];
     label.id = id;
@@ -142,6 +148,18 @@ UIImageRecord& UISystem::createImage(const std::string& id) {
     image.id = id;
     return image;
 }
+
+UIContainerRecord* UISystem::getContainer(const std::string& id) {
+    auto it = containers.find(id);
+    return it != containers.end() ? &it->second : nullptr;
+}
+
+const UIContainerRecord* UISystem::getContainer(const std::string& id) const {
+    auto it = containers.find(id);
+    return it != containers.end() ? &it->second : nullptr;
+}
+
+
 
 UIImageRecord* UISystem::getImage(const std::string& id) {
     auto it = images.find(id);
@@ -231,7 +249,15 @@ void UISystem::updateScreenInteraction(const Input& input,
         if (!isWidgetVisible(record.group, record.visible))
             continue;
 
-        const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+        const glm::vec2 resolvedPosition = resolveParentedPosition(
+            record.parentId,
+            record.position,
+            UIRenderSpace::Screen,
+            record.screenLayout,
+            record.size,
+            viewportWidth,
+            viewportHeight
+        );
         if (pointInsideRect(mousePos, resolvedPosition, record.size)) {
             if (hoveredButton == nullptr || record.order >= hoveredOrder) {
                 hoveredButton = &record;
@@ -262,12 +288,56 @@ void UISystem::updateScreenInteraction(const Input& input,
 
 void UISystem::clear() {
     labels.clear();
+    buttons.clear();
     slotStrips.clear();
     progressBars.clear();
     images.clear();
+    containers.clear();
     groupVisibility.clear();
-    buttons.clear();
     activeScreenButtonId.clear();
+}
+
+glm::vec2 UISystem::resolveContainerPosition(const UIContainerRecord& record,
+                                             int viewportWidth,
+                                             int viewportHeight) const {
+    if (record.renderSpace == UIRenderSpace::Screen) {
+        return resolveScreenWidgetPosition(
+            record.position,
+            record.screenLayout,
+            record.size,
+            viewportWidth,
+            viewportHeight
+        );
+    }
+
+    return record.position;
+}
+
+glm::vec2 UISystem::resolveParentedPosition(const std::string& parentId,
+                                            const glm::vec2& localPosition,
+                                            UIRenderSpace renderSpace,
+                                            const UIScreenLayout& screenLayout,
+                                            const glm::vec2& widgetSize,
+                                            int viewportWidth,
+                                            int viewportHeight) const {
+    if (!parentId.empty()) {
+        const UIContainerRecord* parent = getContainer(parentId);
+        if (parent != nullptr && isWidgetVisible(parent->group, parent->visible)) {
+            return resolveContainerPosition(*parent, viewportWidth, viewportHeight) + localPosition;
+        }
+    }
+
+    if (renderSpace == UIRenderSpace::Screen) {
+        return resolveScreenWidgetPosition(
+            localPosition,
+            screenLayout,
+            widgetSize,
+            viewportWidth,
+            viewportHeight
+        );
+    }
+
+    return localPosition;
 }
 
 void UISystem::drawLabelWorldGeometry(const UILabelRecord& record,
@@ -302,7 +372,22 @@ void UISystem::drawLabelScreenGeometry(const UILabelRecord& record,
     if (font == nullptr)
         return;
 
-    const glm::vec2 resolvedPosition = resolveScreenLabelPosition(record, textRenderer, *font, viewportWidth, viewportHeight);
+    glm::vec2 resolvedPosition;
+    if (!record.parentId.empty()) {
+        const glm::vec2 textSize = textRenderer.measureText(*font, record.text, record.scale);
+        const glm::vec2 boxSize = textSize + record.padding * 2.0f;
+        resolvedPosition = resolveParentedPosition(
+            record.parentId,
+            record.position,
+            UIRenderSpace::Screen,
+            record.screenLayout,
+            boxSize,
+            viewportWidth,
+            viewportHeight
+        );
+    } else {
+        resolvedPosition = resolveScreenLabelPosition(record, textRenderer, *font, viewportWidth, viewportHeight);
+    }
 
     UILabel label = makeLabelWidget(record, resolvedPosition);
     label.drawScreenGeometry(uiRenderer, textRenderer, *font);
@@ -314,7 +399,22 @@ void UISystem::drawLabelScreenText(const UILabelRecord& record,
     if (font == nullptr)
         return;
 
-    const glm::vec2 resolvedPosition = resolveScreenLabelPosition(record, textRenderer, *font, viewportWidth, viewportHeight);
+    glm::vec2 resolvedPosition;
+    if (!record.parentId.empty()) {
+        const glm::vec2 textSize = textRenderer.measureText(*font, record.text, record.scale);
+        const glm::vec2 boxSize = textSize + record.padding * 2.0f;
+        resolvedPosition = resolveParentedPosition(
+            record.parentId,
+            record.position,
+            UIRenderSpace::Screen,
+            record.screenLayout,
+            boxSize,
+            viewportWidth,
+            viewportHeight
+        );
+    } else {
+        resolvedPosition = resolveScreenLabelPosition(record, textRenderer, *font, viewportWidth, viewportHeight);
+    }
 
     UILabel label = makeLabelWidget(record, resolvedPosition);
     label.drawScreenText(textRenderer, *font);
@@ -323,7 +423,15 @@ void UISystem::drawLabelScreenText(const UILabelRecord& record,
 void UISystem::drawButtonScreenGeometry(const UIButtonRecord& record,
                                       UIRenderer& uiRenderer,
                                       int viewportWidth, int viewportHeight) const {
-    const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+    const glm::vec2 resolvedPosition = resolveParentedPosition(
+        record.parentId,
+        record.position,
+        UIRenderSpace::Screen,
+        record.screenLayout,
+        record.size,
+        viewportWidth,
+        viewportHeight
+    );
     const UIButtonVisualState& visualState = getButtonVisualState(record);
     UIButton button = makeButtonWidget(record, resolvedPosition, visualState);
     button.drawScreenGeometry(uiRenderer);
@@ -333,7 +441,15 @@ void UISystem::drawButtonScreenText(const UIButtonRecord& record,
                                   TextRenderer& textRenderer,
                                   AssetManager& assetManager,
                                   int viewportWidth, int viewportHeight) const {
-    const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+    const glm::vec2 resolvedPosition = resolveParentedPosition(
+        record.parentId,
+        record.position,
+        UIRenderSpace::Screen,
+        record.screenLayout,
+        record.size,
+        viewportWidth,
+        viewportHeight
+    );
     const UIButtonVisualState& visualState = getButtonVisualState(record);
     UIButton button = makeButtonWidget(record, resolvedPosition, visualState);
     button.drawScreenText(textRenderer, *assetManager.getFont(record.fontId));
@@ -342,7 +458,15 @@ void UISystem::drawButtonScreenText(const UIButtonRecord& record,
 void UISystem::drawButtonScreenIcon(const UIButtonRecord& record,
                                   UIRenderer& uiRenderer,
                                   int viewportWidth, int viewportHeight) const {
-    const glm::vec2 resolvedPosition = resolveScreenWidgetPosition(record.position, record.screenLayout, record.size, viewportWidth, viewportHeight);
+    const glm::vec2 resolvedPosition = resolveParentedPosition(
+        record.parentId,
+        record.position,
+        UIRenderSpace::Screen,
+        record.screenLayout,
+        record.size,
+        viewportWidth,
+        viewportHeight
+    );
     const UIButtonVisualState& visualState = getButtonVisualState(record);
     UIButton button = makeButtonWidget(record, resolvedPosition, visualState);
     button.drawScreenIcon(uiRenderer);
@@ -368,7 +492,8 @@ void UISystem::drawSlotStrip(const UISlotStripRecord& record,
 }
 
 void UISystem::drawProgressBar(const UIProgressBarRecord& record,
-                               UIRenderer& uiRenderer) const {
+                               UIRenderer& uiRenderer,
+                               int viewportWidth, int viewportHeight) const {
     UIProgressBar progressBar;
     UIProgressBarStyle style;
     style.backgroundColor = record.backgroundColor;
@@ -378,7 +503,17 @@ void UISystem::drawProgressBar(const UIProgressBarRecord& record,
     style.fillColor = record.fillColor;
     style.fillInset = record.fillInset;
 
-    progressBar.draw(uiRenderer, record.position, record.size, record.minValue, record.maxValue, record.value, style);
+    glm::vec2 resolvedPosition = resolveParentedPosition(
+        record.parentId,
+        record.position,
+        record.renderSpace,
+        UIScreenLayout{},
+        record.size,
+        viewportWidth,
+        viewportHeight
+    );
+
+    progressBar.draw(uiRenderer, resolvedPosition, record.size, record.minValue, record.maxValue, record.value, style);
 }
 
 void UISystem::drawImage(const UIImageRecord& record,
@@ -386,8 +521,10 @@ void UISystem::drawImage(const UIImageRecord& record,
                             int viewportWidth, int viewportHeight) const {
     glm::vec2 resolvedPosition = record.position;
     if (record.renderSpace == UIRenderSpace::Screen) {
-        resolvedPosition = resolveScreenWidgetPosition(
+        resolvedPosition = resolveParentedPosition(
+            record.parentId,
             record.position,
+            record.renderSpace,
             record.screenLayout,
             record.size,
             viewportWidth,
@@ -465,7 +602,7 @@ void UISystem::drawWorld(UIRenderer& uiRenderer,
     }
 
     for (const UIProgressBarRecord* record : visibleProgressBars) {
-        drawProgressBar(*record, uiRenderer);
+        drawProgressBar(*record, uiRenderer, 0, 0);
     }
 
     for (const UIImageRecord* record : visibleImages) {
@@ -573,7 +710,7 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
         drawButtonScreenGeometry(*record, uiRenderer, viewportWidth, viewportHeight);
     }
     for (const UIProgressBarRecord* record : visibleProgressBars) {
-        drawProgressBar(*record, uiRenderer);
+        drawProgressBar(*record, uiRenderer, viewportWidth, viewportHeight);
     }
 
     // Draw Phase 2: render all text using different shader

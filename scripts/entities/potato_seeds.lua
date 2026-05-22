@@ -1,10 +1,10 @@
 return {
-    texture = "cozy_ui_items",
+    texture = "cozy_farm_seeds",
     texture_grid = {
         column = 5,
         row = 0,
-        columns = 10,
-        rows = 12 
+        columns = 8,
+        rows = 6 
     },
     scale = {12, 12},
     script = "scripts/behaviors/item_drop.lua",
@@ -12,6 +12,6 @@ return {
     data = {
         type = "pickup",
         count = 1,
-        item_type = "potato"
+        item_type = "potato_seeds"
     }
 }

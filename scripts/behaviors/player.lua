@@ -48,8 +48,8 @@ local function update_player_world_ui(self)
         ui.set_label_position("player.name", playerX, playerY + 42)
     end
 
-    local coinCount = inventory.count_item("inventory", "coin")
-    ui.set_label_text("hud.coins", "Coins: " .. tostring(coinCount))
+    -- local coinCount = inventory.count_item("inventory", "coin")
+    -- ui.set_label_text("hud.coins", "Coins: " .. tostring(coinCount))
 end
 
 local FOLLOW_DISTANCE = 100.0
@@ -90,13 +90,6 @@ function M.on_create(self)
     ui.set_label_text("player.name", "Player")
     ui.set_label_scale("player.name", 0.35)
     update_player_world_ui(self)
-
-    -- Temporary UI label counter for inventory test
-    ui.create_label("hud.coins", "hud")
-    ui.set_label_text("hud.coins", "Coins: 0")
-    ui.set_label_screen_anchor("hud.coins", 1.0, 0.0)
-    ui.set_label_screen_pivot("hud.coins", 1.0, 0.0)
-    ui.set_label_position("hud.coins", -20, 20)
 end
 
 function M.on_update(self, dt)
@@ -170,6 +163,10 @@ function M.on_update(self, dt)
 
     if engine.is_mouse_button_pressed(0) then -- LMB
         if self.selected_tool == "shovel" then
+            -- TODO: TEMP UI TEST
+            local added = inventory.add_item("inventory", "coin", 4)
+            local added = inventory.add_item("inventory", "potato", 4)
+
             -- Replace grass tile on grounds layer with ground tile
             engine.set_tile_tileset_override("Ground", tileX, tileY, "cozyFarm", 491)
             -- Place tilled ground tile in farmland layer above

@@ -1353,6 +1353,109 @@ static int l_start_global_coroutine(lua_State* L) {
 }
 
 
+// --------- UI CONTAINER BINDINGS
+static int l_ui_create_container(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    UIContainerRecord& container = uiSystem->createContainer(id);
+
+    if (lua_gettop(L) >= 2 && lua_isstring(L, 2)) {
+        container.group = lua_tostring(L, 2);
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_container_position(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    float x = (float)luaL_checknumber(L, 2);
+    float y = (float)luaL_checknumber(L, 3);
+
+    UIContainerRecord* c = uiSystem->getContainer(id);
+    if (c == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    c->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_container_size(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    float w = (float)luaL_checknumber(L, 2);
+    float h = (float)luaL_checknumber(L, 3);
+
+    UIContainerRecord* c = uiSystem->getContainer(id);
+    if (c == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    c->size = {w, h};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_container_render_space(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* value = luaL_checkstring(L, 2);
+
+    UIContainerRecord* c = uiSystem->getContainer(id);
+    if (c == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    UIRenderSpace renderSpace;
+    if (!parseUIRenderSpace(value, renderSpace)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    c->renderSpace = renderSpace;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_container_screen_anchor(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    float x = (float)luaL_checknumber(L, 2);
+    float y = (float)luaL_checknumber(L, 3);
+
+    UIContainerRecord* c = uiSystem->getContainer(id);
+    if (c == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    c->screenLayout.enabled = true;
+    c->screenLayout.anchor = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_container_screen_pivot(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    float x = (float)luaL_checknumber(L, 2);
+    float y = (float)luaL_checknumber(L, 3);
+
+    UIContainerRecord* c = uiSystem->getContainer(id);
+    if (c == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    c->screenLayout.enabled = true;
+    c->screenLayout.pivot = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // --------- UI LABEL BINDINGS
 static int l_ui_create_label(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
@@ -1411,6 +1514,21 @@ static int l_ui_set_label_position(lua_State* L) {
     }
 
     label->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_label_parent(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* parentId = luaL_checkstring(L, 2);
+
+    UILabelRecord* label = uiSystem->getLabel(id);
+    if (label == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    label->parentId = parentId;
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -1653,6 +1771,21 @@ static int l_ui_set_button_size(lua_State* L) {
     }
 
     button->size = {width, height};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_parent(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* parentId = luaL_checkstring(L, 2);
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    button->parentId = parentId;
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -1986,6 +2119,21 @@ static int l_ui_set_image_size(lua_State* L) {
     }
 
     image->size = {w, h};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_parent(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* parentId = luaL_checkstring(L, 2);
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    image->parentId = parentId;
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -2641,6 +2789,21 @@ static int l_ui_set_progress_bar_range(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_progress_bar_parent(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* parentId = luaL_checkstring(L, 2);
+
+    UIProgressBarRecord* progressBar = uiSystem->getProgressBar(id);
+    if (progressBar == nullptr) { lua_pushboolean(L, 0); return 1; }
+
+    progressBar->parentId = parentId;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_ui_set_progress_bar_visible(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
     if (uiSystem == nullptr) {
@@ -2991,6 +3154,30 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_newtable(luaState);
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_create_container, 1);
+    lua_setfield(luaState, -2, "create_container");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_container_position, 1);
+    lua_setfield(luaState, -2, "set_container_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_container_size, 1);
+    lua_setfield(luaState, -2, "set_container_size");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_container_render_space, 1);
+    lua_setfield(luaState, -2, "set_container_render_space");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_container_screen_anchor, 1);
+    lua_setfield(luaState, -2, "set_container_screen_anchor");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_container_screen_pivot, 1);
+    lua_setfield(luaState, -2, "set_container_screen_pivot");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_label, 1);
     lua_setfield(luaState, -2, "create_label");
 
@@ -3009,6 +3196,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_scale, 1);
     lua_setfield(luaState, -2, "set_label_scale");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_label_parent, 1);
+    lua_setfield(luaState, -2, "set_label_parent");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_visible, 1);
@@ -3049,6 +3240,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_button_scale, 1);
     lua_setfield(luaState, -2, "set_button_scale");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_parent, 1);
+    lua_setfield(luaState, -2, "set_button_parent");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_button_visible, 1);
@@ -3155,10 +3350,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_progress_bar_range");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_progress_bar_parent, 1);
+    lua_setfield(luaState, -2, "set_progress_bar_parent");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_progress_bar_visible, 1);
     lua_setfield(luaState, -2, "set_progress_bar_visible");
 
-        lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_image, 1);
     lua_setfield(luaState, -2, "create_image");
 
@@ -3169,6 +3368,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_image_size, 1);
     lua_setfield(luaState, -2, "set_image_size");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_parent, 1);
+    lua_setfield(luaState, -2, "set_image_parent");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_image_render_space, 1);

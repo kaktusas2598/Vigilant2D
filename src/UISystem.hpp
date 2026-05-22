@@ -28,9 +28,23 @@ struct UIButtonVisualState {
 };
 
 // Lets scripts modify UI Widgets through records
+struct UIContainerRecord {
+    std::string id;
+    std::string group = "default";
+
+    UIRenderSpace renderSpace = UIRenderSpace::Screen;
+    glm::vec2 position{0.0f, 0.0f};
+    glm::vec2 size{0.0f, 0.0f};
+    UIScreenLayout screenLayout{};
+
+    bool visible = true;
+    int order = 0;
+};
+
 struct UILabelRecord {
     std::string id;
     std::string group = "default";
+    std::string parentId;
     std::string fontId = "ui";
 
     std::string text;
@@ -54,6 +68,7 @@ struct UILabelRecord {
 struct UIButtonRecord {
     std::string id;
     std::string group = "default";
+    std::string parentId;
     std::string fontId = "ui";
 
     glm::vec2 position{0.0f, 0.0f};
@@ -105,6 +120,7 @@ struct UISlotStripRecord {
 struct UIProgressBarRecord {
     std::string id;
     std::string group = "default";
+    std::string parentId;
 
     UIRenderSpace renderSpace = UIRenderSpace::Screen;
     glm::vec2 position{0.0f, 0.0f};
@@ -128,6 +144,7 @@ struct UIProgressBarRecord {
 struct UIImageRecord {
     std::string id;
     std::string group = "default";
+    std::string parentId;
 
     UIRenderSpace renderSpace = UIRenderSpace::Screen;
     glm::vec2 position{0.0f, 0.0f};
@@ -144,11 +161,15 @@ struct UIImageRecord {
 // Retained UI System
 class UISystem {
     public:
+        UIContainerRecord& createContainer(const std::string& id);
         UILabelRecord& createLabel(const std::string& id);
         UISlotStripRecord& createSlotStrip(const std::string& id);
         UIProgressBarRecord& createProgressBar(const std::string& id);
         UIButtonRecord& createButton(const std::string& id);
         UIImageRecord& createImage(const std::string& id);
+
+        UIContainerRecord* getContainer(const std::string& id);
+        const UIContainerRecord* getContainer(const std::string& id) const;
 
         UILabelRecord* getLabel(const std::string& id);
         const UILabelRecord* getLabel(const std::string& id) const;
@@ -198,6 +219,18 @@ class UISystem {
 
         bool isWidgetVisible(const std::string& group, bool visible) const;
 
+        glm::vec2 resolveContainerPosition(const UIContainerRecord& record,
+                                           int viewportWidth,
+                                           int viewportHeight) const;
+
+        glm::vec2 resolveParentedPosition(const std::string& parentId,
+                                          const glm::vec2& localPosition,
+                                          UIRenderSpace renderSpace,
+                                          const UIScreenLayout& screenLayout,
+                                          const glm::vec2& widgetSize,
+                                          int viewportWidth,
+                                          int viewportHeight) const;
+
         void drawLabelWorldGeometry(const UILabelRecord& record,
                             UIRenderer& uiRenderer,
                             TextRenderer& textRenderer,
@@ -231,9 +264,10 @@ class UISystem {
                         int viewportHeight) const;
 
         void drawSlotStrip(const UISlotStripRecord& record, UIRenderer& uiRenderer) const;
-        void drawProgressBar(const UIProgressBarRecord& record, UIRenderer& uiRenderer) const;
+        void drawProgressBar(const UIProgressBarRecord& record, UIRenderer& uiRenderer, int viewportWidth, int viewportHeight) const;
         void drawImage(const UIImageRecord& record, UIRenderer& uiRenderer, int viewportWidth, int viewportHeight) const;
 
+        std::unordered_map<std::string, UIContainerRecord> containers;
         std::unordered_map<std::string, UILabelRecord> labels;
         std::unordered_map<std::string, UISlotStripRecord> slotStrips;
         std::unordered_map<std::string, UIProgressBarRecord> progressBars;
