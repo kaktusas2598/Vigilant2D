@@ -15,6 +15,7 @@ return {
         { id = "cozy_ui_items", path = "assets/Cozy Farm/ui/items.png" },
         { id = "cozy_farm_seeds", path = "assets/Cozy Farm/farming/seeds.png" },
         { id = "cozy_farm_item_carry", path = "assets/Cozy Farm/farming/item_carry.png" },
+        { id = "ui_flat", path = "assets/textures/ui/Spritesheet_UI_Flat.png" },
     },
     fonts = {
         { id = "ui", path = "assets/fonts/Ithaca-LVB75.ttf", pixel_size = 24 },
