@@ -89,7 +89,7 @@ function M.on_update(self, dt)
     for i = 0, 15 do
         local slot = inventory.get_slot("inventory", i)
         local imageId = "menu.inventory.slot_icon_" .. tostring(i)
-        local countId = "menu.inven,tory.slot_count_" .. tostring(i)
+        local countId = "menu.inventory.slot_count_" .. tostring(i)
 
         if slot ~= nil then
             set_slot_image(imageId, slot.item_id)
