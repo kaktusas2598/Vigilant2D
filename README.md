@@ -33,6 +33,11 @@ to start from scratch using OpenGL for rendering and ditching SDL for GLFW.
    - Collision definitions using collidable tile layer or rects in object layer
    - Animated tiles
    - Background/foreground layers relative to entities
+ - Retained Mode UI System
+   - Button, Label, Image, Progress Bar, Slot Strip Widgets
+   - Layout making using containers and pivots/anchors
+   - Renderable in world and screen space
+   - Fully scriptable from Lua 
  - Simple Scene-Entity Model
  - Selectable tiles/entities
  - World and Screen space UI system
@@ -62,10 +67,9 @@ git submodule init && git submodule update
   * Pathfinding
   * More POST FX/ Blur, etc.
   * Real implemented game mechanics with scripting help like managing inventory, crop farming, random encounters, etc, do research here
-  * Game Events
+  * Game Events/ Triggers
   * Some kind of backgrounds, fog of war
   * Warping to other maps, rooms, caves, etc.
-  * More UI Bling
   * Scriptable dialogue?
   * Saving/serialisation
   * More Box2D integration
