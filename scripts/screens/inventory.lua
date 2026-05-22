@@ -3,18 +3,6 @@ local uiLayout = require("scripts.lib.ui_layout")
 
 local M = {}
 
-local function set_slot_image(slotId, itemId)
-    if itemId == "coin" then
-        ui.set_image_texture(slotId, "crate")
-        ui.set_image_visible(slotId, true)
-    elseif itemId == "potato" then
-        ui.set_image_texture_grid(slotId, "cozy_ui_items", 5, 0, 10, 12)
-        ui.set_image_visible(slotId, true)
-    else
-        ui.set_image_visible(slotId, false)
-    end
-end
-
 function M.build(self)
     ui.create_container("menu.inventory.root", "menu.inventory")
     ui.set_container_render_space("menu.inventory.root", "screen")
@@ -101,7 +89,11 @@ function M.on_update(self, dt)
         local countId = "menu.inventory.slot_count_" .. tostring(i)
 
         if slot ~= nil then
-            set_slot_image(imageId, slot.item_id)
+            if ui.set_image_from_entity_definition(imageId, slot.item_id) then
+                ui.set_image_visible(imageId, true)
+            else
+                ui.set_image_visible(imageId, false)
+            end
             if slot.count ~= nil and slot.count > 1 then
                 ui.set_label_text(countId, tostring(slot.count))
             else

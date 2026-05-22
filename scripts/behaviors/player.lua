@@ -164,7 +164,7 @@ function M.on_update(self, dt)
     if engine.is_mouse_button_pressed(0) then -- LMB
         if self.selected_tool == "shovel" then
             -- TODO: TEMP UI TEST
-            local added = inventory.add_item("inventory", "coin", 4)
+            local added = inventory.add_item("inventory", "item_drop", 4)
             local added = inventory.add_item("inventory", "potato", 4)
 
             -- Replace grass tile on grounds layer with ground tile

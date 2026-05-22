@@ -1,5 +1,5 @@
 return {
-    coin = {
+    item_drop = {
         name = "Coin",
         stack_limit = 999,
     },

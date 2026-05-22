@@ -4,12 +4,14 @@
 
 #include "ScriptSystem.hpp"
 #include "Scene.hpp"
+#include "EntityDefinition.hpp"
 #include "EntityFactory.hpp"
 #include "AnimatedSprite.hpp"
 #include "AssetManager.hpp"
 #include "AnimationRegistry.hpp"
 #include "ParticleEmitter.hpp"
 #include "ParticleEmitterRegistry.hpp"
+#include "TileMapData.hpp"
 #include "CameraFollowState.hpp"
 #include "ScreenFlowSystem.hpp"
 #include "AudioSystem.hpp"
@@ -70,6 +72,43 @@ static const char* getEntityIdFromSelf(lua_State* L, int argIndex) {
     const char* entityId = lua_tostring(L, -1);
     lua_pop(L, 1);
     return entityId;
+}
+
+static bool makeRegionFromEntityDefinition(ScriptSystem* scriptSystem,
+                                           const char* definitionId,
+                                           TextureRegion& outRegion) {
+    if (scriptSystem == nullptr || scriptSystem->getAssetManager() == nullptr || definitionId == nullptr) {
+        return false;
+    }
+
+    EntityDefinition definition;
+    const std::string definitionFile = "scripts/entities/" + std::string(definitionId) + ".lua";
+    if (!scriptSystem->loadEntityDefinition(definitionFile, definition)) {
+        return false;
+    }
+
+    if (definition.texture.empty()) {
+        return false;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(definition.texture);
+    if (texture == nullptr) {
+        return false;
+    }
+
+    if (definition.hasTextureGrid) {
+        outRegion = makeRegionFromGrid(
+            texture,
+            definition.textureGridColumn,
+            definition.textureGridRow,
+            definition.textureGridColumns,
+            definition.textureGridRows
+        );
+    } else {
+        outRegion = TextureRegion::full(texture);
+    }
+
+    return true;
 }
 
 // --------- CAMERA BINDINGS
@@ -2352,6 +2391,36 @@ static int l_ui_set_image_texture_rect(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_image_from_entity_definition(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* imageId = luaL_checkstring(L, 1);
+    const char* definitionId = luaL_checkstring(L, 2);
+
+    UIImageRecord* image = uiSystem->getImage(imageId);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TextureRegion region;
+    if (!makeRegionFromEntityDefinition(scriptSystem, definitionId, region)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->region = region;
+    image->tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_ui_set_image_order(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
     if (uiSystem == nullptr) {
@@ -2601,6 +2670,39 @@ static int l_ui_set_slot_strip_slot_texture_rect(lua_State* L) {
     UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
     slot.occupied = true;
     slot.icon = makeRegionFromPixels(texture, x, y, width, height);
+    slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_slot_from_entity_definition(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* stripId = luaL_checkstring(L, 1);
+    const int slotIndex = static_cast<int>(luaL_checkinteger(L, 2));
+    const char* definitionId = luaL_checkstring(L, 3);
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(stripId);
+    if (strip == nullptr || slotIndex < 0 || slotIndex >= static_cast<int>(strip->slots.size())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    TextureRegion region;
+    if (!makeRegionFromEntityDefinition(scriptSystem, definitionId, region)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
+    slot.occupied = true;
+    slot.icon = region;
     slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
 
     lua_pushboolean(L, 1);
@@ -3326,6 +3428,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_slot_strip_slot_texture_rect");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_from_entity_definition, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_slot_from_entity_definition");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_progress_bar, 1);
     lua_setfield(luaState, -2, "create_progress_bar");
 
@@ -3404,6 +3510,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_image_texture_rect, 1);
     lua_setfield(luaState, -2, "set_image_texture_rect");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_from_entity_definition, 1);
+    lua_setfield(luaState, -2, "set_image_from_entity_definition");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_image_order, 1);
