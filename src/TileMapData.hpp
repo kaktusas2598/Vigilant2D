@@ -118,3 +118,30 @@ inline TextureRegion makeRegionFromGrid(
 
     return {texture, uvMin, uvMax};
 }
+
+inline TextureRegion makeRegionFromPixels(
+    Texture* texture,
+    int x,
+    int y,
+    int width,
+    int height
+) {
+    if (texture == nullptr || width <= 0 || height <= 0) {
+        return TextureRegion::full(nullptr);
+    }
+
+    const float textureWidth = static_cast<float>(texture->getWidth());
+    const float textureHeight = static_cast<float>(texture->getHeight());
+
+    const glm::vec2 uvMin(
+        static_cast<float>(x) / textureWidth,
+        1.0f - (static_cast<float>(y + height) / textureHeight)
+    );
+
+    const glm::vec2 uvMax(
+        static_cast<float>(x + width) / textureWidth,
+        1.0f - (static_cast<float>(y) / textureHeight)
+    );
+
+    return {texture, uvMin, uvMax};
+}

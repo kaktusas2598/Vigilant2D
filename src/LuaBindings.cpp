@@ -1853,6 +1853,378 @@ static int l_ui_is_button_hovered(lua_State* L) {
     return 1;
 }
 
+static int l_ui_set_button_icon_texture_grid(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* textureId = luaL_checkstring(L, 2);
+    const int column = static_cast<int>(luaL_checkinteger(L, 3));
+    const int row = static_cast<int>(luaL_checkinteger(L, 4));
+    const int columns = static_cast<int>(luaL_checkinteger(L, 5));
+    const int rows = static_cast<int>(luaL_checkinteger(L, 6));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->iconEnabled = true;
+    button->icon = makeRegionFromGrid(texture, column, row, columns, rows);
+    button->normal.iconTint = {1.0f, 1.0f, 1.0f, 1.0f};
+    button->hovered.iconTint = {1.0f, 1.0f, 1.0f, 1.0f};
+    button->pressed.iconTint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_button_icon_texture_rect(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* textureId = luaL_checkstring(L, 2);
+    const int x = static_cast<int>(luaL_checkinteger(L, 3));
+    const int y = static_cast<int>(luaL_checkinteger(L, 4));
+    const int width = static_cast<int>(luaL_checkinteger(L, 5));
+    const int height = static_cast<int>(luaL_checkinteger(L, 6));
+
+    UIButtonRecord* button = uiSystem->getButton(id);
+    if (button == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    button->iconEnabled = true;
+    button->icon = makeRegionFromPixels(texture, x, y, width, height);
+    button->normal.iconTint = {1.0f, 1.0f, 1.0f, 1.0f};
+    button->hovered.iconTint = {1.0f, 1.0f, 1.0f, 1.0f};
+    button->pressed.iconTint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+// --------- UI IMAGE BINDINGS
+static int l_ui_create_image(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    UIImageRecord& image = uiSystem->createImage(id);
+
+    if (lua_gettop(L) >= 2 && lua_isstring(L, 2)) {
+        image.group = lua_tostring(L, 2);
+    }
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_position(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->position = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_size(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float w = static_cast<float>(luaL_checknumber(L, 2));
+    const float h = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->size = {w, h};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_render_space(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* renderSpaceValue = luaL_checkstring(L, 2);
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UIRenderSpace renderSpace;
+    if (!parseUIRenderSpace(renderSpaceValue, renderSpace)) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->renderSpace = renderSpace;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_visible(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const bool visible = lua_toboolean(L, 2) != 0;
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->visible = visible;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_screen_anchor(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->screenLayout.enabled = true;
+    image->screenLayout.anchor = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_screen_pivot(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float x = static_cast<float>(luaL_checknumber(L, 2));
+    const float y = static_cast<float>(luaL_checknumber(L, 3));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->screenLayout.enabled = true;
+    image->screenLayout.pivot = {x, y};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_tint(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const float r = static_cast<float>(luaL_checknumber(L, 2));
+    const float g = static_cast<float>(luaL_checknumber(L, 3));
+    const float b = static_cast<float>(luaL_checknumber(L, 4));
+    const float a = static_cast<float>(luaL_optnumber(L, 5, 1.0));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->tint = {r, g, b, a};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_texture(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* textureId = luaL_checkstring(L, 2);
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->region = TextureRegion::full(texture);
+    image->tint = {1.0f, 1.0f, 1.0f, 1.0f};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_texture_grid(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* textureId = luaL_checkstring(L, 2);
+    const int column = static_cast<int>(luaL_checkinteger(L, 3));
+    const int row = static_cast<int>(luaL_checkinteger(L, 4));
+    const int columns = static_cast<int>(luaL_checkinteger(L, 5));
+    const int rows = static_cast<int>(luaL_checkinteger(L, 6));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->region = makeRegionFromGrid(texture, column, row, columns, rows);
+    image->tint = {1.0f, 1.0f, 1.0f, 1.0f};
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_texture_rect(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const char* textureId = luaL_checkstring(L, 2);
+    const int x = static_cast<int>(luaL_checkinteger(L, 3));
+    const int y = static_cast<int>(luaL_checkinteger(L, 4));
+    const int width = static_cast<int>(luaL_checkinteger(L, 5));
+    const int height = static_cast<int>(luaL_checkinteger(L, 6));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->region = makeRegionFromPixels(texture, x, y, width, height);
+    image->tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_image_order(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int order = static_cast<int>(luaL_checkinteger(L, 2));
+
+    UIImageRecord* image = uiSystem->getImage(id);
+    if (image == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    image->order = order;
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 // --------- UI SLOT STRIP BINDINGS
 static int l_ui_create_slot_strip(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
@@ -2007,6 +2379,80 @@ static int l_ui_set_slot_strip_slot_tileset_tile(lua_State* L) {
     UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
     slot.occupied = true;
     slot.icon = region;
+    slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_slot_texture_grid(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int slotIndex = static_cast<int>(luaL_checkinteger(L, 2));
+    const char* textureId = luaL_checkstring(L, 3);
+    const int column = static_cast<int>(luaL_checkinteger(L, 4));
+    const int row = static_cast<int>(luaL_checkinteger(L, 5));
+    const int columns = static_cast<int>(luaL_checkinteger(L, 6));
+    const int rows = static_cast<int>(luaL_checkinteger(L, 7));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || slotIndex < 0 || slotIndex >= static_cast<int>(strip->slots.size())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
+    slot.occupied = true;
+    slot.icon = makeRegionFromGrid(texture, column, row, columns, rows);
+    slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_set_slot_strip_slot_texture_rect(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    UISystem* uiSystem = getUISystem(L);
+    if (scriptSystem == nullptr || uiSystem == nullptr || scriptSystem->getAssetManager() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int slotIndex = static_cast<int>(luaL_checkinteger(L, 2));
+    const char* textureId = luaL_checkstring(L, 3);
+    const int x = static_cast<int>(luaL_checkinteger(L, 4));
+    const int y = static_cast<int>(luaL_checkinteger(L, 5));
+    const int width = static_cast<int>(luaL_checkinteger(L, 6));
+    const int height = static_cast<int>(luaL_checkinteger(L, 7));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || slotIndex < 0 || slotIndex >= static_cast<int>(strip->slots.size())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    Texture* texture = scriptSystem->getAssetManager()->getTexture(textureId);
+    if (texture == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
+    slot.occupied = true;
+    slot.icon = makeRegionFromPixels(texture, x, y, width, height);
     slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
 
     lua_pushboolean(L, 1);
@@ -2637,6 +3083,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "is_button_hovered");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_icon_texture_grid, 1);
+    lua_setfield(luaState, -2, "set_button_icon_texture_grid");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_button_icon_texture_rect, 1);
+    lua_setfield(luaState, -2, "set_button_icon_texture_rect");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_slot_strip, 1);
     lua_setfield(luaState, -2, "create_slot_strip");
 
@@ -2669,6 +3123,14 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "set_slot_strip_render_space");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_texture_grid, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_slot_texture_grid");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_texture_rect, 1);
+    lua_setfield(luaState, -2, "set_slot_strip_slot_texture_rect");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_progress_bar, 1);
     lua_setfield(luaState, -2, "create_progress_bar");
 
@@ -2695,6 +3157,54 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_progress_bar_visible, 1);
     lua_setfield(luaState, -2, "set_progress_bar_visible");
+
+        lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_create_image, 1);
+    lua_setfield(luaState, -2, "create_image");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_position, 1);
+    lua_setfield(luaState, -2, "set_image_position");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_size, 1);
+    lua_setfield(luaState, -2, "set_image_size");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_render_space, 1);
+    lua_setfield(luaState, -2, "set_image_render_space");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_visible, 1);
+    lua_setfield(luaState, -2, "set_image_visible");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_screen_anchor, 1);
+    lua_setfield(luaState, -2, "set_image_screen_anchor");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_screen_pivot, 1);
+    lua_setfield(luaState, -2, "set_image_screen_pivot");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_tint, 1);
+    lua_setfield(luaState, -2, "set_image_tint");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_texture, 1);
+    lua_setfield(luaState, -2, "set_image_texture");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_texture_grid, 1);
+    lua_setfield(luaState, -2, "set_image_texture_grid");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_texture_rect, 1);
+    lua_setfield(luaState, -2, "set_image_texture_rect");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_set_image_order, 1);
+    lua_setfield(luaState, -2, "set_image_order");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_group_visible, 1);

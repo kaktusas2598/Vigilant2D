@@ -20,4 +20,10 @@ struct EntityDefinition {
     bool physicsEnabled = false;
     std::optional<TopDownControllerConfig> topDownContoller;
     PropertyBag customData;
+
+    bool hasTextureGrid = false;
+    int textureGridColumn = 0;
+    int textureGridRow = 0;
+    int textureGridColumns = 1;
+    int textureGridRows = 1;
 };

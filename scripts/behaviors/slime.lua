@@ -114,6 +114,7 @@ function M.on_update(self, dt)
                 engine.set_entity_data(dropId, "count", 1)
                 engine.set_entity_data(dropId, "item_type", "coin")
             end
+            local potato = engine.spawn_entity("potato", x + 4, y + 3)
 
             engine.destroy_entity(self.id)
         end)

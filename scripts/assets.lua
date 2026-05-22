@@ -10,6 +10,11 @@ return {
         { id = "sword", path = "assets/rpg_icons_free/sword.png" },
         { id = "bucket", path = "assets/rpg_icons_free/empty_bucket.png" },
         { id = "torch", path = "assets/rpg_icons_free/torch.png" },
+        { id = "cozy_ui_inventory", path = "assets/Cozy Farm/ui/inventory.png" },
+        { id = "cozy_ui_inventory_chopped", path = "assets/Cozy Farm/ui/inventory_chopped.png" },
+        { id = "cozy_ui_items", path = "assets/Cozy Farm/ui/items.png" },
+        { id = "cozy_farm_seeds", path = "assets/Cozy Farm/farming/seeds.png" },
+        { id = "cozy_farm_item_carry", path = "assets/Cozy Farm/farming/item_carry.png" },
     },
     fonts = {
         { id = "ui", path = "assets/fonts/Ithaca-LVB75.ttf", pixel_size = 24 },

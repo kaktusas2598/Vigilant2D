@@ -447,6 +447,19 @@ bool ScriptContentLoader::loadEntityDefinition(const std::string& fileName, Enti
     readStringField(luaState, tableIndex, "animation", outDefinition.animation);
     readVec2Field(luaState, tableIndex, "scale", outDefinition.scale);
 
+    lua_getfield(luaState, tableIndex, "texture_grid");
+    if (lua_istable(luaState, -1)) {
+        const int textureGridIndex = lua_gettop(luaState);
+
+        if (readIntField(luaState, textureGridIndex, "column", outDefinition.textureGridColumn) &&
+            readIntField(luaState, textureGridIndex, "row", outDefinition.textureGridRow) &&
+            readIntField(luaState, textureGridIndex, "columns", outDefinition.textureGridColumns) &&
+            readIntField(luaState, textureGridIndex, "rows", outDefinition.textureGridRows)) {
+            outDefinition.hasTextureGrid = true;
+        }
+    }
+    lua_pop(luaState, 1);
+
     if (readVec2Field(luaState, tableIndex, "bounds_offset", outDefinition.boundsOffset)) {
         outDefinition.hasBounds = true;
     }

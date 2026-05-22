@@ -125,6 +125,22 @@ struct UIProgressBarRecord {
     float borderThickness = 1.0f;
 };
 
+struct UIImageRecord {
+    std::string id;
+    std::string group = "default";
+
+    UIRenderSpace renderSpace = UIRenderSpace::Screen;
+    glm::vec2 position{0.0f, 0.0f};
+    UIScreenLayout screenLayout{};
+    glm::vec2 size{32.0f, 32.0f};
+
+    TextureRegion region = TextureRegion::full(nullptr);
+    glm::vec4 tint{1.0f, 1.0f, 1.0f, 1.0f};
+
+    bool visible = true;
+    int order = 0;
+};
+
 // Retained UI System
 class UISystem {
     public:
@@ -132,6 +148,7 @@ class UISystem {
         UISlotStripRecord& createSlotStrip(const std::string& id);
         UIProgressBarRecord& createProgressBar(const std::string& id);
         UIButtonRecord& createButton(const std::string& id);
+        UIImageRecord& createImage(const std::string& id);
 
         UILabelRecord* getLabel(const std::string& id);
         const UILabelRecord* getLabel(const std::string& id) const;
@@ -144,6 +161,9 @@ class UISystem {
 
         UIButtonRecord* getButton(const std::string& id);
         const UIButtonRecord* getButton(const std::string& id) const;
+
+        UIImageRecord* getImage(const std::string& id);
+        const UIImageRecord* getImage(const std::string& id) const;
 
         void setGroupVisible(const std::string& group, bool visible);
         bool isGroupVisible(const std::string& group) const;
@@ -212,11 +232,13 @@ class UISystem {
 
         void drawSlotStrip(const UISlotStripRecord& record, UIRenderer& uiRenderer) const;
         void drawProgressBar(const UIProgressBarRecord& record, UIRenderer& uiRenderer) const;
+        void drawImage(const UIImageRecord& record, UIRenderer& uiRenderer, int viewportWidth, int viewportHeight) const;
 
         std::unordered_map<std::string, UILabelRecord> labels;
         std::unordered_map<std::string, UISlotStripRecord> slotStrips;
         std::unordered_map<std::string, UIProgressBarRecord> progressBars;
         std::unordered_map<std::string, UIButtonRecord> buttons;
+        std::unordered_map<std::string, UIImageRecord> images;
         std::string activeScreenButtonId;
         std::unordered_map<std::string, bool> groupVisibility;
 };

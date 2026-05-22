@@ -72,6 +72,7 @@ function M.on_create(self)
     ui.set_slot_strip_slot_texture("hud.hotbar", 2, "sword")
     ui.set_slot_strip_slot_texture("hud.hotbar", 3, "bucket")
     ui.set_slot_strip_selected("hud.hotbar", 0)
+    ui.set_slot_strip_slot_texture_grid("hud.hotbar", 5, "cozy_farm_seeds", 0, 0, 8, 6)
 
     ui.create_label("hud.hotbar_label", "hud")
     ui.set_label_text("hud.hotbar_label", "Hotbar")

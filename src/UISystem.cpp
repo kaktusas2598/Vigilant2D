@@ -137,6 +137,22 @@ UIProgressBarRecord& UISystem::createProgressBar(const std::string& id) {
     return bar;
 }
 
+UIImageRecord& UISystem::createImage(const std::string& id) {
+    auto& image = images[id];
+    image.id = id;
+    return image;
+}
+
+UIImageRecord* UISystem::getImage(const std::string& id) {
+    auto it = images.find(id);
+    return it != images.end() ? &it->second : nullptr;
+}
+
+const UIImageRecord* UISystem::getImage(const std::string& id) const {
+    auto it = images.find(id);
+    return it != images.end() ? &it->second : nullptr;
+}
+
 UILabelRecord* UISystem::getLabel(const std::string& id) {
     auto it = labels.find(id);
     return it != labels.end() ? &it->second : nullptr;
@@ -248,6 +264,7 @@ void UISystem::clear() {
     labels.clear();
     slotStrips.clear();
     progressBars.clear();
+    images.clear();
     groupVisibility.clear();
     buttons.clear();
     activeScreenButtonId.clear();
@@ -364,6 +381,27 @@ void UISystem::drawProgressBar(const UIProgressBarRecord& record,
     progressBar.draw(uiRenderer, record.position, record.size, record.minValue, record.maxValue, record.value, style);
 }
 
+void UISystem::drawImage(const UIImageRecord& record,
+                            UIRenderer& uiRenderer,
+                            int viewportWidth, int viewportHeight) const {
+    glm::vec2 resolvedPosition = record.position;
+    if (record.renderSpace == UIRenderSpace::Screen) {
+        resolvedPosition = resolveScreenWidgetPosition(
+            record.position,
+            record.screenLayout,
+            record.size,
+            viewportWidth,
+            viewportHeight
+        );
+    }
+
+    uiRenderer.drawQuad({
+        {resolvedPosition, record.size},
+        record.region,
+        record.tint
+    });
+}
+
 void UISystem::drawWorld(UIRenderer& uiRenderer,
                         TextRenderer& textRenderer,
                         AssetManager& assetManager,
@@ -371,6 +409,7 @@ void UISystem::drawWorld(UIRenderer& uiRenderer,
     std::vector<const UISlotStripRecord*> visibleSlotStrips;
     std::vector<const UILabelRecord*> visibleLabels;
     std::vector<const UIProgressBarRecord*> visibleProgressBars;
+    std::vector<const UIImageRecord*> visibleImages;
 
     for (const auto& pair : slotStrips) {
         const UISlotStripRecord& record = pair.second;
@@ -393,6 +432,13 @@ void UISystem::drawWorld(UIRenderer& uiRenderer,
         }
     }
 
+    for (const auto& pair : images) {
+        const UIImageRecord& record = pair.second;
+        if (record.renderSpace == UIRenderSpace::World && isWidgetVisible(record.group, record.visible)) {
+            visibleImages.push_back(&record);
+        }
+    }
+
     std::sort(visibleSlotStrips.begin(), visibleSlotStrips.end(),
         [](const UISlotStripRecord* a, const UISlotStripRecord* b) {
             return a->order < b->order;
@@ -408,6 +454,11 @@ void UISystem::drawWorld(UIRenderer& uiRenderer,
             return a->order < b->order;
         });
 
+    std::sort(visibleImages.begin(), visibleImages.end(),
+        [](const UIImageRecord* a, const UIImageRecord* b) {
+            return a->order < b->order;
+        });
+
     // Phase 1: geometry
     for (const UISlotStripRecord* record : visibleSlotStrips) {
         drawSlotStrip(*record, uiRenderer);
@@ -415,6 +466,10 @@ void UISystem::drawWorld(UIRenderer& uiRenderer,
 
     for (const UIProgressBarRecord* record : visibleProgressBars) {
         drawProgressBar(*record, uiRenderer);
+    }
+
+    for (const UIImageRecord* record : visibleImages) {
+        drawImage(*record, uiRenderer, 0, 0);
     }
 
     for (const UILabelRecord* record : visibleLabels) {
@@ -442,6 +497,7 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
     std::vector<const UILabelRecord*> visibleLabels;
     std::vector<const UIProgressBarRecord*> visibleProgressBars;
     std::vector<const UIButtonRecord*> visibleButtons;
+    std::vector<const UIImageRecord*> visibleImages;
 
     for (const auto& pair : slotStrips) {
         const UISlotStripRecord& record = pair.second;
@@ -471,6 +527,13 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
         }
     }
 
+    for (const auto& pair : images) {
+        const UIImageRecord& record = pair.second;
+        if (record.renderSpace == UIRenderSpace::Screen && isWidgetVisible(record.group, record.visible)) {
+            visibleImages.push_back(&record);
+        }
+    }
+
     std::sort(visibleSlotStrips.begin(), visibleSlotStrips.end(),
         [](const UISlotStripRecord* a, const UISlotStripRecord* b) {
             return a->order < b->order;
@@ -491,9 +554,17 @@ void UISystem::drawScreen(UIRenderer& uiRenderer,
             return a->order < b->order;
         });
 
+    std::sort(visibleImages.begin(), visibleImages.end(),
+        [](const UIImageRecord* a, const UIImageRecord* b) {
+            return a->order < b->order;
+        });
+
     // Draw Phase 1: render all geometry first
     for (const UISlotStripRecord* record : visibleSlotStrips) {
         drawSlotStrip(*record, uiRenderer);
+    }
+    for (const UIImageRecord* record : visibleImages) {
+        drawImage(*record, uiRenderer, viewportWidth, viewportHeight);
     }
     for (const UILabelRecord* record : visibleLabels) {
         drawLabelScreenGeometry(*record, uiRenderer, textRenderer, assetManager, viewportWidth, viewportHeight);

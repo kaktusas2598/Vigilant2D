@@ -9,6 +9,7 @@
 #include "Sprite.hpp"
 #include "AnimatedSprite.hpp"
 #include "Texture.hpp"
+#include "TileMapData.hpp" // for makeRegionFromGrid
 
 EntityFactory::EntityFactory(Scene& scene,
                              AssetManager& assetManager,
@@ -37,8 +38,17 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
         Texture* texture = assetManager.getTexture(definition.texture);
         if (texture != nullptr) {
             auto sprite = std::make_unique<Sprite>();
-            // TODO: add ability to sample from texture region optionally
-            sprite->setRegion(TextureRegion::full(texture));
+            if (definition.hasTextureGrid) {
+                sprite->setRegion(makeRegionFromGrid(
+                    texture,
+                    definition.textureGridColumn,
+                    definition.textureGridRow,
+                    definition.textureGridColumns,
+                    definition.textureGridRows
+                ));
+            } else {
+                sprite->setRegion(TextureRegion::full(texture));
+            }
             entity.setSprite(std::move(sprite));
         }
     }
