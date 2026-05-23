@@ -27,6 +27,9 @@ public:
     void requestSessionReset(const std::string& baseScreenId);
     bool consumeSessionResetRequest(std::string& outBaseScreenId);
 
+    void requestMapWarp(const std::string& mapPath, const std::string& spawnName);
+    bool consumeMapWarpRequest(std::string& outMapPath, std::string& outSpawnName);
+
     const std::string& getCurrentBase() const { return currentBaseScreenId; }
     const std::string& getCurrentOverlay() const { return currentOverlayScreenId; }
 
@@ -55,4 +58,8 @@ private:
 
     bool sessionResetRequested = false;
     std::string requestedResetBaseScreenId;
+
+    bool mapWarpRequested = false;
+    std::string requestWarpMapPath;
+    std::string requestWarpSpawnName;
 };

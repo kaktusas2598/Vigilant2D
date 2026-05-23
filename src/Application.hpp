@@ -63,6 +63,10 @@ class Application {
         void clearGameplaySession();
         void performPendingSessionReset();
 
+        bool loadMapIntoScene(const std::string& mapPath);
+        bool performMapWarp(const std::string& mapPath, const std::string& spawnName);
+        void performPendingMapWarp();
+
         Window window;
         ImGuiLayer uiLayer;
         std::unique_ptr<EngineEditor> engineEditor = nullptr;

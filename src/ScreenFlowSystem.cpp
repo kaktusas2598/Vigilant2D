@@ -13,6 +13,9 @@ bool ScreenFlowSystem::loadScreens(const std::vector<ScreenDefinition>& definiti
     gameplayPaused = false;
     sessionResetRequested = false;
     requestedResetBaseScreenId = "main_menu";
+    mapWarpRequested = false;
+    requestWarpMapPath.clear();
+    requestWarpSpawnName.clear();
 
     std::string initialScreenId;
     for (const ScreenDefinition& definition: definitions) {
@@ -176,6 +179,24 @@ bool ScreenFlowSystem::consumeSessionResetRequest(std::string& outBaseScreenId) 
     sessionResetRequested = false;
     outBaseScreenId = requestedResetBaseScreenId;
     requestedResetBaseScreenId = "main_menu";
+    return true;
+}
+
+void ScreenFlowSystem::requestMapWarp(const std::string& mapPath, const std::string& spawnName) {
+    mapWarpRequested = !mapPath.empty();
+    requestWarpMapPath = mapPath;
+    requestWarpSpawnName = spawnName;
+}
+
+bool ScreenFlowSystem::consumeMapWarpRequest(std::string& outMapPath, std::string& outSpawnName) {
+    if (!mapWarpRequested)
+        return false;
+    
+    mapWarpRequested = false;
+    outMapPath = requestWarpMapPath;
+    outSpawnName = requestWarpSpawnName;
+    requestWarpMapPath.clear();
+    requestWarpSpawnName.clear();
     return true;
 }
 

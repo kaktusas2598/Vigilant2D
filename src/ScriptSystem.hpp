@@ -74,6 +74,7 @@ class ScriptSystem {
         bool attachToEntity(const Entity& entity);
         bool callEntityOnCreate(const Entity& entity);
         bool callEntityOnUpdate(const Entity& entity, float dt);
+        bool callEntityOnDestroy(const Entity& entity);
         void detachFromEntity(const Entity& entity);
         bool callTableFunction(const ScriptInstance& instance, const char* functionName);
         bool callTableFunction(const ScriptInstance& instance, const char* functionName, float dt);

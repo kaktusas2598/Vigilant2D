@@ -19,6 +19,7 @@ return {
     data = {
         health = 100,
         type = "player",
-        damage = 3
+        damage = 3,
+        persist_across_maps = true
     }
 }

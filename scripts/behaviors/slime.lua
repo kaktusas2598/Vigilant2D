@@ -121,4 +121,8 @@ function M.on_update(self, dt)
     end
 end
 
+function M.on_destroy(self)
+    ui.remove_progress_bar(self.health_bar_id)
+end
+
 return M

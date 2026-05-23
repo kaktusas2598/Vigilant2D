@@ -1099,6 +1099,21 @@ static int l_load_map(lua_State* L) {
     return 1;
 }
 
+static int l_request_map_warp(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* mapPath = luaL_checkstring(L, 1);
+    const char* spawnName = luaL_checkstring(L, 2);
+
+    scriptSystem->getRuntimeScreenFlowSystem()->requestMapWarp(mapPath, spawnName);
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_run_script(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr) {
@@ -1511,6 +1526,18 @@ static int l_ui_create_label(lua_State* L) {
     }
 
     lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_ui_remove_label(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    lua_pushboolean(L, uiSystem->removeLabel(id) ? 1 : 0);
     return 1;
 }
 
@@ -2776,6 +2803,18 @@ static int l_ui_create_progress_bar(lua_State* L) {
     return 1;
 }
 
+static int l_ui_remove_progress_bar(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    lua_pushboolean(L, uiSystem->removeProgressBar(id) ? 1 : 0);
+    return 1;
+}
+
 static int l_ui_set_progress_bar_render_space(lua_State* L) {
     UISystem* uiSystem = getUISystem(L);
     if (uiSystem == nullptr) {
@@ -3177,6 +3216,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "load_map");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_request_map_warp, 1);
+    lua_setfield(luaState, -2, "request_map_warp");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_create_emitter_from_preset, 1);
     lua_setfield(luaState, -2, "create_emitter_from_preset");
 
@@ -3282,6 +3325,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_label, 1);
     lua_setfield(luaState, -2, "create_label");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_remove_label, 1);
+    lua_setfield(luaState, -2, "remove_label");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_label_text, 1);
@@ -3434,6 +3481,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_create_progress_bar, 1);
     lua_setfield(luaState, -2, "create_progress_bar");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_remove_progress_bar, 1);
+    lua_setfield(luaState, -2, "remove_progress_bar");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_progress_bar_render_space, 1);

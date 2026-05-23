@@ -96,6 +96,9 @@ struct TileMapData {
 // TODO: Don't like these global methods just sittin there below data definitions
 const TilesetData* findTilesetForGid(const TileMapData& map, int gid);
 TextureRegion makeRegionForGid(const TilesetData& tileset, Texture* texture,  int gid);
+bool tryFindPointObjectWorldPosition(const TileMapData& map,
+                                     const std::string& objectName,
+                                     glm::vec2& outWorldPosition);
 inline TextureRegion makeRegionFromGrid(
     Texture* texture,
     int frameX,

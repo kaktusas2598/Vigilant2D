@@ -18,6 +18,10 @@ class Scene {
         Entity& createEntity(const std::string& id);
         bool destroyEntity(const std::string& id);
         void setTileMap(std::unique_ptr<TileMap> newMap);
+
+        const std::vector<std::string>& getPendingDestroyedEntityIds() const { return pendingDestroyedEntityIds; }
+        void clearPendingDestroyedEntityIds();
+        bool eraseEntityImmediately(const std::string& id);
     
         Entity* findEntityByID(const std::string& id);
         const Entity* findEntityByID(const std::string& id) const;
@@ -32,9 +36,9 @@ class Scene {
         const std::vector<std::unique_ptr<Entity>>& getEntities() const { return entities; }
         unsigned int getEntityCount() const { return entities.size(); }
     private:
-        // TODO: might want make more than 1 map available
         std::unique_ptr<TileMap> tileMap;
         std::vector<std::unique_ptr<Entity>> entities;
+        std::vector<std::string> pendingDestroyedEntityIds;
         PhysicsWorld2D physicsWorld;
 
 };

@@ -175,6 +175,13 @@ bool ScriptSystem::callEntityOnCreate(const Entity& entity) {
     return callTableFunction(it->second, "on_create");
 }
 
+bool ScriptSystem::callEntityOnDestroy(const Entity& entity) {
+    auto it = entityScripts.find(entity.getID());
+    if (it == entityScripts.end())
+        return false;
+    return callTableFunction(it->second, "on_destroy");
+}
+
 bool ScriptSystem::callEntityOnUpdate(const Entity& entity, float dt) {
     auto it = entityScripts.find(entity.getID());
     if (it == entityScripts.end())

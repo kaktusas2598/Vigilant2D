@@ -111,6 +111,109 @@ void Application::performPendingSessionReset() {
     }
 }
 
+bool Application::loadMapIntoScene(const std::string& mapPath) {
+    auto map = std::make_unique<TileMap>();
+    if (!map->loadFromFile(mapPath, assetManager))
+        return false;
+
+    scene.setTileMap(std::move(map));
+    return true;
+}
+
+bool Application::performMapWarp(const std::string& mapPath, const std::string& spawnName) {
+    struct PersistedEntityState {
+        std::string id;
+        std::string definitionId;
+        PropertyBag customData;
+    };
+
+    std::vector<PersistedEntityState> persisted;
+    for (const auto& entityPtr : scene.getEntities()) {
+        if (entityPtr == nullptr)
+            continue;
+
+        const CustomValue* persistValue = entityPtr->getCustomData().get("persist_across_maps");
+        const bool shouldPersist = persistValue != nullptr &&
+            std::holds_alternative<bool>(*persistValue) &&
+            std::get<bool>(*persistValue);
+
+        if (shouldPersist) {
+            PersistedEntityState state;
+            state.id = entityPtr->getID();
+            state.customData = entityPtr->getCustomData();
+
+            if (const CustomValue* defValue = entityPtr->getCustomData().get("entity_definition");
+                defValue != nullptr && std::holds_alternative<std::string>(*defValue)) {
+                state.definitionId = std::get<std::string>(*defValue);
+            }
+
+            persisted.push_back(std::move(state));
+        }
+
+        if (entityPtr->hasScript()) {
+            scriptSystem.callEntityOnDestroy(*entityPtr);
+            scriptSystem.detachFromEntity(*entityPtr);
+        }
+    }
+
+    scriptSystem.cancelAllTasks();
+    scene.clear();
+    selectionManager.clear();
+    topDownControllerSystem->clearControlledEntity();
+
+    if (!loadMapIntoScene(mapPath))
+        return false;
+
+    if (scene.getTileMap() != nullptr) {
+        entityFactory->spawnFromMapObjects(scene.getTileMap()->getData(), "Entities");
+    }
+
+    for (const auto& state : persisted) {
+        Entity* entity = scene.findEntityByID(state.id);
+        if (entity == nullptr && !state.definitionId.empty()) {
+            entity = entityFactory->spawnFromDefinition(
+                state.id,
+                "scripts/entities/" + state.definitionId + ".lua",
+                {0.0f, 0.0f}
+            );
+        }
+
+        if (entity != nullptr) {
+            entity->getCustomData() = state.customData;
+        }
+    }
+
+    if (scene.getTileMap() != nullptr && !spawnName.empty()) {
+        glm::vec2 spawnPos;
+        if (tryFindPointObjectWorldPosition(scene.getTileMap()->getData(), spawnName, spawnPos)) {
+            if (Entity* player = scene.findEntityByID("player")) {
+                if (player->hasPhysicsBody()) {
+                    const glm::vec2 boundPos = spawnPos + player->getBoundsOffset();
+                    const glm::vec2 centre = boundPos + player->getBoundsSize() * 0.5f;
+                    scene.getPhysicsWorld().setBodyPositionPixels(player->getPhysicsBody(), centre);
+                } else {
+                    player->transform.position = spawnPos;
+                }
+            }
+        }
+    }
+
+    topDownControllerSystem->clearControlledEntity();
+    topDownControllerSystem->attachFirstConfiguredEntity();
+    return true;
+}
+
+void Application::performPendingMapWarp() {
+    std::string mapPath;
+    std::string spawnName;
+    if (!screenFlowSystem->consumeMapWarpRequest(mapPath, spawnName))
+        return;
+
+    if (!performMapWarp(mapPath, spawnName)) {
+        VG_ERROR("Failed to warp to map '" + mapPath + "'");
+    }
+}
+
 void Application::init() {
     window.init(initialWindowWidth, initialWindowHeight);
     glEnable(GL_BLEND);
@@ -264,6 +367,18 @@ void Application::update(float dt) {
                 scriptSystem.callEntityOnUpdate(*entityPtr, dt);
             }
         }
+
+        for (const std::string& id : scene.getPendingDestroyedEntityIds()) {
+            if (Entity* entity = scene.findEntityByID(id)) {
+                if (entity->hasScript()) {
+                    scriptSystem.callEntityOnDestroy(*entity);
+                    scriptSystem.detachFromEntity(*entity);
+                }
+            }
+
+            scene.eraseEntityImmediately(id);
+        }
+        scene.clearPendingDestroyedEntityIds();
     }
     scriptSystem.updateTasks(dt);
     
@@ -285,6 +400,8 @@ void Application::update(float dt) {
     if (!uiLayer.wantsMouseCapture() && selectionManagerEnabled) {
         selectionManager.update(input, camera, scene);
     }
+
+    performPendingMapWarp();
 
     performPendingSessionReset();
 }

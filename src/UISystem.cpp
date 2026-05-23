@@ -149,6 +149,26 @@ UIImageRecord& UISystem::createImage(const std::string& id) {
     return image;
 }
 
+bool UISystem::removeLabel(const std::string& id) {
+    return labels.erase(id) > 0;
+}
+
+bool UISystem::removeProgressBar(const std::string& id) {
+    return progressBars.erase(id) > 0;
+}
+
+bool UISystem::removeImage(const std::string& id) {
+    return images.erase(id) > 0;
+}
+
+bool UISystem::removeButton(const std::string& id) {
+    return buttons.erase(id) > 0;
+}
+
+bool UISystem::removeSlotStrip(const std::string& id) {
+    return slotStrips.erase(id) > 0;
+}
+
 UIContainerRecord* UISystem::getContainer(const std::string& id) {
     auto it = containers.find(id);
     return it != containers.end() ? &it->second : nullptr;

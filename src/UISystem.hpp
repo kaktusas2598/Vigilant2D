@@ -168,6 +168,12 @@ class UISystem {
         UIButtonRecord& createButton(const std::string& id);
         UIImageRecord& createImage(const std::string& id);
 
+        bool removeLabel(const std::string& id);
+        bool removeProgressBar(const std::string& id);
+        bool removeImage(const std::string& id);
+        bool removeButton(const std::string& id);
+        bool removeSlotStrip(const std::string& id);
+
         UIContainerRecord* getContainer(const std::string& id);
         const UIContainerRecord* getContainer(const std::string& id) const;
 

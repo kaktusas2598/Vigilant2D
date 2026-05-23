@@ -1,5 +1,7 @@
 #include "Scene.hpp"
 
+#include <algorithm>
+
 void Scene::update(float dt) {
     if (tileMap)
         tileMap->update(dt);
@@ -39,6 +41,7 @@ void Scene::clear() {
     tileMap.reset();
     entities.clear();
     physicsWorld.clear();
+    pendingDestroyedEntityIds.clear();
 }
 
 void Scene::drawPhysicsDebug(Renderer& renderer) const {
@@ -54,8 +57,21 @@ Entity& Scene::createEntity(const std::string& id) {
     return entity;
 }
 
-// TODO: should also make sure script is detached, physics body and etc - proper cleanup
 bool Scene::destroyEntity(const std::string& id) {
+    // Make sure item does not get request to be destroyed more than once in quick succession
+    if (std::find(pendingDestroyedEntityIds.begin(), pendingDestroyedEntityIds.end(), id) != pendingDestroyedEntityIds.end()) {
+        return true;
+    }
+
+    pendingDestroyedEntityIds.push_back(id);
+    return true;
+}
+
+void Scene::clearPendingDestroyedEntityIds() {
+    pendingDestroyedEntityIds.clear();
+}
+
+bool Scene::eraseEntityImmediately(const std::string& id) {
     for (auto it = entities.begin(); it != entities.end(); ++it) {
         if (*it && (*it)->getID() == id) {
             entities.erase(it);

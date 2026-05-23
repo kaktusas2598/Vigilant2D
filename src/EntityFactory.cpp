@@ -69,6 +69,16 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
 
     entity.getCustomData() = definition.customData;
 
+    std::string definitionId = definitionFile;
+    const size_t slash = definitionId.find_last_of("/\\");
+    if (slash != std::string::npos)
+        definitionId = definitionId.substr(slash + 1);
+    const size_t dot = definitionId.find_last_of('.');
+    if (dot != std::string::npos)
+        definitionId = definitionId.substr(0, dot);
+
+    entity.getCustomData().set("entity_definition", definitionId);
+
     if (!definition.behaviorScript.empty()) {
         entity.setScript(definition.behaviorScript);
         if (scriptSystem.attachToEntity(entity)) {
@@ -134,6 +144,10 @@ void EntityFactory::spawnFromMapObjects(const TileMapData& mapData, const std::s
             Entity* entity = spawnFromDefinition(runtimeId, definitionFile, position);
             if (entity == nullptr)
                 continue;
+
+            for (const auto& [key, value] : object.properties) {
+                entity->getCustomData().set(key, value);
+            }
 
             // Custom properties
             if (const std::string* animationId = object.findProperty("animation")) {
