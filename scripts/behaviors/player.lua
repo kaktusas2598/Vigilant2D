@@ -68,7 +68,7 @@ function M.on_create(self)
     ui.set_slot_strip_slot_count("hud.hotbar", 8)
     ui.set_slot_strip_position("hud.hotbar", 20, 20)
     ui.set_slot_strip_slot_texture("hud.hotbar", 0, "shovel")
-    ui.set_slot_strip_slot_tileset_tile("hud.hotbar", 1, "cozy_farm_free_version", 108)
+    ui.set_slot_strip_slot_texture_grid("hud.hotbar", 1, "cozy_farm_seeds", 5, 0, 7, 6)
     ui.set_slot_strip_slot_texture("hud.hotbar", 2, "sword")
     ui.set_slot_strip_slot_texture("hud.hotbar", 3, "bucket")
     ui.set_slot_strip_selected("hud.hotbar", 0)
@@ -185,7 +185,7 @@ function M.on_update(self, dt)
             -- add crop on top of ground an farmland layer
             local tilled = grid.get_data("farm", tileX, tileY, "tilled")
             if tilled == true then
-                engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_free_version", 110)
+                engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_crops", 31)
             end
         elseif self.selected_tool == "sword" and not self.action_locked then
             self.action_locked = true
