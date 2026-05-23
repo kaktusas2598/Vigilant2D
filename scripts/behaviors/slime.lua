@@ -112,7 +112,7 @@ function M.on_update(self, dt)
             if dropId ~= nil then
                 engine.set_entity_data(dropId, "type", "pickup")
                 engine.set_entity_data(dropId, "count", 1)
-                engine.set_entity_data(dropId, "item_type", "coin")
+                engine.set_entity_data(dropId, "item_type", "item_drop")
             end
             local potato = engine.spawn_entity("potato", x + 4, y + 3)
 
