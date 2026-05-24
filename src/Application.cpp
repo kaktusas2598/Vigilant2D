@@ -347,13 +347,6 @@ void Application::update(float dt) {
     glfwGetFramebufferSize(window.getHandle(), &display_w, &display_h);
     camera.setViewportSize((float)display_w, (float)display_h);
 
-    const double scrollY = input.getScrollY();
-    if (scrollY != 0.0f) {
-        const float zoomPerStep = 1.095f;
-        const float factor = std::pow(zoomPerStep, static_cast<float>(scrollY));
-        camera.setZoom(camera.getZoom() * factor);
-    }
-
     if ((input.isKeyPressed(GLFW_KEY_GRAVE_ACCENT)))
         debugMode = !debugMode;
 
@@ -385,7 +378,17 @@ void Application::update(float dt) {
     if (cameraFollowState.followEntity) {
         Entity* target = scene.findEntityByID(cameraFollowState.targetEntityId);
         if (target != nullptr) {
-            camera.setTargetPosition(target->transform.position + target->transform.scale * 0.5f);
+            glm::vec2 targetPosition = target->transform.position + target->transform.scale * 0.5f;
+            TileMap* map = scene.getTileMap();
+            // Clamp camera so that it doesnt leave map bounds
+            if (map != nullptr) {
+                const TileMapData& data = map->getData();
+                const float worldWidth = static_cast<float>(data.width * data.tileWidth);
+                const float worldHeight = static_cast<float>(data.height * data.tileHeight);
+                targetPosition = camera.clampPositionToWorldBounds(targetPosition, worldWidth, worldHeight);
+            }
+
+            camera.setTargetPosition(targetPosition);
         } else {
             camera.clearTargetPosition();
         }

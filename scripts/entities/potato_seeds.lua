@@ -3,7 +3,7 @@ return {
     texture_grid = {
         column = 5,
         row = 0,
-        columns = 8,
+        columns = 7,
         rows = 6 
     },
     scale = {12, 12},

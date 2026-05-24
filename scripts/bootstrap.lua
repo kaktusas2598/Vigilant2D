@@ -17,7 +17,16 @@ function M.post_start(self)
 
     grid.create("farm", 120, 120)
     list.create("inventory", 16)
-    list.create("hotbar", 8)
+
+    -- Initial inventory items
+    list.set_data("inventory", 0, "item_id", "shovel")
+    list.set_data("inventory", 0, "count", 1)
+    list.set_data("inventory", 1, "item_id", "potato_seeds")
+    list.set_data("inventory", 1, "count", 10)
+    list.set_data("inventory", 2, "item_id", "sword")
+    list.set_data("inventory", 2, "count", 1)
+    list.set_data("inventory", 3, "item_id", "bucket")
+    list.set_data("inventory", 3, "count", 1)
 end
 
 return M

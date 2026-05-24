@@ -1014,6 +1014,17 @@ static int l_get_mouse_world_position(lua_State* L) {
     return 2;
 }
 
+static int l_get_mouse_scroll_y(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
+        lua_pushnumber(L, 0.0);
+        return 1;
+    }
+
+    lua_pushnumber(L, scriptSystem->getRuntimeInput()->getScrollY());
+    return 1;
+}
+
 // --------- PARTICLE BINDINGS
 static int l_emit_particles(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
@@ -2556,6 +2567,31 @@ static int l_ui_set_slot_strip_selected(lua_State* L) {
     return 1;
 }
 
+static int l_ui_clear_slot_strip_slot(lua_State* L) {
+    UISystem* uiSystem = getUISystem(L);
+    if (uiSystem == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const char* id = luaL_checkstring(L, 1);
+    const int slotIndex = static_cast<int>(luaL_checkinteger(L, 2));
+
+    UISlotStripRecord* strip = uiSystem->getSlotStrip(id);
+    if (strip == nullptr || slotIndex < 0 || slotIndex >= static_cast<int>(strip->slots.size())) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    UISlotStripItemRecord& slot = strip->slots[static_cast<size_t>(slotIndex)];
+    slot.occupied = false;
+    slot.icon = TextureRegion::full(nullptr);
+    slot.tint = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
 static int l_ui_set_slot_strip_slot_texture(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     UISystem* uiSystem = getUISystem(L);
@@ -3180,6 +3216,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "get_mouse_world_position");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_mouse_scroll_y, 1);
+    lua_setfield(luaState, -2, "get_mouse_scroll_y");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_emit_particles, 1);
     lua_setfield(luaState, -2, "emit_particles");
 
@@ -3449,6 +3489,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_slot_strip_selected, 1);
     lua_setfield(luaState, -2, "set_slot_strip_selected");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_ui_clear_slot_strip_slot, 1);
+    lua_setfield(luaState, -2, "clear_slot_strip_slot");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_ui_set_slot_strip_slot_texture, 1);

@@ -1,6 +1,46 @@
 local inventory = require("scripts.lib.inventory")
 local M = {}
 
+local function get_hotbar_slot(slotIndex)
+    return inventory.get_slot("inventory", slotIndex)
+end
+
+local function get_item_display_name(itemId)
+    local items = require("scripts.items")
+    local itemDef = items[itemId]
+    if itemDef ~= nil and itemDef.name ~= nil then
+        return itemDef.name
+    end
+
+    return itemId or "Empty"
+end
+
+local function refresh_hotbar_ui()
+    for i = 0, 7 do
+        local slot = get_hotbar_slot(i)
+
+        if slot ~= nil and slot.item_id ~= nil and slot.item_id ~= "" then
+            ui.set_slot_strip_slot_from_entity_definition("hud.hotbar", i, slot.item_id)
+        else
+            ui.clear_slot_strip_slot("hud.hotbar", i)
+        end
+    end
+end
+
+local function apply_selected_slot(self)
+    local slot = get_hotbar_slot(self.selected_slot - 1)
+
+    if slot ~= nil and slot.item_id ~= nil and slot.item_id ~= "" then
+        self.selected_tool = slot.item_id
+        ui.set_label_text("hud.hotbar_label", get_item_display_name(slot.item_id))
+    else
+        self.selected_tool = nil
+        ui.set_label_text("hud.hotbar_label", "Empty")
+    end
+
+    ui.set_slot_strip_selected("hud.hotbar", self.selected_slot - 1)
+end
+
 -- Calculate sword hitbox based on player facing direction
 local function get_sword_hit_box(self)
     local centreX, centreY = engine.get_entity_centre(self.id)
@@ -47,18 +87,11 @@ local function update_player_world_ui(self)
         ui.set_progress_bar_value("player.health", health)
         ui.set_label_position("player.name", playerX, playerY + 42)
     end
-
-    -- local coinCount = inventory.count_item("inventory", "coin")
-    -- ui.set_label_text("hud.coins", "Coins: " .. tostring(coinCount))
 end
-
-local FOLLOW_DISTANCE = 100.0
-local STOP_DISTANCE = 5.0
-local MOVE_SPEED = 20.0
 
 function M.on_create(self)
     print("[LUA] Player created")
-    self.selected_tool = "shovel"
+    self.selected_slot = 1
     self.health = 72;
     self.max_health = 100;
     self.facing = "down"
@@ -67,12 +100,6 @@ function M.on_create(self)
     ui.create_slot_strip("hud.hotbar", "hud")
     ui.set_slot_strip_slot_count("hud.hotbar", 8)
     ui.set_slot_strip_position("hud.hotbar", 20, 20)
-    ui.set_slot_strip_slot_texture("hud.hotbar", 0, "shovel")
-    ui.set_slot_strip_slot_texture_grid("hud.hotbar", 1, "cozy_farm_seeds", 5, 0, 7, 6)
-    ui.set_slot_strip_slot_texture("hud.hotbar", 2, "sword")
-    ui.set_slot_strip_slot_texture("hud.hotbar", 3, "bucket")
-    ui.set_slot_strip_selected("hud.hotbar", 0)
-    ui.set_slot_strip_slot_texture_grid("hud.hotbar", 5, "cozy_farm_seeds", 0, 0, 8, 6)
 
     ui.create_label("hud.hotbar_label", "hud")
     ui.set_label_text("hud.hotbar_label", "Hotbar")
@@ -89,10 +116,15 @@ function M.on_create(self)
     ui.set_label_render_space("player.name", "world")
     ui.set_label_text("player.name", "Player")
     ui.set_label_scale("player.name", 0.35)
+
     update_player_world_ui(self)
+    refresh_hotbar_ui()
+    apply_selected_slot(self)
+
 end
 
 function M.on_update(self, dt)
+    refresh_hotbar_ui()
     update_player_world_ui(self)
 
     if self.action_locked and engine.is_entity_animation_finished(self.id) then
@@ -135,30 +167,23 @@ function M.on_update(self, dt)
         return
     end
 
-    -- Particle emitter test
-    if engine.is_key_pressed(80) then -- 'p'
-        engine.emit_particles("crates_0", mouseX, mouseY, 128)
-    elseif engine.is_key_pressed(66) then -- 'b'
-        engine.emit_particles("blood_0", mouseX, mouseY, 256)
+    -- Mouse wheel changes selected slot in hotbar
+    local scrollY = engine.get_mouse_scroll_y()
+    if scrollY > 0 then
+        self.selected_slot = (self.selected_slot - 2) % 8 + 1
+        apply_selected_slot(self)
+    elseif scrollY < 0 then
+        self.selected_slot = (self.selected_slot % 8) + 1
+        apply_selected_slot(self)
     end
 
-    -- Hotbar/selected tool update based on input
-    if engine.is_key_pressed(49) then -- '1'
-        self.selected_tool = "shovel"
-        ui.set_slot_strip_selected("hud.hotbar", 0)
-        ui.set_label_text("hud.hotbar_label", "Shovel")
-    elseif engine.is_key_pressed(50) then -- '2'
-        self.selected_tool = "seeds"
-        ui.set_slot_strip_selected("hud.hotbar", 1)
-        ui.set_label_text("hud.hotbar_label", "Potato seeds")
-    elseif engine.is_key_pressed(51) then -- '3'
-        self.selected_tool = "sword"
-        ui.set_slot_strip_selected("hud.hotbar", 2)
-        ui.set_label_text("hud.hotbar_label", "Sword")
-    elseif engine.is_key_pressed(52) then -- '4'
-        self.selected_tool = "bucket"
-        ui.set_label_text("hud.hotbar_label", "Bucket")
-        ui.set_slot_strip_selected("hud.hotbar", 3)
+    -- Number keys 1..8 map directly to hotbar slots 1..8.
+    for i = 1, 8 do
+        if engine.is_key_pressed(48 + i) then
+            self.selected_slot = i
+            apply_selected_slot(self)
+            break
+        end
     end
 
     if engine.is_mouse_button_pressed(0) then -- LMB
@@ -177,7 +202,7 @@ function M.on_update(self, dt)
         engine.set_entity_animation_locked(self.id, true)
         engine.play_entity_animation(self.id, "player_hoe_right", true)
 
-        elseif self.selected_tool == "seeds" then
+        elseif self.selected_tool == "potato_seeds" then
             -- add crop on top of ground an farmland layer
             local tilled = grid.get_data("farm", tileX, tileY, "tilled")
             if tilled == true then

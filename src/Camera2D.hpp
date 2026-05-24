@@ -39,6 +39,10 @@ class Camera2D {
             }
         }
 
+        glm::vec2 clampPositionToWorldBounds(const glm::vec2& desiredPosition,
+                                        float worldWidth,
+                                        float worldHeight) const;
+
     private:
         glm::vec2 position;
         float zoom;

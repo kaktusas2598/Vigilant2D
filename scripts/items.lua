@@ -1,4 +1,16 @@
 return {
+    shovel = {
+        name = "Iron Shovel",
+        stack_limit = 1
+    },
+    sword = {
+        name = "Iron Sword",
+        stack_limit = 1 
+    },
+    bucket = {
+        name = "Bucket",
+        stack_limit = 1
+    },
     item_drop = {
         name = "Coin",
         stack_limit = 999,
