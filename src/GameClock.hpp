@@ -25,6 +25,15 @@ class GameClock {
             minute = newMinute;
         }
 
+        void advanceMinutes(int minutesToAdvance) {
+            if (minutesToAdvance <= 0)
+                return;
+            
+            for (int i = 0; i < minutesToAdvance; ++i) {
+                advanceMinute();
+            }
+        }
+
         void setRunning(bool value) { running = value; }
 
         int getDay() const { return day; }

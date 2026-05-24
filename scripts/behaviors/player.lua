@@ -136,6 +136,10 @@ function M.on_create(self)
     self.health = 72;
     self.max_health = 100;
     self.facing = "down"
+    -- Track last game clock time to not crash FPS with farm growth logic
+    self.last_clock_day = -1
+    self.last_clock_hour = -1
+    self.last_clock_minute = -1
 
     -- Create Quickbar UI
     ui.create_slot_strip("hud.hotbar", "hud")
@@ -165,22 +169,59 @@ function M.on_create(self)
     ui.set_label_text("player.name", "Player")
     ui.set_label_scale("player.name", 0.35)
 
+   -- Debug time controls 
+    ui.create_button("hud.time_plus_1h", "hud")
+    ui.set_button_text("hud.time_plus_1h", "+1h")
+    ui.set_button_screen_anchor("hud.time_plus_1h", 1.0, 0.0)
+    ui.set_button_screen_pivot("hud.time_plus_1h", 1.0, 0.0)
+    ui.set_button_position("hud.time_plus_1h", -20, 56)
+    ui.set_button_size("hud.time_plus_1h", 72, 32)
+
+    ui.create_button("hud.time_plus_6h", "hud")
+    ui.set_button_text("hud.time_plus_6h", "+6h")
+    ui.set_button_screen_anchor("hud.time_plus_6h", 1.0, 0.0)
+    ui.set_button_screen_pivot("hud.time_plus_6h", 1.0, 0.0)
+    ui.set_button_position("hud.time_plus_6h", -100, 56)
+    ui.set_button_size("hud.time_plus_6h", 72, 32)
+
     update_player_world_ui(self)
     refresh_hotbar_ui()
     apply_selected_slot(self)
 end
 
 function M.on_update(self, dt)
-    -- HACK: restore farm state
-    if not self.farm_restored then
-        farmState.restore()
-        self.farmRestored = true
+    local currentMapPath = engine.get_current_map_path()
+    if farmState.is_farm_map(currentMapPath) then
+        if not self.farm_restored then
+            print("[Lua] Restoring farm data")
+            farmState.restore()
+            self.farm_restored = true
+        end
+    else
+        self.farm_restored = false
     end
 
-    refresh_hotbar_ui()
     update_player_world_ui(self)
     update_clock_ui()
     update_day_night_visuals()
+
+    if ui.was_button_clicked("hud.time_plus_1h") then
+        engine.advance_game_time(60)
+    end
+
+    if ui.was_button_clicked("hud.time_plus_6h") then
+        engine.advance_game_time(360)
+    end
+
+    local day, hour, minute = engine.get_game_time()
+    if day ~= nil then
+        if day ~= self.last_clock_day or hour ~= self.last_clock_hour or minute ~= self.last_clock_minute then
+            farmState.update_growth(day, hour, minute)
+            self.last_clock_day = day
+            self.last_clock_hour = hour
+            self.last_clock_minute = minute
+        end
+    end
 
 
     if self.action_locked and engine.is_entity_animation_finished(self.id) then
@@ -256,10 +297,13 @@ function M.on_update(self, dt)
         elseif self.selected_tool == "potato_seeds" then
             local tilled = farmState.is_tilled(tileX, tileY)
             local crop = farmState.get_crop(tileX, tileY)
+
             if tilled == true and crop == nil then
                 local removed = inventory.remove_item("inventory", "potato_seeds", 1)
                 if removed > 0 then
-                    farmState.plant(tileX, tileY, "potato_seeds")
+                    local day, hour, minute = engine.get_game_time()
+                    farmState.plant(tileX, tileY, "potato_seeds", day, hour, minute)
+                    refresh_hotbar_ui()
                 end
             end
         elseif self.selected_tool == "sword" and not self.action_locked then

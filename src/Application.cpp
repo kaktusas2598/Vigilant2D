@@ -77,6 +77,7 @@ void Application::clearGameplaySession() {
 
     for (const auto& entityPtr : scene.getEntities()) {
         if (entityPtr != nullptr && entityPtr->hasScript()) {
+            scriptSystem.callEntityOnDestroy(*entityPtr);
             scriptSystem.detachFromEntity(*entityPtr);
         }
     }

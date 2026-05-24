@@ -1111,6 +1111,23 @@ static int l_load_map(lua_State* L) {
     return 1;
 }
 
+static int l_get_current_map_path(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeScene() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    TileMap* map = scriptSystem->getRuntimeScene()->getTileMap();
+    if (map == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua_pushstring(L, map->getSourcePath().c_str());
+    return 1;
+}
+
 static int l_request_map_warp(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeScreenFlowSystem() == nullptr) {
@@ -1180,6 +1197,19 @@ static int l_set_game_time_scale(lua_State* L) {
     return 1;
 }
 
+static int l_advance_game_time(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeGameClock() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const int minutes = static_cast<int>(luaL_checkinteger(L, 1));
+    scriptSystem->getRuntimeGameClock()->advanceMinutes(minutes);
+
+    lua_pushboolean(L, 1);
+    return 1;
+}
 static int l_run_script(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr) {
@@ -3311,6 +3341,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_setfield(luaState, -2, "load_map");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_current_map_path, 1);
+    lua_setfield(luaState, -2, "get_current_map_path");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_request_map_warp, 1);
     lua_setfield(luaState, -2, "request_map_warp");
 
@@ -3337,6 +3371,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_set_game_time_scale, 1);
     lua_setfield(luaState, -2, "set_game_time_scale");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_advance_game_time, 1);
+    lua_setfield(luaState, -2, "advance_game_time");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_start_entity_coroutine, 1);

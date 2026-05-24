@@ -20,6 +20,7 @@ bool TileMap::loadFromFile(const std::string &fileName, AssetManager& assets) {
 
     runtime.initFromMapData(mapData);
     rebuildAnimatedTileInstances();
+    sourcePath = fileName;
     loaded = true;
     return true;
 }

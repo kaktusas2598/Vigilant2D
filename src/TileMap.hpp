@@ -22,6 +22,7 @@ class TileMap {
         void drawForegroundLayers(Renderer& renderer) const;
         void update(float dt);
         bool isLoaded() const { return loaded; }
+        const std::string &getSourcePath() const { return sourcePath; }
 
         glm::ivec2 worldToTile(const glm::vec2& worldPosition) const;
         glm::vec2 tileToWorld(int tileX, int tileY) const;
@@ -43,6 +44,7 @@ class TileMap {
         Texture* resolveTextureForTileset(const TilesetData* tileset);
         const TilesetData* findTilesetByName(const std::string& name) const;
 
+        std::string sourcePath;
         bool loaded = false;
         TileMapData mapData;
         TileRuntime runtime;
