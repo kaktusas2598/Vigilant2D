@@ -1,4 +1,5 @@
 local inventory = require("scripts.lib.inventory")
+local farmState = require("scripts.lib.farm_state")
 local M = {}
 
 local function get_hotbar_slot(slotIndex)
@@ -170,10 +171,17 @@ function M.on_create(self)
 end
 
 function M.on_update(self, dt)
+    -- HACK: restore farm state
+    if not self.farm_restored then
+        farmState.restore()
+        self.farmRestored = true
+    end
+
     refresh_hotbar_ui()
     update_player_world_ui(self)
     update_clock_ui()
     update_day_night_visuals()
+
 
     if self.action_locked and engine.is_entity_animation_finished(self.id) then
         engine.set_entity_animation_locked(self.id, false)
@@ -236,14 +244,9 @@ function M.on_update(self, dt)
 
     if engine.is_mouse_button_pressed(0) then -- LMB
         if self.selected_tool == "shovel" then
-            -- Replace grass tile on grounds layer with ground tile
-            engine.set_tile_tileset_override("Ground", tileX, tileY, "cozyFarm", 491)
-            -- Place tilled ground tile in farmland layer above
-            engine.set_tile_tileset_override("Farmland", tileX, tileY, "cozyFarm", 494)
-
             engine.play_sound("shovel", 0.7)
+            farmState.till(tileX, tileY)
             engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
-            grid.set_data("farm", tileX, tileY, "tilled", true)
 
         -- different animation texture test
         self.action_locked = true
@@ -251,19 +254,19 @@ function M.on_update(self, dt)
         engine.play_entity_animation(self.id, "player_hoe_right", true)
 
         elseif self.selected_tool == "potato_seeds" then
-            -- add crop on top of ground an farmland layer
-            local tilled = grid.get_data("farm", tileX, tileY, "tilled")
-            if tilled == true then
+            local tilled = farmState.is_tilled(tileX, tileY)
+            local crop = farmState.get_crop(tileX, tileY)
+            if tilled == true and crop == nil then
                 local removed = inventory.remove_item("inventory", "potato_seeds", 1)
                 if removed > 0 then
-                    engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_crops", 31)
+                    farmState.plant(tileX, tileY, "potato_seeds")
                 end
             end
         elseif self.selected_tool == "sword" and not self.action_locked then
             self.action_locked = true
             engine.set_entity_animation_locked(self.id, true)
             play_attack_animation(self)
-            engine.play_sound("sword_hit", 0.7)
+            engine.play_sound("sword_hit", 0.6)
 
             local hitX, hitY, hitW, hitH = get_sword_hit_box(self)
             if hitX ~= nil then
@@ -291,10 +294,7 @@ function M.on_update(self, dt)
     -- Clear tile overrides with RMB
     if engine.is_mouse_button_pressed(1) then -- RMB
         engine.play_sound("clear_dirt", 0.7)
-        engine.clear_tile_override("Ground", tileX, tileY)
-        engine.clear_tile_override("Farmland", tileX, tileY)
-        engine.clear_tile_override("Crops", tileX, tileY)
-        grid.set_data("farm", tileX, tileY, "tilled", false)
+        farmState.clear(tileX, tileY)
     end
 
     local playerHealth = engine.get_entity_data(self.id, "health")
