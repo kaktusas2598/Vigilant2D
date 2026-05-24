@@ -275,7 +275,8 @@ void Application::init() {
         &cameraFollowState,
         &postProcessSettings,
         &dataGridRegistry,
-        &dataListRegistry
+        &dataListRegistry,
+        &gameClock
     });
 
     // Load and Register screens
@@ -353,6 +354,7 @@ void Application::update(float dt) {
     uiSystem.updateScreenInteraction(input, textRenderer, assetManager, display_w, display_h);
     screenFlowSystem->update(dt);
     if (!screenFlowSystem->isGameplayPaused()) {
+        gameClock.update(dt);
         topDownControllerSystem->update(dt);
         scene.update(dt);
         for (const auto& entityPtr : scene.getEntities()) {

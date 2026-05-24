@@ -22,6 +22,7 @@
 #include "glm/glm.hpp"
 #include "DataGridRegistry.hpp"
 #include "DataListRegistry.hpp"
+#include "GameClock.hpp"
 
 // --------- STATIC HELPERS
 static ScriptSystem* getScriptSystem(lua_State* L) {
@@ -1121,6 +1122,60 @@ static int l_request_map_warp(lua_State* L) {
     const char* spawnName = luaL_checkstring(L, 2);
 
     scriptSystem->getRuntimeScreenFlowSystem()->requestMapWarp(mapPath, spawnName);
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_get_game_time(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeGameClock() == nullptr) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    GameClock* clock = scriptSystem->getRuntimeGameClock();
+    lua_pushinteger(L, clock->getDay());
+    lua_pushinteger(L, clock->getHour());
+    lua_pushinteger(L, clock->getMinute());
+    return 3;
+}
+
+static int l_get_time_of_day_01(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeGameClock() == nullptr) {
+        lua_pushnumber(L, 0.0);
+        return 1;
+    }
+
+    lua_pushnumber(L, scriptSystem->getRuntimeGameClock()->getTimeOfDay01());
+    return 1;
+}
+
+static int l_set_game_time(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeGameClock() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const int day = static_cast<int>(luaL_checkinteger(L, 1));
+    const int hour = static_cast<int>(luaL_checkinteger(L, 2));
+    const int minute = static_cast<int>(luaL_checkinteger(L, 3));
+
+    scriptSystem->getRuntimeGameClock()->setTime(day, hour, minute);
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int l_set_game_time_scale(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeGameClock() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const float minutesPerSecond = static_cast<float>(luaL_checknumber(L, 1));
+    scriptSystem->getRuntimeGameClock()->setMinutesPerRealSecond(minutesPerSecond);
     lua_pushboolean(L, 1);
     return 1;
 }
@@ -3266,6 +3321,22 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_run_script, 1);
     lua_setfield(luaState, -2, "run_script");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_game_time, 1);
+    lua_setfield(luaState, -2, "get_game_time");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_get_time_of_day_01, 1);
+    lua_setfield(luaState, -2, "get_time_of_day_01");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_game_time, 1);
+    lua_setfield(luaState, -2, "set_game_time");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_set_game_time_scale, 1);
+    lua_setfield(luaState, -2, "set_game_time_scale");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_start_entity_coroutine, 1);

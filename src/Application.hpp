@@ -41,6 +41,7 @@
 #include "ScreenFlowSystem.hpp"
 #include "DataGridRegistry.hpp"
 #include "DataListRegistry.hpp"
+#include "GameClock.hpp"
 
 class Application {
     public:
@@ -111,4 +112,5 @@ class Application {
 
         DataGridRegistry dataGridRegistry;
         DataListRegistry dataListRegistry;
+        GameClock gameClock;
 };

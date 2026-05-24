@@ -343,6 +343,7 @@ void ScriptSystem::setRuntimeContext(ScriptRuntimeContext newContext) {
     runtimeContext.window = newContext.window;
     runtimeContext.dataGridRegistry = newContext.dataGridRegistry;
     runtimeContext.dataListRegistry = newContext.dataListRegistry;
+    runtimeContext.gameClock = newContext.gameClock;
 }
 
 bool ScriptSystem::reportError(int status, const std::string &context) {

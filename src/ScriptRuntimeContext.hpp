@@ -17,6 +17,7 @@ class CameraFollowState;
 class PostProcessSettings;
 class DataGridRegistry;
 class DataListRegistry;
+class GameClock;
 
 struct ScriptRuntimeContext {
     Scene* scene = nullptr;
@@ -36,4 +37,5 @@ struct ScriptRuntimeContext {
     PostProcessSettings* postProcessSettings = nullptr;
     DataGridRegistry* dataGridRegistry = nullptr;
     DataListRegistry* dataListRegistry = nullptr;
+    GameClock* gameClock = nullptr;
 };

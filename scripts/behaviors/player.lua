@@ -41,6 +41,35 @@ local function apply_selected_slot(self)
     ui.set_slot_strip_selected("hud.hotbar", self.selected_slot - 1)
 end
 
+local function update_day_night_visuals()
+    local t = engine.get_time_of_day_01()
+
+    -- 0.0 = midnight, 0.25 = 6:00, 0.5 = noon, 0.75 = 18:00
+    if t == nil then
+        return
+    end
+
+    local brightness = 0.0
+    local tintR = 1.0
+    local tintG = 1.0
+    local tintB = 1.0
+    local saturation = 1.0
+
+    if t < 0.20 or t > 0.85 then
+        brightness = -0.18
+        tintR, tintG, tintB = 0.72, 0.78, 1.0
+        saturation = 0.82
+    elseif t < 0.28 or t > 0.75 then
+        brightness = -0.08
+        tintR, tintG, tintB = 1.0, 0.92, 0.82
+        saturation = 0.95
+    end
+
+    engine.set_post_brightness(brightness)
+    engine.set_post_tint(tintR, tintG, tintB)
+    engine.set_post_saturation(saturation)
+end
+
 -- Calculate sword hitbox based on player facing direction
 local function get_sword_hit_box(self)
     local centreX, centreY = engine.get_entity_centre(self.id)
@@ -89,6 +118,17 @@ local function update_player_world_ui(self)
     end
 end
 
+local function update_clock_ui()
+    local day, hour, minute = engine.get_game_time()
+    if day == nil then
+        return
+    end
+
+    local hourText = string.format("%02d", hour)
+    local minuteText = string.format("%02d", minute)
+    ui.set_label_text("hud.clock", "Day " .. day .. " " .. hourText .. ":" .. minuteText)
+end
+
 function M.on_create(self)
     print("[LUA] Player created")
     self.selected_slot = 1
@@ -105,6 +145,13 @@ function M.on_create(self)
     ui.set_label_text("hud.hotbar_label", "Hotbar")
     ui.set_label_position("hud.hotbar_label", 20, 96)
 
+    -- Create clock label
+    ui.create_label("hud.clock", "hud")
+    ui.set_label_text("hud.clock", "Day 1 06:00")
+    ui.set_label_screen_anchor("hud.clock", 1.0, 1.0)
+    ui.set_label_screen_pivot("hud.clock", 1.0, 0.0)
+    ui.set_label_position("hud.clock", -20, -30)
+
     -- Create player HUD
     ui.create_progress_bar("player.health", "world")
     ui.set_progress_bar_render_space("player.health", "world")
@@ -120,12 +167,13 @@ function M.on_create(self)
     update_player_world_ui(self)
     refresh_hotbar_ui()
     apply_selected_slot(self)
-
 end
 
 function M.on_update(self, dt)
     refresh_hotbar_ui()
     update_player_world_ui(self)
+    update_clock_ui()
+    update_day_night_visuals()
 
     if self.action_locked and engine.is_entity_animation_finished(self.id) then
         engine.set_entity_animation_locked(self.id, false)
@@ -206,7 +254,10 @@ function M.on_update(self, dt)
             -- add crop on top of ground an farmland layer
             local tilled = grid.get_data("farm", tileX, tileY, "tilled")
             if tilled == true then
-                engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_crops", 31)
+                local removed = inventory.remove_item("inventory", "potato_seeds", 1)
+                if removed > 0 then
+                    engine.set_tile_tileset_override("Crops", tileX, tileY, "cozy_farm_crops", 31)
+                end
             end
         elseif self.selected_tool == "sword" and not self.action_locked then
             self.action_locked = true

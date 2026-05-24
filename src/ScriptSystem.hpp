@@ -39,6 +39,7 @@ class ScreenFlowSystem;
 class PostProcessSettings;
 class DataGridRegistry;
 class DataListRegistry;
+class GameClock;
 
 struct ScriptInstance {
     std::string fileName;
@@ -108,6 +109,7 @@ class ScriptSystem {
         AudioSystem* getRuntimeAudioSystem() const { return runtimeContext.audioSystem; }
         ScreenFlowSystem* getRuntimeScreenFlowSystem() const { return runtimeContext.screenFlowSystem; }
         Window* getRuntimeWindow() const { return runtimeContext.window; }
+        GameClock* getRuntimeGameClock() const { return runtimeContext.gameClock; }
         PostProcessSettings* getPostProcessSettings() const { return runtimeContext.postProcessSettings; }
         DataGridRegistry* getDataGridRegistry() const { return runtimeContext.dataGridRegistry; }
         DataListRegistry* getDataListRegistry() const { return runtimeContext.dataListRegistry; }
