@@ -71,6 +71,31 @@ local function update_day_night_visuals()
     engine.set_post_saturation(saturation)
 end
 
+local function try_harvest_crop(tileX, tileY)
+    if not farmState.is_crop_mature(tileX, tileY) then
+        return false
+    end
+
+    local itemId = farmState.get_crop_harvest_item(tileX, tileY)
+    if itemId == nil then
+        return false
+    end
+
+    local worldX, worldY = engine.get_tile_world_position(tileX, tileY)
+    farmState.clear_crop(tileX, tileY)
+
+    local dropId = engine.spawn_entity(itemId, worldX + 8, worldY + 8)
+    if dropId ~= nil then
+        engine.set_entity_data(dropId, "type", "pickup")
+        engine.set_entity_data(dropId, "count", 1)
+        engine.set_entity_data(dropId, "item_type", itemId)
+    end
+
+    engine.play_sound("pickup_item", 0.7)
+    engine.emit_particles("dust_puff_0", worldX + 8, worldY + 8, 10)
+    return true
+end
+
 -- Calculate sword hitbox based on player facing direction
 local function get_sword_hit_box(self)
     local centreX, centreY = engine.get_entity_centre(self.id)
@@ -284,6 +309,11 @@ function M.on_update(self, dt)
     end
 
     if engine.is_mouse_button_pressed(0) then -- LMB
+        -- Any tool or empty with LMB click - try harvesting crop
+        if try_harvest_crop(tileX, tileY) then
+            return
+        end
+
         if self.selected_tool == "shovel" then
             engine.play_sound("shovel", 0.7)
             farmState.till(tileX, tileY)
@@ -306,6 +336,7 @@ function M.on_update(self, dt)
                     refresh_hotbar_ui()
                 end
             end
+
         elseif self.selected_tool == "sword" and not self.action_locked then
             self.action_locked = true
             engine.set_entity_animation_locked(self.id, true)

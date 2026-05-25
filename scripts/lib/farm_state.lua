@@ -81,6 +81,15 @@ function M.set_growth_stage(tileX, tileY, stage)
     grid.set_data("farm", tileX, tileY, "growth_stage", stage)
 end
 
+function M.is_crop_mature(tileX, tileY)
+    local crop = M.get_crop(tileX, tileY)
+    if crop == "potato_seeds" then
+        return M.get_growth_stage(tileX, tileY) >= 3
+    end
+
+    return false
+end
+
 function M.till(tileX, tileY)
     M.ensure()
     grid.set_data("farm", tileX, tileY, "tilled", true)
@@ -130,6 +139,28 @@ function M.apply_crop_visual(tileX, tileY)
     if tileId ~= nil then
         engine.set_tile_tileset_override("Crops", tileX, tileY, CROPS_TILESET, tileId)
     end
+end
+
+function M.clear_crop(tileX, tileY)
+    M.ensure()
+
+    grid.set_data("farm", tileX, tileY, "crop", "")
+    grid.set_data("farm", tileX, tileY, "growth_stage", 0)
+    grid.set_data("farm", tileX, tileY, "planted_day", 0)
+    grid.set_data("farm", tileX, tileY, "planted_hour", 0)
+    grid.set_data("farm", tileX, tileY, "planted_minute", 0)
+    unmark_planted(tileX, tileY)
+
+    engine.clear_tile_override("Crops", tileX, tileY)
+end
+
+function M.get_crop_harvest_item(tileX, tileY)
+    local crop = M.get_crop(tileX, tileY)
+    if crop == "potato_seeds" then
+        return "potato"
+    end
+
+    return nil
 end
 
 function M.update_growth_for_tile(tileX, tileY, currentDay, currentHour, currentMinute)
