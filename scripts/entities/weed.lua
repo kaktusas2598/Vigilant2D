@@ -6,7 +6,7 @@ return {
         columns = 54,
         rows = 50 
     },
-    scale = {32, 32},
+    scale = {16, 16},
     physics_enabled = true,
     data = {
         type = "breakable"

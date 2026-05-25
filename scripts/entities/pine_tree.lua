@@ -8,6 +8,8 @@ return {
     },
     scale = {32, 48},
     physics_enabled = true,
+    bounds_offset = {13, 0},
+    bounds_size = {8, 10},
     data = {
         type = "breakable"
     }
