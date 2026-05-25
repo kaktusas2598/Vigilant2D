@@ -1,5 +1,6 @@
 local inventory = require("scripts.lib.inventory")
 local farmState = require("scripts.lib.farm_state")
+local farmClutter = require("scripts.lib.farm_clutter")
 local items = require("scripts.items")
 local playerHotbar = require("scripts.lib.player_hotbar")
 
@@ -81,10 +82,22 @@ function M.can_use_selected_item_on_tile(self, tileX, tileY)
     end
 
     if self.selected_tool == "shovel" then
+        if farmClutter.can_break_with_tool(tileX, tileY, "shovel") then
+            return true
+        end
         return not farmState.is_tilled(tileX, tileY)
+
+    elseif self.selected_tool == "axe" then
+        return farmClutter.can_break_with_tool(tileX, tileY, "axe")
+
+    elseif self.selected_tool == "pickaxe" then
+        return farmClutter.can_break_with_tool(tileX, tileY, "pickaxe")
+
     elseif self.selected_tool == "potato_seeds" then
         return farmState.is_tilled(tileX, tileY) and farmState.get_crop(tileX, tileY) == nil
+
     elseif self.selected_tool == "bucket" then
+        -- TODO: implement watering
         return true
     end
 
@@ -118,6 +131,13 @@ end
 
 function M.commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
     if self.selected_tool == "shovel" then
+        if farmClutter.can_break_with_tool(tileX, tileY, "shovel") then
+            if farmClutter.break_at(tileX, tileY) then
+                engine.play_sound("clear_dirt", 0.7)
+                return true
+            end
+        end
+
         farmState.till(tileX, tileY)
         engine.play_sound("shovel", 0.7)
         engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
@@ -126,6 +146,18 @@ function M.commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
         engine.set_entity_animation_locked(self.id, true)
         engine.play_entity_animation(self.id, "player_hoe_right", true)
         return true
+    
+    elseif self.selected_tool == "axe" then
+        if farmClutter.break_at(tileX, tileY) then
+            engine.play_sound("wood_hit", 4.0, true)
+            return true
+        end
+
+    elseif self.selected_tool == "pickaxe" then
+        if farmClutter.break_at(tileX, tileY) then
+            engine.play_sound("rock_hit", 2.0, true)
+            return true
+        end
 
     elseif self.selected_tool == "potato_seeds" then
         local removed = inventory.remove_item("inventory", "potato_seeds", 1)

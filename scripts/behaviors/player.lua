@@ -1,4 +1,5 @@
 local farmState = require("scripts.lib.farm_state")
+local farmClutter = require("scripts.lib.farm_clutter")
 local playerHud = require("scripts.lib.player_hud")
 local playerHotbar = require("scripts.lib.player_hotbar")
 local playerTools = require("scripts.lib.player_tools")
@@ -94,7 +95,14 @@ function M.on_update(self, dt)
         if not self.farm_restored then
             print("[Lua] Restoring farm data")
             farmState.restore()
+            farmClutter.generate_once()
             self.farm_restored = true
+            -- Defect actual clutter entity spawning to a bit later on to avoid
+            -- segfault
+            engine.start_entity_coroutine(self, function(self)
+                engine.wait(0.1)
+                farmClutter.restore()
+            end)
         end
     else
         self.farm_restored = false
@@ -174,8 +182,7 @@ function M.on_update(self, dt)
 
     local mouseHeld = engine.is_mouse_button_down(0)
     local selectedHoldTime = playerTools.get_selected_item_number(self, "hold_time", 0.0)
-
-    if mouseHeld and self.selected_tool == "shovel" then
+    if mouseHeld and selectedHoldTime > 0.0 then
         if playerTools.can_use_selected_item_on_tile(self, tileX, tileY) then
             if self.use_hold_tile_x ~= tileX or self.use_hold_tile_y ~= tileY then
                 self.use_hold_tile_x = tileX

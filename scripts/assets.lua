@@ -10,11 +10,14 @@ return {
         { id = "sword", path = "assets/rpg_icons_free/sword.png" },
         { id = "bucket", path = "assets/rpg_icons_free/empty_bucket.png" },
         { id = "torch", path = "assets/rpg_icons_free/torch.png" },
+        { id = "log", path = "assets/rpg_icons_free/log.png" },
         { id = "cozy_ui_inventory", path = "assets/Cozy Farm/ui/inventory.png" },
         { id = "cozy_ui_inventory_chopped", path = "assets/Cozy Farm/ui/inventory_chopped.png" },
         { id = "cozy_ui_items", path = "assets/Cozy Farm/ui/items.png" },
         { id = "cozy_farm_seeds", path = "assets/Cozy Farm/farming/seeds.png" },
         { id = "cozy_farm_item_carry", path = "assets/Cozy Farm/farming/item_carry.png" },
+        { id = "cozy_farm_tiles", path = "assets/Cozy Farm/tiles/tiles.png" },
+        { id = "cozy_farm_trees", path = "assets/Cozy Farm/tiles/tree_shake.png" },
         { id = "ui_flat", path = "assets/textures/ui/Spritesheet_UI_Flat.png" },
     },
     fonts = {
@@ -28,5 +31,7 @@ return {
         { id = "pickup_item", path = "assets/sounds/yodguard-drop-or-pickup-item.mp3" },
         { id = "shovel", path = "assets/sounds/shovel.mp3" },
         { id = "clear_dirt", path = "assets/sounds/clear-dirt.mp3" },
+        { id = "wood_hit", path = "assets/sounds/wood hit 1.wav" },
+        { id = "rock_hit", path = "assets/sounds/rock 10.wav" },
     }
 }
