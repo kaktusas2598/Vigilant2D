@@ -226,6 +226,12 @@ function M.on_update(self, dt)
         self.farm_restored = false
     end
 
+    if engine.get_entity_data(self.id, "hotbar_dirty") == true then
+        refresh_hotbar_ui()
+        apply_selected_slot(self)
+        engine.set_entity_data(self.id, "hotbar_dirty", false)
+    end
+
     update_player_world_ui(self)
     update_clock_ui()
     update_day_night_visuals()

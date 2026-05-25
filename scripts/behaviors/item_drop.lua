@@ -44,11 +44,16 @@ function M.on_update(self, dt)
         engine.emit_particles("coin_pickup_0", dropX, dropY, 18)
         engine.emit_particles("heal_sparkle_0", playerX, playerY, 10)
 
+        -- TODO: insteawd of automatic effect apply - instead items will have to be 
+        -- consumed to get effect - vegetables consumed for hp/energy, seeds planted etc.
         -- Temp for testing
         local playerHealth = engine.get_entity_data("player", "health") or 0
         engine.set_entity_data("player", "health", playerHealth + 10)
 
         if added > 0 then
+            -- HACK: Allows player to know that hotbar UI needs to be refreshed
+            engine.set_entity_data("player", "hotbar_dirty", true)
+
             engine.destroy_entity(self.id)
         end
     end
