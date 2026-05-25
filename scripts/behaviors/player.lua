@@ -1,5 +1,7 @@
 local inventory = require("scripts.lib.inventory")
 local farmState = require("scripts.lib.farm_state")
+local items = require("scripts.items")
+
 local M = {}
 
 local function get_hotbar_slot(slotIndex)
@@ -7,13 +9,97 @@ local function get_hotbar_slot(slotIndex)
 end
 
 local function get_item_display_name(itemId)
-    local items = require("scripts.items")
     local itemDef = items[itemId]
     if itemDef ~= nil and itemDef.name ~= nil then
         return itemDef.name
     end
 
     return itemId or "Empty"
+end
+
+local function get_selected_item_def(self)
+    if self.selected_tool == nil then
+        return nil
+    end
+
+    return items[self.selected_tool]
+end
+
+local function get_selected_item_number(self, key, defaultValue)
+    local itemDef = get_selected_item_def(self)
+    if itemDef == nil then
+        return defaultValue
+    end
+
+    local value = itemDef[key]
+    if type(value) == "number" then
+        return value
+    end
+
+    return defaultValue
+end
+
+local function get_selected_item_type(self)
+    local itemDef = get_selected_item_def(self)
+    if itemDef == nil then
+        return nil
+    end
+
+    return itemDef.type
+end
+
+local function get_tile_centre(tileX, tileY)
+    local worldX, worldY = engine.get_tile_world_position(tileX, tileY)
+    if worldX == nil then
+        return nil
+    end
+
+    return worldX + 8, worldY + 8
+end
+
+local function is_tile_in_use_range(self, tileX, tileY)
+    local playerX, playerY = engine.get_entity_centre(self.id)
+    local tileCentreX, tileCentreY = get_tile_centre(tileX, tileY)
+    if playerX == nil or tileCentreX == nil then
+        return false
+    end
+
+    local dx = tileCentreX - playerX
+    local dy = tileCentreY - playerY
+    local distance = math.sqrt(dx * dx + dy * dy)
+
+    local useRange = get_selected_item_number(self, "use_range", 0)
+    return useRange > 0 and distance <= useRange
+end
+
+local function can_preview_selected_item(self)
+    local itemType = get_selected_item_type(self)
+    return itemType == "tool" or itemType == "seed"
+end
+
+local function can_use_selected_item_on_tile(self, tileX, tileY)
+    if not can_preview_selected_item(self) then
+        return false
+    end
+
+    -- TODO:
+    -- if not farmState.is_inside_farm_area(tileX, tileY) then
+    --     return false
+    -- end
+
+    if not is_tile_in_use_range(self, tileX, tileY) then
+        return false
+    end
+
+    if self.selected_tool == "shovel" then
+        return not farmState.is_tilled(tileX, tileY)
+    elseif self.selected_tool == "potato_seeds" then
+        return farmState.is_tilled(tileX, tileY) and farmState.get_crop(tileX, tileY) == nil
+    elseif self.selected_tool == "bucket" then
+        return true
+    end
+
+    return false
 end
 
 local function refresh_hotbar_ui()
@@ -155,6 +241,55 @@ local function update_clock_ui()
     ui.set_label_text("hud.clock", "Day " .. day .. " " .. hourText .. ":" .. minuteText)
 end
 
+local function update_tool_preview(self, tileX, tileY)
+    if not can_preview_selected_item(self) then
+        ui.set_image_visible("player.tool_preview", false)
+        return
+    end
+
+    local worldX, worldY = engine.get_tile_world_position(tileX, tileY)
+    if worldX == nil then
+        ui.set_image_visible("player.tool_preview", false)
+        return
+    end
+
+    ui.set_image_position("player.tool_preview", worldX, worldY)
+
+    if can_use_selected_item_on_tile(self, tileX, tileY) then
+        ui.set_image_tint("player.tool_preview", 0.45, 1.0, 0.45, 0.75)
+    elseif is_tile_in_use_range(self, tileX, tileY) then
+        ui.set_image_tint("player.tool_preview", 1.0, 0.4, 0.4, 0.75)
+    else
+        ui.set_image_tint("player.tool_preview", 0.6, 0.6, 0.6, 0.55)
+    end
+
+    ui.set_image_visible("player.tool_preview", true)
+end
+
+local function commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
+    if self.selected_tool == "shovel" then
+        farmState.till(tileX, tileY)
+        engine.play_sound("shovel", 0.7)
+        engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
+
+        self.action_locked = true
+        engine.set_entity_animation_locked(self.id, true)
+        engine.play_entity_animation(self.id, "player_hoe_right", true)
+        return true
+
+    elseif self.selected_tool == "potato_seeds" then
+        local removed = inventory.remove_item("inventory", "potato_seeds", 1)
+        if removed > 0 then
+            local day, hour, minute = engine.get_game_time()
+            farmState.plant(tileX, tileY, "potato_seeds", day, hour, minute)
+            refresh_hotbar_ui()
+            return true
+        end
+    end
+
+    return false
+end
+
 function M.on_create(self)
     print("[LUA] Player created")
     self.selected_slot = 1
@@ -165,6 +300,9 @@ function M.on_create(self)
     self.last_clock_day = -1
     self.last_clock_hour = -1
     self.last_clock_minute = -1
+    self.use_hold_elapsed = 0.0
+    self.use_hold_tile_x = nil
+    self.use_hold_tile_y = nil
 
     -- Create Quickbar UI
     ui.create_slot_strip("hud.hotbar", "hud")
@@ -208,6 +346,14 @@ function M.on_create(self)
     ui.set_button_screen_pivot("hud.time_plus_6h", 1.0, 0.0)
     ui.set_button_position("hud.time_plus_6h", -100, 56)
     ui.set_button_size("hud.time_plus_6h", 72, 32)
+
+    -- Tool use preview overlay
+    ui.create_image("player.tool_preview", "hud")
+    ui.set_image_render_space("player.tool_preview", "world")
+    ui.set_image_size("player.tool_preview", 16, 16)
+    ui.set_image_order("player.tool_preview", 20)
+    ui.set_image_visible("player.tool_preview", false)
+    ui.set_image_texture_rect("player.tool_preview", "ui_flat", 384, 32, 32, 32)
 
     update_player_world_ui(self)
     refresh_hotbar_ui()
@@ -314,35 +460,48 @@ function M.on_update(self, dt)
         end
     end
 
+    update_tool_preview(self, tileX, tileY)
+
+    local mouseHeld = engine.is_mouse_button_down(0)
+    local selectedHoldTime = get_selected_item_number(self, "hold_time", 0.0)
+
+    if mouseHeld and self.selected_tool == "shovel" then
+        if can_use_selected_item_on_tile(self, tileX, tileY) then
+            if self.use_hold_tile_x ~= tileX or self.use_hold_tile_y ~= tileY then
+                self.use_hold_tile_x = tileX
+                self.use_hold_tile_y = tileY
+                self.use_hold_elapsed = 0.0
+            end
+
+            self.use_hold_elapsed = self.use_hold_elapsed + dt
+
+            if self.use_hold_elapsed >= selectedHoldTime then
+                commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
+                self.use_hold_elapsed = 0.0
+                self.use_hold_tile_x = nil
+                self.use_hold_tile_y = nil
+            end
+        else
+            self.use_hold_elapsed = 0.0
+            self.use_hold_tile_x = nil
+            self.use_hold_tile_y = nil
+        end
+    else
+        self.use_hold_elapsed = 0.0
+        self.use_hold_tile_x = nil
+        self.use_hold_tile_y = nil
+    end
+
     if engine.is_mouse_button_pressed(0) then -- LMB
         -- Any tool or empty with LMB click - try harvesting crop
-        if try_harvest_crop(tileX, tileY) then
+        if is_tile_in_use_range(self, tileX, tileY) and try_harvest_crop(tileX, tileY) then
             return
         end
 
-        if self.selected_tool == "shovel" then
-            engine.play_sound("shovel", 0.7)
-            farmState.till(tileX, tileY)
-            engine.emit_particles("dust_puff_0", mouseX, mouseY + 8, 14)
-
-        -- different animation texture test
-        self.action_locked = true
-        engine.set_entity_animation_locked(self.id, true)
-        engine.play_entity_animation(self.id, "player_hoe_right", true)
-
-        elseif self.selected_tool == "potato_seeds" then
-            local tilled = farmState.is_tilled(tileX, tileY)
-            local crop = farmState.get_crop(tileX, tileY)
-
-            if tilled == true and crop == nil then
-                local removed = inventory.remove_item("inventory", "potato_seeds", 1)
-                if removed > 0 then
-                    local day, hour, minute = engine.get_game_time()
-                    farmState.plant(tileX, tileY, "potato_seeds", day, hour, minute)
-                    refresh_hotbar_ui()
-                end
+        if self.selected_tool == "potato_seeds" then
+            if can_use_selected_item_on_tile(self, tileX, tileY) then
+                commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
             end
-
         elseif self.selected_tool == "sword" and not self.action_locked then
             self.action_locked = true
             engine.set_entity_animation_locked(self.id, true)

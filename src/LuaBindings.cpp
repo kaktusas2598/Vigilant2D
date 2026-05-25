@@ -973,6 +973,18 @@ static int l_is_mouse_button_pressed(lua_State* L) {
     return 1;
 }
 
+static int l_is_mouse_button_down(lua_State* L) {
+    ScriptSystem* scriptSystem = getScriptSystem(L);
+    if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    const int button = static_cast<int>(luaL_checkinteger(L, 1));
+    lua_pushboolean(L, scriptSystem->getRuntimeInput()->isMouseButtonDown(button));
+    return 1;
+}
+
 static int l_is_key_pressed(lua_State* L) {
     ScriptSystem* scriptSystem = getScriptSystem(L);
     if (scriptSystem == nullptr || scriptSystem->getRuntimeInput() == nullptr) {
@@ -3287,6 +3299,10 @@ void registerEngineBindings(lua_State* luaState, ScriptSystem& scriptSystem) {
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_is_mouse_button_pressed, 1);
     lua_setfield(luaState, -2, "is_mouse_button_pressed");
+
+    lua_pushlightuserdata(luaState, &scriptSystem);
+    lua_pushcclosure(luaState, l_is_mouse_button_down, 1);
+    lua_setfield(luaState, -2, "is_mouse_button_down");
 
     lua_pushlightuserdata(luaState, &scriptSystem);
     lua_pushcclosure(luaState, l_is_key_pressed, 1);
