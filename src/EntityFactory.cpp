@@ -89,7 +89,15 @@ Entity* EntityFactory::spawnFromDefinition(const std::string& entityId,
     if (definition.physicsEnabled) {
         glm::vec2 bodyPos = entity.getBoundsPosition();
         glm::vec2 bodySize = entity.getBoundsSize();
-        entity.setPhysicsBody(scene.getPhysicsWorld().createDynamicBox(bodyPos, bodySize));
+
+        b2BodyType bodyType = b2_dynamicBody;
+        if (definition.physicsBodyType == PhysicsBodyType::Static) {
+            bodyType = b2_staticBody;
+        } else if (definition.physicsBodyType == PhysicsBodyType::Kinematic) {
+            bodyType = b2_kinematicBody;
+        }
+
+        entity.setPhysicsBody(scene.getPhysicsWorld().createBox(bodyPos, bodySize, bodyType));
     }
 
     if (definition.topDownContoller.has_value()) {

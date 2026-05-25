@@ -6,6 +6,12 @@
 #include "PropertyBag.hpp"
 #include "TopDownControllerConfig.hpp"
 
+enum class PhysicsBodyType {
+    Dynamic,
+    Static,
+    Kinematic
+};
+
 // Used by EntityFactory to load Lua-returned table into Entity
 struct EntityDefinition {
     std::string texture;
@@ -18,6 +24,7 @@ struct EntityDefinition {
 
     std::string behaviorScript;
     bool physicsEnabled = false;
+    PhysicsBodyType physicsBodyType = PhysicsBodyType::Dynamic;
     std::optional<TopDownControllerConfig> topDownContoller;
     PropertyBag customData;
 

@@ -8,6 +8,7 @@ return {
     },
     scale = {32, 32},
     physics_enabled = true,
+    physics_body_type = "static",
     bounds_offset = {8, 0},
     bounds_size = {16, 16},
     data = {

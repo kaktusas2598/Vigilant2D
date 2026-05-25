@@ -6,7 +6,7 @@ return {
         columns = 54,
         rows = 50 
     },
-    scale = {32, 32},
+    scale = {8, 8},
     script = "scripts/behaviors/item_drop.lua",
     physics_enabled = false,
     data = {

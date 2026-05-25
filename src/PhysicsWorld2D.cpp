@@ -1,5 +1,6 @@
 #include "PhysicsWorld2D.hpp"
 
+#include <algorithm>
 #include "TileMapData.hpp"
 
 PhysicsWorld2D::PhysicsWorld2D() {
@@ -22,6 +23,50 @@ void PhysicsWorld2D::clear() {
     createWorld();
 }
 
+b2BodyId PhysicsWorld2D::createBox(const glm::vec2& positionPixels,
+                                   const glm::vec2& sizePixels,
+                                   b2BodyType bodyType) {
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.type = bodyType;
+    bodyDef.position = {
+        toMeters(positionPixels.x + sizePixels.x * 0.5f),
+        toMeters(positionPixels.y + sizePixels.y * 0.5f)
+    };
+
+    if (bodyType == b2_dynamicBody) {
+        bodyDef.gravityScale = 0.0f;
+        bodyDef.motionLocks.angularZ = true;
+        bodyDef.linearDamping = 8.0f;
+    } else if (bodyType == b2_kinematicBody) {
+        bodyDef.gravityScale = 0.0f;
+        bodyDef.motionLocks.angularZ = true;
+    }
+
+    b2BodyId bodyId = b2CreateBody(worldId, &bodyDef);
+
+    b2Polygon polygon = b2MakeBox(
+        toMeters(sizePixels.x * 0.5f),
+        toMeters(sizePixels.y * 0.5f)
+    );
+
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    if (bodyType == b2_dynamicBody) {
+        shapeDef.density = 1.0f;
+    }
+    shapeDef.material.friction = 0.0f;
+    b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
+
+    const bool dynamicLike = bodyType != b2_staticBody;
+    debugBodies.push_back({
+        bodyId,
+        sizePixels,
+        dynamicLike ? glm::vec4{1.0f, 0.3f, 0.2f, 0.28f}
+                    : glm::vec4{0.2f, 0.8f, 1.0f, 0.22f},
+        dynamicLike
+    });
+
+    return bodyId;
+}
 
 b2BodyId PhysicsWorld2D::createStaticBox(float centerX, float centerY, float halfWidth, float halfHeight) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
@@ -83,35 +128,7 @@ void PhysicsWorld2D::buildStaticCollisionFromMap(const TileMapData &map) {
 }
 
 b2BodyId PhysicsWorld2D::createDynamicBox(const glm::vec2 &positionPixels, const glm::vec2 &sizePixels) {
-
-    b2BodyDef bodyDef = b2DefaultBodyDef();
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position = {
-        toMeters(positionPixels.x + sizePixels.x * 0.5f), 
-        toMeters(positionPixels.y + sizePixels.y * 0.5f)
-    };
-    bodyDef.gravityScale = 0.0f;
-    bodyDef.motionLocks.angularZ = true;
-    bodyDef.linearDamping = 8.0f;
-
-    b2BodyId bodyId = b2CreateBody(worldId, &bodyDef);
-
-    b2Polygon polygon = b2MakeBox(
-        toMeters(sizePixels.x * 0.5f), 
-        toMeters(sizePixels.y * 0.5f)
-    );
-    b2ShapeDef shapeDef = b2DefaultShapeDef();
-    shapeDef.density = 1.0f;
-    shapeDef.material.friction = 0.0f;
-    b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
-
-    debugBodies.push_back({
-        bodyId,
-        sizePixels,
-        {1.0f, 0.3f, 0.2f, 0.28f},
-        true
-    });
-    return bodyId;
+    return createBox(positionPixels, sizePixels, b2_dynamicBody);
 }
 
 glm::vec2 PhysicsWorld2D::getBodyPositionPixels(b2BodyId bodyId) const {
@@ -146,6 +163,26 @@ void PhysicsWorld2D::drawDebug(Renderer& renderer) const {
             debugBody.color
         });
     }
+}
+
+void PhysicsWorld2D::destroyBody(b2BodyId bodyId) {
+    if (B2_IS_NULL(bodyId) || !b2Body_IsValid(bodyId)) {
+        return;
+    }
+
+    b2DestroyBody(bodyId);
+
+    staticBodies.erase(
+        std::remove_if(staticBodies.begin(), staticBodies.end(),
+            [bodyId](b2BodyId id) { return B2_ID_EQUALS(id, bodyId); }),
+        staticBodies.end()
+    );
+
+    debugBodies.erase(
+        std::remove_if(debugBodies.begin(), debugBodies.end(),
+            [bodyId](const DebugBodyBox& debugBody) { return B2_ID_EQUALS(debugBody.bodyId, bodyId); }),
+        debugBodies.end()
+    );
 }
 
 void PhysicsWorld2D::createWorld() {

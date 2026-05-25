@@ -74,6 +74,10 @@ void Scene::clearPendingDestroyedEntityIds() {
 bool Scene::eraseEntityImmediately(const std::string& id) {
     for (auto it = entities.begin(); it != entities.end(); ++it) {
         if (*it && (*it)->getID() == id) {
+            if ((*it)->hasPhysicsBody()) {
+                physicsWorld.destroyBody((*it)->getPhysicsBody());
+            }
+
             entities.erase(it);
             return true;
         }

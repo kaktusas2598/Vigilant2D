@@ -8,6 +8,7 @@ return {
     },
     scale = {16, 16},
     physics_enabled = true,
+    physics_body_type = "static",
     data = {
         type = "breakable"
     }

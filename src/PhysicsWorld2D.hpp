@@ -23,6 +23,9 @@ class PhysicsWorld2D {
         void step(float dt);
         void clear();
 
+        b2BodyId createBox(const glm::vec2& positionPixels,
+                    const glm::vec2& sizePixels, b2BodyType bodyType);
+
         b2BodyId createStaticBox(float centerX, float centerY, float halfWidth, float halfHeight);
         void buildStaticCollisionFromMap(const TileMapData& map);
 
@@ -35,6 +38,7 @@ class PhysicsWorld2D {
         int getStaticBodyCount() const { return static_cast<int>(staticBodies.size()); }
         b2WorldId& getWorldId() { return worldId; }
         const std::vector<b2BodyId>& getStaticBodies() const { return staticBodies; }
+        void destroyBody(b2BodyId bodyId);
 
     private:
         void createWorld();

@@ -476,6 +476,17 @@ bool ScriptContentLoader::loadEntityDefinition(const std::string& fileName, Enti
     }
     lua_pop(luaState, 1);
 
+    std::string physicsBodyType;
+    if (readStringField(luaState, tableIndex, "physics_body_type", physicsBodyType)) {
+        if (physicsBodyType == "static") {
+            outDefinition.physicsBodyType = PhysicsBodyType::Static;
+        } else if (physicsBodyType == "kinematic") {
+            outDefinition.physicsBodyType = PhysicsBodyType::Kinematic;
+        } else {
+            outDefinition.physicsBodyType = PhysicsBodyType::Dynamic;
+        }
+    }
+
     // Optional top down controller attached to an entity
     TopDownControllerConfig controllerConfig;
     if (readTopDownControllerField(luaState, tableIndex, "controller", controllerConfig)) {
