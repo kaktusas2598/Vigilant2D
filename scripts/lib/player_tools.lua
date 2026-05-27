@@ -172,4 +172,40 @@ function M.commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
     return false
 end
 
+function M.consume_selected_item(self)
+    local itemType = M.get_selected_item_type(self)
+    if itemType ~= "consumable" or self.selected_tool == nil then
+        return false
+    end
+
+    local itemDef = items[self.selected_tool]
+    if itemDef == nil then
+        return false
+    end
+
+    local removed = inventory.remove_item("inventory", self.selected_tool, 1)
+    if removed <= 0 then
+        return false
+    end
+
+    local healAmount = itemDef.heal_amount or 0
+    if healAmount > 0 then
+        local health = engine.get_entity_data(self.id, "health") or 0
+        local maxHealth = self.max_health or 100
+        local newHealth = math.min(health + healAmount, maxHealth)
+        engine.set_entity_data(self.id, "health", newHealth)
+    end
+
+    playerHotbar.refresh_ui()
+    playerHotbar.apply_selected_slot(self)
+    engine.play_sound("pickup_item", 0.7)
+
+    local playerX, playerY = engine.get_entity_centre(self.id)
+    if playerX ~= nil then
+        engine.emit_particles("heal_sparkle_0", playerX, playerY, 10)
+    end
+
+    return true
+end
+
 return M

@@ -57,6 +57,7 @@ return {
         name = "Potato",
         type = "consumable",
         stack_limit = 99,
+        heal_amount = 10
     },
     potato_seeds = {
         name = "Potato seeds",

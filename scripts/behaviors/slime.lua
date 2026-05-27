@@ -108,13 +108,12 @@ function M.on_update(self, dt)
             engine.play_entity_animation(self.id, "slime_death", true)
             engine.wait(0.4)
 
-            local dropId = engine.spawn_entity("item_drop", x, y)
+            local dropId = engine.spawn_entity("potato", x + 4, y + 3)
             if dropId ~= nil then
                 engine.set_entity_data(dropId, "type", "pickup")
                 engine.set_entity_data(dropId, "count", 1)
-                engine.set_entity_data(dropId, "item_type", "item_drop")
+                engine.set_entity_data(dropId, "item_type", "potato")
             end
-            local potato = engine.spawn_entity("potato", x + 4, y + 3)
 
             engine.destroy_entity(self.id)
         end)

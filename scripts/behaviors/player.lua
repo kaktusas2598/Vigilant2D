@@ -97,8 +97,7 @@ function M.on_update(self, dt)
             farmState.restore()
             farmClutter.generate_once()
             self.farm_restored = true
-            -- Defect actual clutter entity spawning to a bit later on to avoid
-            -- segfault
+            -- Defer actual clutter entity spawning to a bit later on to avoid segfault
             engine.start_entity_coroutine(self, function(self)
                 engine.wait(0.1)
                 farmClutter.restore()
@@ -248,12 +247,15 @@ function M.on_update(self, dt)
         end
     end
 
-    -- Clear tile overrides with RMB
     if engine.is_mouse_button_pressed(1) then -- RMB
-        engine.play_sound("clear_dirt", 0.7)
-        farmState.clear(tileX, tileY)
+        if self.selected_tool == "shovel" then
+            engine.play_sound("clear_dirt", 0.7)
+            farmState.clear(tileX, tileY)
+        elseif playerTools.get_selected_item_type(self) == "consumable" then
+            playerTools.consume_selected_item(self)
+        end
     end
-
+    
     local playerHealth = engine.get_entity_data(self.id, "health")
     if playerHealth ~= nil and playerHealth < 0 and not self.game_over then
         self.game_over = true

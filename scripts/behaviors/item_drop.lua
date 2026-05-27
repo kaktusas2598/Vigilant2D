@@ -39,18 +39,11 @@ function M.on_update(self, dt)
         local inventory = require("scripts.lib.inventory")
         local added = inventory.add_item("inventory", itemType, count)
         
-        print("Item picked up: " .. itemType .. " (x" .. count .. ")")
-        engine.play_sound("pickup_item", 0.8)
-        engine.emit_particles("coin_pickup_0", dropX, dropY, 18)
-        engine.emit_particles("heal_sparkle_0", playerX, playerY, 10)
-
-        -- TODO: insteawd of automatic effect apply - instead items will have to be 
-        -- consumed to get effect - vegetables consumed for hp/energy, seeds planted etc.
-        -- Temp for testing
-        local playerHealth = engine.get_entity_data("player", "health") or 0
-        engine.set_entity_data("player", "health", playerHealth + 10)
-
         if added > 0 then
+            print("Item picked up: " .. itemType .. " (x" .. count .. ")")
+            engine.play_sound("pickup_item", 0.8)
+            engine.emit_particles("coin_pickup_0", dropX, dropY, 18)
+
             -- HACK: Allows player to know that hotbar UI needs to be refreshed
             engine.set_entity_data("player", "hotbar_dirty", true)
 
