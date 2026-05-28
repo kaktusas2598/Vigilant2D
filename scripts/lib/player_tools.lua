@@ -97,8 +97,7 @@ function M.can_use_selected_item_on_tile(self, tileX, tileY)
         return farmState.is_tilled(tileX, tileY) and farmState.get_crop(tileX, tileY) == nil
 
     elseif self.selected_tool == "bucket" then
-        -- TODO: implement watering
-        return true
+        return farmState.is_tilled(tileX, tileY) and not farmState.is_watered(tileX, tileY)
     end
 
     return false
@@ -156,6 +155,13 @@ function M.commit_selected_tool_use(self, tileX, tileY, mouseX, mouseY)
     elseif self.selected_tool == "pickaxe" then
         if farmClutter.break_at(tileX, tileY) then
             engine.play_sound("rock_hit", 2.0, true)
+            return true
+        end
+
+    elseif self.selected_tool == "bucket" then
+        if farmState.water(tileX, tileY) then
+            engine.play_sound("watering", 0.5)
+            engine.emit_particles("heal_sparkle_0", mouseX, mouseY + 8, 8)
             return true
         end
 

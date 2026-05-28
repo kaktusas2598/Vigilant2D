@@ -2,11 +2,15 @@ local M = {}
 
 local FARM_MAP = "assets/farmMap.tmx"
 
+-- NOTE: These are defined in map
 local GROUND_TILESET = "cozyFarm"
 local CROPS_TILESET = "cozy_farm_crops"
+local CROPS_WET_TILESET = "cozy_farm_crops_wet"
 
-local GROUND_TILLED_TILE = 491
-local FARMLAND_TILLED_TILE = 494
+local GROUND_TILLED_TILE = 491 -- Base tilled dirt on "Ground" layer
+local FARMLAND_WATERED_TILE = 494 -- Watered soil overlay on "Farmland" layer
+-- TODO: support animated tile during tool use
+local FARMLAND_WATERED_ANIMATED_TILE = 498
 
 local POTATO_STAGE_0_TILE = 31
 local POTATO_STAGE_1_TILE = 32
@@ -62,6 +66,16 @@ function M.is_tilled(tileX, tileY)
     return grid.get_data("farm", tileX, tileY, "tilled") == true
 end
 
+function M.is_watered(tileX, tileY)
+    M.ensure()
+    return grid.get_data("farm", tileX, tileY, "watered") == true
+end
+
+function M.set_watered(tileX, tileY, watered)
+    M.ensure()
+    grid.set_data("farm", tileX, tileY, "watered", watered == true)
+end
+
 function M.get_crop(tileX, tileY)
     M.ensure()
     local crop = grid.get_data("farm", tileX, tileY, "crop")
@@ -90,12 +104,42 @@ function M.is_crop_mature(tileX, tileY)
     return false
 end
 
+function M.apply_soil_visual(tileX, tileY)
+    if not M.is_tilled(tileX, tileY) then
+        engine.clear_tile_override("Ground", tileX, tileY)
+        engine.clear_tile_override("Farmland", tileX, tileY)
+        return
+    end
+
+    engine.set_tile_tileset_override("Ground", tileX, tileY, GROUND_TILESET, GROUND_TILLED_TILE)
+
+    if M.is_watered(tileX, tileY) then
+        engine.set_tile_tileset_override("Farmland", tileX, tileY, GROUND_TILESET, FARMLAND_WATERED_TILE)
+    else
+        engine.clear_tile_override("Farmland", tileX, tileY)
+
+    end
+end
+
+function M.water(tileX, tileY)
+    M.ensure()
+
+    if not M.is_tilled(tileX, tileY) then
+        return false
+    end
+
+    M.set_watered(tileX, tileY, true)
+    M.apply_soil_visual(tileX, tileY)
+    M.apply_crop_visual(tileX, tileY)
+    return true
+end
+
 function M.till(tileX, tileY)
     M.ensure()
     grid.set_data("farm", tileX, tileY, "tilled", true)
+    grid.set_data("farm", tileX, tileY, "watered", false)
 
-    engine.set_tile_tileset_override("Ground", tileX, tileY, GROUND_TILESET, GROUND_TILLED_TILE)
-    engine.set_tile_tileset_override("Farmland", tileX, tileY, GROUND_TILESET, FARMLAND_TILLED_TILE)
+    M.apply_soil_visual(tileX, tileY)
 end
 
 function M.plant(tileX, tileY, cropId, day, hour, minute)
@@ -114,6 +158,7 @@ end
 function M.clear(tileX, tileY)
     M.ensure()
     grid.set_data("farm", tileX, tileY, "tilled", false)
+    grid.set_data("farm", tileX, tileY, "watered", false)
     grid.set_data("farm", tileX, tileY, "crop", "")
     grid.set_data("farm", tileX, tileY, "growth_stage", 0)
     grid.set_data("farm", tileX, tileY, "planted_day", 0)
@@ -137,7 +182,8 @@ function M.apply_crop_visual(tileX, tileY)
     local stage = M.get_growth_stage(tileX, tileY)
     local tileId = crop_stage_tile(cropId, stage)
     if tileId ~= nil then
-        engine.set_tile_tileset_override("Crops", tileX, tileY, CROPS_TILESET, tileId)
+        local tilesetId = M.is_watered(tileX, tileY) and CROPS_WET_TILESET or CROPS_TILESET
+        engine.set_tile_tileset_override("Crops", tileX, tileY, tilesetId, tileId)
     end
 end
 
@@ -166,6 +212,10 @@ end
 function M.update_growth_for_tile(tileX, tileY, currentDay, currentHour, currentMinute)
     local cropId = M.get_crop(tileX, tileY)
     if cropId == nil then
+        return
+    end
+
+    if not M.is_watered(tileX, tileY) then
         return
     end
 
@@ -201,6 +251,27 @@ function M.update_growth(currentDay, currentHour, currentMinute)
     end
 end
 
+function M.clear_all_watered()
+    M.ensure()
+
+    -- FIXME: probably shouldnt loop over everything!??
+    for y = 0, 119 do
+        for x = 0, 119 do
+            if M.is_watered(x, y) then
+                M.set_watered(x, y, false)
+                M.apply_soil_visual(x, y)
+                M.apply_crop_visual(x, y)
+            end
+        end
+    end
+end
+
+function M.handle_day_change(previousDay, currentDay)
+    if previousDay >= 0 and currentDay ~= previousDay then
+        M.clear_all_watered()
+    end
+end
+
 function M.restore()
     M.ensure()
 
@@ -212,8 +283,7 @@ function M.restore()
             local crop = grid.get_data("farm", x, y, "crop")
 
             if tilled == true then
-                engine.set_tile_tileset_override("Ground", x, y, GROUND_TILESET, GROUND_TILLED_TILE)
-                engine.set_tile_tileset_override("Farmland", x, y, GROUND_TILESET, FARMLAND_TILLED_TILE)
+                M.apply_soil_visual(x, y)
             end
 
             if crop ~= nil and crop ~= "" then

@@ -33,5 +33,6 @@ return {
         { id = "clear_dirt", path = "assets/sounds/clear-dirt.mp3" },
         { id = "wood_hit", path = "assets/sounds/wood hit 1.wav" },
         { id = "rock_hit", path = "assets/sounds/rock 10.wav" },
+        { id = "watering", path = "assets/sounds/universfield-fill-water.mp3" },
     }
 }

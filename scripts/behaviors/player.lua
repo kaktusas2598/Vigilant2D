@@ -128,6 +128,7 @@ function M.on_update(self, dt)
     local day, hour, minute = engine.get_game_time()
     if day ~= nil then
         if day ~= self.last_clock_day or hour ~= self.last_clock_hour or minute ~= self.last_clock_minute then
+            farmState.handle_day_change(self.last_clock_day, day)
             farmState.update_growth(day, hour, minute)
             self.last_clock_day = day
             self.last_clock_hour = hour

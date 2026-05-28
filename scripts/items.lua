@@ -32,7 +32,7 @@ return {
         type = "tool",
         stack_limit = 1,
         use_range = 28,
-        hold_time = 0.0
+        hold_time = 0.4
     },
     wood = {
         name = "Wood",
